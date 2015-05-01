@@ -2,6 +2,8 @@
 # Created by br@re-web.eu, 2015
 
 import sys
+import subprocess
+import time
 import pygame
 
 #####################
@@ -20,10 +22,6 @@ image_offset = (80,60)
 ###############
 ### Classes ###
 ###############
-
-class Usage(Exception):
-    def __init__(self, msg):
-        self.msg = msg
 
 class GUI_PyGame:
     """The GUI class using PyGame"""
@@ -59,10 +57,13 @@ class GUI_PyGame:
     def teardown(self):
         pygame.quit()
 
-# class Camera:
-#     """Camera class providing functionality to take pictures"""
-    # def __init__(self):
-
+class Camera:
+    """Camera class providing functionality to take pictures"""
+    #def __init__(self):
+    def preview(self, filename="/tmp/preview.jpg"):
+        ret = subprocess.call("gphoto2 --force-overwrite --capture-preview --quiet --filename " + filename)
+        if ret != 0: error("Error during preview!", ret)
+        return filename
 
 
 #################
@@ -70,12 +71,20 @@ class GUI_PyGame:
 #################
 
 def actions():
-    display.show_picture('../../capture_preview.jpg', image_size, image_offset)
+    display.show_picture(camera.preview(), image_size, image_offset)
+    time.sleep(0.5)
+
+def error(msg, exit_code=1):
+    print "ERROR:" + msg
+    teardown(exit_code)
+
+def teardown(exit_code=0):
+    display.teardown()
+    sys.exit(exit_code)
 
 def handle_keypress(key):
     if key == ord('q'):
-        display.teardown()
-        sys.exit()
+        teardown()
     elif key == ord('c'):
         print "Taking picture"
 
@@ -89,6 +98,7 @@ def main():
 ########################
 
 display = GUI_PyGame('Photobooth', display_size)
+camera = Camera()
 
 if __name__ == "__main__":
     sys.exit(main())
