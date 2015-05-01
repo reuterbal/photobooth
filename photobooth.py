@@ -91,10 +91,14 @@ class Camera:
         except subprocess.CalledProcessError as e:
             error("Error during preview when calling '" + e.cmd + "'!\nOutput: "
                   + e.output, e.returncode)
-        if "ERROR" in output: error("Error during preview!\n" + output)
+        # Error 2019 is: cannot focus
+        if "Canon EOS Capture failed: 2019" in output: return False
+        elif "ERROR" in output: error("Error during preview!\n" + output)
+        return True
 
     def preview(self, filename="/tmp/preview.jpg"):
-        self.call_gphoto("--capture-preview", filename)
+	while not self.call_gphoto("--capture-preview", filename):
+	    continue
         return filename
 
     def take_picture(self, filename="/tmp/picture.jpg"):
