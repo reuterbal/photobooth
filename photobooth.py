@@ -61,8 +61,11 @@ class Camera:
     """Camera class providing functionality to take pictures"""
     #def __init__(self):
     def preview(self, filename="/tmp/preview.jpg"):
-        ret = subprocess.call("gphoto2 --force-overwrite --capture-preview --quiet --filename " + filename)
-        if ret != 0: error("Error during preview!", ret)
+        try:
+            output = subprocess.check_output("gphoto2 --force-overwrite --capture-preview --quiet --filename " + filename, shell=True, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            error("Error during preview when calling '" + e.cmd + "'!\nOutput: " + e.output, e.returncode)
+        if "ERROR" in output: error("Error during preview!\n" + output)
         return filename
 
 
@@ -75,7 +78,7 @@ def actions():
     time.sleep(0.5)
 
 def error(msg, exit_code=1):
-    print "ERROR:" + msg
+    print "ERROR: " + msg
     teardown(exit_code)
 
 def teardown(exit_code=0):
