@@ -145,7 +145,7 @@ def handle_keypress(key):
         print "Taking 4 pictures"
         size = display.get_size()
         image_size = (int(size[0]/2), int(size[1]/2))
-        filenames = []
+        filenames = [i for i in range(4)]
         for x in range(4):
             filenames[x] = camera.take_picture(images.get_next())
         display.show_picture(filenames[0], image_size, (0,0))
