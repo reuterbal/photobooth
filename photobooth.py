@@ -108,6 +108,7 @@ class GUI_PyGame:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: return
                 elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
+            self.clear()
             self.show_picture(filename)
             self.show_message("Hit me!")
             self.apply()
@@ -161,7 +162,6 @@ def handle_keypress(key):
     # Take pictures
     elif key == ord('c'):
         # Show pose message
-        display.clear()
         display.show_picture(image_pose)
         display.show_message("POSE! Taking four pictures...");
         display.apply()
@@ -174,20 +174,19 @@ def handle_keypress(key):
         for x in range(4):
             filenames[x] = camera.take_picture(images.get_next())
         # Show pictures for 10 seconds
+        display.clear()
         display.show_picture(filenames[0], image_size, (0,0))
         display.show_picture(filenames[1], image_size, (image_size[0],0))
         display.show_picture(filenames[2], image_size, (0,image_size[1]))
         display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
         display.apply()
         time.sleep(display_time)
-        display.clear()
 
 def handle_exception(msg):
     display.clear()
     display.show_message("Error: " + msg)
     display.apply()
     time.sleep(3)
-    display.clear()
 
 def teardown(exit_code=0):
     display.teardown()
