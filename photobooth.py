@@ -30,6 +30,12 @@ image_pose = "pose.png"
 # Image basename
 image_basename = "pic"
 
+# Waiting time in seconds for posing
+pose_time = 5
+
+# Display time for taken pictures
+display_time = 10
+
 ###############
 ### Classes ###
 ###############
@@ -61,12 +67,12 @@ class GUI_PyGame:
         pygame.mouse.set_visible(False)
         # Store screen and size
         self.size = size
-        # Reset and initialize screen
-        self.reset()
-
-    def reset(self):
         self.screen = pygame.display.set_mode(self.size)
-        self.screen.fill((255,255,255))
+        # Clear screen
+        self.clear()
+
+    def clear(self, color=(255,255,255)):
+        self.screen.fill(color)
 
     def apply(self):
         pygame.display.update()
@@ -155,11 +161,11 @@ def handle_keypress(key):
     # Take pictures
     elif key == ord('c'):
         # Show pose message
-        display.reset()
+        display.clear()
         display.show_picture(image_pose)
         display.show_message("POSE! Taking four pictures...");
         display.apply()
-        time.sleep(5)
+        time.sleep(pose_time)
         # Extract display and image sizes
         size = display.get_size()
         image_size = (int(size[0]/2), int(size[1]/2))
@@ -173,15 +179,15 @@ def handle_keypress(key):
         display.show_picture(filenames[2], image_size, (0,image_size[1]))
         display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
         display.apply()
-        time.sleep(10)
-        display.reset()
+        time.sleep(display_time)
+        display.clear()
 
 def handle_exception(msg):
-    display.reset()
+    display.clear()
     display.show_message("Error: " + msg)
     display.apply()
     time.sleep(3)
-    display.reset()
+    display.clear()
 
 def teardown(exit_code=0):
     display.teardown()
