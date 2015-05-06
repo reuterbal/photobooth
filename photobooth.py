@@ -54,10 +54,19 @@ class GUI_PyGame:
         pygame.display.set_caption(name)
         # Hide mouse cursor
         pygame.mouse.set_visible(False)
-        # Save objects
+        # Store screen and size
         self.size = size
-        self.screen = pygame.display.set_mode(size)
+        self.reset()
+        # self.screen = pygame.display.set_mode(size)
         #self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        # Set background
+        # self.background = pygame.Surface(self.screen.get_size())
+        # self.background = self.background.convert()
+        # self.background.fill((250, 250, 250))
+
+    def reset(self):
+        self.screen = pygame.display.set_mode(self.size)
+        self.screen.fill((255,255,255))
 
     def get_size(self):
         return self.size
@@ -66,9 +75,20 @@ class GUI_PyGame:
         if size == (0,0):
             size = self.get_size()
         image = pygame.image.load(filename)
-        image = pygame.transform.scale(image, size)
+        image = pygame.transform.scale(image, size).convert()
+        # self.sprite.image = image.convert()
         self.screen.blit(image, offset)
-        pygame.display.flip()
+
+    def show_message(self, msg):
+        font = pygame.font.Font(None, 36)
+        text = font.render(msg, 1, (10, 10, 10))
+        textpos = text.get_rect()
+        textpos.centerx = self.screen.get_rect().centerx
+        self.screen.blit(text, textpos)
+
+    def apply(self):
+        # pygame.display.flip()
+        pygame.display.update()
 
     def mainloop(self, filename):
         while True:
@@ -76,25 +96,36 @@ class GUI_PyGame:
                 if event.type == pygame.QUIT: return
                 elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
             self.show_picture(filename)
+            self.show_message("Hit me!")
+            self.apply()
 
     def teardown(self):
         pygame.quit()
 
+class CameraException(Exception):
+    pass
+
 class Camera:
     """Camera class providing functionality to take pictures"""
-    #def __init__(self):
+    def __init__(self):
+        try:
+            print(self.call_gphoto("-a", "/dev/null"))
+        except CameraException as e:
+            handle_exception(e.message)
+
     def call_gphoto(self, action, filename):
         try:
             output = subprocess.check_output("gphoto2 --force-overwrite --quiet " 
                                              + action + " --filename " + filename, 
                                              shell=True, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
-            error("Error during preview when calling '" + e.cmd + "'!\nOutput: "
-                  + e.output, e.returncode)
-        # Error 2019 is: cannot focus
-        if "Canon EOS Capture failed: 2019" in output: return False
-        elif "ERROR" in output: error("Error during preview!\n" + output)
-        return True
+            raise CameraException("Can't call gphoto2!")
+        # Check for non-fatal errors
+        if "Canon EOS Capture failed: 2019" in output:
+            raise CameraException("Cannot focus! Move a little bit and try again!")
+        elif "ERROR" in output: 
+            raise CameraException("Unknown error:\n" + output)
+        return output
 
     def preview(self, filename="/tmp/preview.jpg"):
 	while not self.call_gphoto("--capture-preview", filename):
@@ -128,8 +159,18 @@ def handle_keypress(key):
             display.show_picture(filename)
             time.sleep(2)
 
-def main(): 
-    display.mainloop(image_idle)
+def handle_exception(msg):
+    display.reset()
+    display.show_message("Error: " + msg)
+    display.apply()
+    time.sleep(3)
+
+def main():
+    while True:
+        try:
+            display.mainloop(image_idle)
+        except CameraException as e:
+            handle_exception(e.message)
     display.teardown()
     return 0
 
@@ -139,7 +180,7 @@ def main():
 
 display = GUI_PyGame('Photobooth', display_size)
 camera = Camera()
-images = Images(image_basename)
+images = Images("pic")
 
 if __name__ == "__main__":
     sys.exit(main())
