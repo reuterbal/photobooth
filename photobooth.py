@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # Created by br@re-web.eu, 2015
 
+from __future__ import division
+
 import sys
 import subprocess
 import time
@@ -21,6 +23,9 @@ image_offset = (80,60)
 
 # Idle image
 image_idle = "idle.jpg"
+
+# Pose image
+image_pose = "pose.png"
 
 # Image basename
 image_basename = "pic"
@@ -70,9 +75,18 @@ class GUI_PyGame:
         return self.size
 
     def show_picture(self, filename, size=(0,0), offset=(0,0)):
+        # Use window size if none given
         if size == (0,0):
             size = self.size
+        # Load image from file
         image = pygame.image.load(filename)
+        # Extract image size and determine scaling
+        image_size = image.get_rect().size
+        max_size = (min(size[0],image_size[0]),min(size[1],image_size[1]))
+        image_scale = min(max_size[0]/image_size[0], max_size[1]/image_size[1])
+        # New image size
+        size = (int(image_size[0] * image_scale), int(image_size[1] * image_scale))
+        # Apply scaling and display picture
         image = pygame.transform.scale(image, size).convert()
         self.screen.blit(image, offset)
 
@@ -134,32 +148,40 @@ class Camera:
 ### Functions ###
 #################
 
-# def error(msg, exit_code=1):
-#     print "ERROR: " + msg
-#     teardown(exit_code)
-
 def handle_keypress(key):
+    # Exit the application
     if key == ord('q'):
         teardown()
+    # Take pictures
     elif key == ord('c'):
-        print "Taking 4 pictures"
+        # Show pose message
+        display.reset()
+        display.show_picture(image_pose)
+        display.show_message("POSE! Taking four pictures...");
+        display.apply()
+        time.sleep(5)
+        # Extract display and image sizes
         size = display.get_size()
         image_size = (int(size[0]/2), int(size[1]/2))
+        # Take pictures
         filenames = [i for i in range(4)]
         for x in range(4):
             filenames[x] = camera.take_picture(images.get_next())
+        # Show pictures for 10 seconds
         display.show_picture(filenames[0], image_size, (0,0))
         display.show_picture(filenames[1], image_size, (image_size[0],0))
         display.show_picture(filenames[2], image_size, (0,image_size[1]))
         display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
         display.apply()
-        time.sleep(5)
+        time.sleep(10)
+        display.reset()
 
 def handle_exception(msg):
     display.reset()
     display.show_message("Error: " + msg)
     display.apply()
     time.sleep(3)
+    display.reset()
 
 def teardown(exit_code=0):
     display.teardown()
