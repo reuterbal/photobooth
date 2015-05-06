@@ -56,27 +56,24 @@ class GUI_PyGame:
         pygame.mouse.set_visible(False)
         # Store screen and size
         self.size = size
+        # Reset and initialize screen
         self.reset()
-        # self.screen = pygame.display.set_mode(size)
-        #self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-        # Set background
-        # self.background = pygame.Surface(self.screen.get_size())
-        # self.background = self.background.convert()
-        # self.background.fill((250, 250, 250))
 
     def reset(self):
         self.screen = pygame.display.set_mode(self.size)
         self.screen.fill((255,255,255))
+
+    def apply(self):
+        pygame.display.update()
 
     def get_size(self):
         return self.size
 
     def show_picture(self, filename, size=(0,0), offset=(0,0)):
         if size == (0,0):
-            size = self.get_size()
+            size = self.size
         image = pygame.image.load(filename)
         image = pygame.transform.scale(image, size).convert()
-        # self.sprite.image = image.convert()
         self.screen.blit(image, offset)
 
     def show_message(self, msg):
@@ -85,10 +82,6 @@ class GUI_PyGame:
         textpos = text.get_rect()
         textpos.centerx = self.screen.get_rect().centerx
         self.screen.blit(text, textpos)
-
-    def apply(self):
-        # pygame.display.flip()
-        pygame.display.update()
 
     def mainloop(self, filename):
         while True:
@@ -141,29 +134,36 @@ class Camera:
 ### Functions ###
 #################
 
-def error(msg, exit_code=1):
-    print "ERROR: " + msg
-    teardown(exit_code)
-
-def teardown(exit_code=0):
-    display.teardown()
-    sys.exit(exit_code)
+# def error(msg, exit_code=1):
+#     print "ERROR: " + msg
+#     teardown(exit_code)
 
 def handle_keypress(key):
     if key == ord('q'):
         teardown()
     elif key == ord('c'):
-        print "Taking 3 pictures"
-        for x in xrange(3):
-            filename = camera.take_picture(images.get_next())
-            display.show_picture(filename)
-            time.sleep(2)
+        print "Taking 4 pictures"
+        size = display.get_size()
+        image_size = (int(size[0]/2), int(size[1]/2))
+        filenames = []
+        for x in range(4):
+            filenames[x] = camera.take_picture(images.get_next())
+        display.show_picture(filenames[0], image_size, (0,0))
+        display.show_picture(filenames[1], image_size, (image_size[0],0))
+        display.show_picture(filenames[2], image_size, (0,image_size[1]))
+        display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
+        display.apply()
+        timer.sleep(5)
 
 def handle_exception(msg):
     display.reset()
     display.show_message("Error: " + msg)
     display.apply()
     time.sleep(3)
+
+def teardown(exit_code=0):
+    display.teardown()
+    sys.exit(exit_code)
 
 def main():
     while True:
