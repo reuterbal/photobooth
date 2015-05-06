@@ -91,9 +91,12 @@ class GUI_PyGame:
         max_size = (min(size[0],image_size[0]),min(size[1],image_size[1]))
         image_scale = min(max_size[0]/image_size[0], max_size[1]/image_size[1])
         # New image size
-        size = (int(image_size[0] * image_scale), int(image_size[1] * image_scale))
+        new_size = (int(image_size[0] * image_scale), int(image_size[1] * image_scale))
+        # Update offset
+        offset = (  offset[0] + int((size[0] - new_size[0]) / 2) ,
+                    offset[1] + int((size[1] - new_size[1]) / 2) );
         # Apply scaling and display picture
-        image = pygame.transform.scale(image, size).convert()
+        image = pygame.transform.scale(image, new_size).convert()
         self.screen.blit(image, offset)
 
     def show_message(self, msg):
@@ -161,6 +164,7 @@ def handle_keypress(key):
         teardown()
     # Take pictures
     elif key == ord('c'):
+        display.clear()
         # Show pose message
         display.show_picture(image_pose)
         display.show_message("POSE! Taking four pictures...");
