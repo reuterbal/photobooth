@@ -153,7 +153,7 @@ def handle_keypress(key):
         display.show_picture(filenames[2], image_size, (0,image_size[1]))
         display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
         display.apply()
-        timer.sleep(5)
+        time.sleep(5)
 
 def handle_exception(msg):
     display.reset()
