@@ -53,6 +53,7 @@ class Images:
         # Find existing files
         count_pattern = "[0-9]" * self.count_width
         pictures = glob.glob(self.basename + count_pattern + self.suffix)
+        # Get number of latest file
         if len(pictures) == 0:
             self.counter = 0
         else:
@@ -115,48 +116,59 @@ class GUI_PyGame:
         self.screen.blit(image, offset)
 
     def show_message(self, msg):
+        # Choose font
         font = pygame.font.Font(None, 36)
+        # Render text
         text = font.render(msg, 1, (10, 10, 10))
+        # Position and display text
         textpos = text.get_rect()
         textpos.centerx = self.screen.get_rect().centerx
         self.screen.blit(text, textpos)
 
     def mainloop(self, filename):
         while True:
+            # Check for events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: return
                 elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
+            # Clear display
             self.clear()
+            # Show idle-picture and message
             self.show_picture(filename)
             self.show_message("Hit me!")
+            # Render everything
             self.apply()
 
     def teardown(self):
         pygame.quit()
 
 class CameraException(Exception):
+    """Custom exception class to handle gPhoto errors"""
     pass
 
 class Camera:
     """Camera class providing functionality to take pictures"""
     def __init__(self):
+        # Print the abilities of the connected camera
         try:
             print(self.call_gphoto("-a", "/dev/null"))
         except CameraException as e:
             handle_exception(e.message)
 
     def call_gphoto(self, action, filename):
+        # Try to run the command
         try:
             output = subprocess.check_output("gphoto2 --force-overwrite --quiet " 
                                              + action + " --filename " + filename, 
                                              shell=True, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             raise CameraException("Can't call gphoto2!")
-        # Check for non-fatal errors
+        # Handle non-fatal errors
         if "Canon EOS Capture failed: 2019" in output:
             raise CameraException("Cannot focus! Move a little bit and try again!")
         elif "ERROR" in output: 
             raise CameraException("Unknown error:\n" + output)
+        # Return the command line output
         return output
 
     def preview(self, filename="/tmp/preview.jpg"):
@@ -173,34 +185,38 @@ class Camera:
 ### Functions ###
 #################
 
+def take_picture():
+    display.clear()
+    # Show pose message
+    display.show_picture(image_pose)
+    display.show_message("POSE! Taking four pictures...");
+    display.apply()
+    time.sleep(pose_time)
+    # Extract display and image sizes
+    size = display.get_size()
+    image_size = (int(size[0]/2), int(size[1]/2))
+    # Take pictures
+    filenames = [i for i in range(4)]
+    for x in range(4):
+        filenames[x] = camera.take_picture(images.get_next())
+    # Show pictures for 10 seconds
+    display.clear()
+    display.show_picture(filenames[0], image_size, (0,0))
+    display.show_picture(filenames[1], image_size, (image_size[0],0))
+    display.show_picture(filenames[2], image_size, (0,image_size[1]))
+    display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
+    display.apply()
+    time.sleep(display_time)
+
 def handle_keypress(key):
+    """Implements the actions for the different keypress events"""
     # Exit the application
     if key == ord('q'):
         teardown()
     # Take pictures
     elif key == ord('c'):
-        display.clear()
-        # Show pose message
-        display.show_picture(image_pose)
-        display.show_message("POSE! Taking four pictures...");
-        display.apply()
-        time.sleep(pose_time)
-        # Extract display and image sizes
-        size = display.get_size()
-        image_size = (int(size[0]/2), int(size[1]/2))
-        # Take pictures
-        filenames = [i for i in range(4)]
-        for x in range(4):
-            filenames[x] = camera.take_picture(images.get_next())
-        # Show pictures for 10 seconds
-        display.clear()
-        display.show_picture(filenames[0], image_size, (0,0))
-        display.show_picture(filenames[1], image_size, (image_size[0],0))
-        display.show_picture(filenames[2], image_size, (0,image_size[1]))
-        display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
-        display.apply()
-        time.sleep(display_time)
-
+        take_picture()
+        
 def handle_exception(msg):
     display.clear()
     display.show_message("Error: " + msg)
