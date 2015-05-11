@@ -59,6 +59,7 @@ class Images:
             last_picture = pictures[-1]
             self.counter = int(last_picture[-(self.count_width+len(self.suffix)):-len(self.suffix)])
         print "Number of existing files: " + str(self.counter)
+        print "Saving as: " + self.basename
 
     def get(self, count):
         return self.basename + str(count).zfill(self.count_width) + self.suffix
@@ -224,7 +225,7 @@ def main():
 
 display = GUI_PyGame('Photobooth', display_size)
 camera = Camera()
-images = Images("pic")
+images = Images(image_basename)
 
 if __name__ == "__main__":
     sys.exit(main())
