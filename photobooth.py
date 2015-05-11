@@ -51,14 +51,15 @@ class Images:
         self.suffix = ".jpg"
         self.count_width = 5
         # Find existing files
-        pictures = glob.glob(self.basename + "[0-9]" + self.suffix)
+        count_pattern = "[0-9]" * self.count_width
+        pictures = glob.glob(self.basename + count_pattern + self.suffix)
         if len(pictures) == 0:
             self.counter = 0
         else:
             pictures.sort()
             last_picture = pictures[-1]
             self.counter = int(last_picture[-(self.count_width+len(self.suffix)):-len(self.suffix)])
-        print "Number of existing files: " + str(self.counter)
+        print "Number of last existing file: " + str(self.counter) + "(" + str(len(pictures)) + ")"
         print "Saving as: " + self.basename
 
     def get(self, count):
@@ -224,8 +225,8 @@ def main():
 ########################
 
 display = GUI_PyGame('Photobooth', display_size)
-camera = Camera()
 images = Images(image_basename)
+camera = Camera()
 
 if __name__ == "__main__":
     sys.exit(main())
