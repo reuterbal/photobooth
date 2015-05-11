@@ -3,9 +3,12 @@
 
 from __future__ import division
 
-import sys
+import datetime
+import glob
 import subprocess
+import sys
 import time
+
 import pygame
 
 #####################
@@ -28,7 +31,7 @@ image_idle = "idle.jpg"
 image_pose = "pose.png"
 
 # Image basename
-image_basename = "pic"
+image_basename = datetime.datetime.now().strftime("%Y-%m-%d/pic")
 
 # Waiting time in seconds for posing
 pose_time = 5
@@ -43,12 +46,22 @@ display_time = 10
 class Images:
     """Class to manage images and count them"""
     def __init__(self, basename):
+        # Set basename and suffix
         self.basename = basename
-        self.counter = 0
         self.suffix = ".jpg"
+        self.count_width = 5
+        # Find existing files
+        pictures = glob.glob(self.basename + "[0-9]" + self.suffix)
+        if len(pictures) == 0:
+            self.counter = 0
+        else:
+            pictures.sort()
+            last_picture = pictures[-1]
+            self.counter = int(last_picture[-(self.count_width+len(self.suffix)):-len(self.suffix)])
+        print "Number of existing files: " + str(self.counter)
 
     def get(self, count):
-        return self.basename + str(count).zfill(5) + self.suffix
+        return self.basename + str(count).zfill(self.count_width) + self.suffix
 
     def get_last(self):
         return self.get(self.counter)
