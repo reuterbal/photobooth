@@ -104,13 +104,11 @@ class GUI_PyGame:
         image = pygame.image.load(filename)
         # Extract image size and determine scaling
         image_size = image.get_rect().size
-        max_size = (min(size[0],image_size[0]),min(size[1],image_size[1]))
-        image_scale = min(max_size[0]/image_size[0], max_size[1]/image_size[1])
+        image_scale = min([min(a,b)/b for a,b in zip(size, image_size)])
         # New image size
-        new_size = (int(image_size[0] * image_scale), int(image_size[1] * image_scale))
+        new_size = [int(a*image_scale) for a in image_size]
         # Update offset
-        offset = (  offset[0] + int((size[0] - new_size[0]) / 2) ,
-                    offset[1] + int((size[1] - new_size[1]) / 2) );
+        offset = tuple(a+int((b-c)/2) for a,b,c in zip(offset, size, new_size))
         # Apply scaling and display picture
         image = pygame.transform.scale(image, new_size).convert()
         self.screen.blit(image, offset)
