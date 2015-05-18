@@ -11,6 +11,11 @@ import time
 
 import pygame
 
+# try:
+#     import RPi.GPIO as GPIO
+# except RuntimeError:
+#     print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
+
 #####################
 ### Configuration ###
 #####################
@@ -32,6 +37,9 @@ image_pose = "pose.png"
 
 # Image basename
 image_basename = datetime.datetime.now().strftime("%Y-%m-%d/pic")
+
+# GPIO channel of switch to take pictures
+gpio_trigger_channel = 0 #GPIO23
 
 # Waiting time in seconds for posing
 pose_time = 5
@@ -217,18 +225,42 @@ def handle_keypress(key):
     # Take pictures
     elif key == ord('c'):
         take_picture()
+
+# def handle_gpio_event(channel):
+#     """Implements the actions taken for a GPIO event"""
+#     if channel == gpio_trigger_channel:
+#         GPIO.remove_event_detect(gpio_trigger_channel)
+#         take_picture()
+#         GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
+#                               callback=handle_gpio_event, bouncetime=200)
         
 def handle_exception(msg):
+    """Displays an error message and returns"""
     display.clear()
-    display.show_message("Error: " + msg)
+    msg = "Error: " + msg
+    print msg
+    display.show_message(msg)
     display.apply()
     time.sleep(3)
 
+# def setup_gpio():
+#     # Display initial information
+#     print "Your Raspberry Pi is board revision " + str(GPIO.RPI_INFO['P1_REVISION'])
+#     print "RPi.GPIO version is " + str(GPIO.VERSION)
+#     # Choose BCM numbering system
+#     GPIO.setmode(GPIO.BCM)
+#     # Setup the trigger channel as input and listen for events
+#     GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#     GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
+#                           callback=handle_gpio_event, bouncetime=200)
+
 def teardown(exit_code=0):
     display.teardown()
+    # GPIO.cleanup()
     sys.exit(exit_code)
 
 def main():
+    # setup_gpio()
     while True:
         try:
             display.mainloop(image_idle)
