@@ -125,10 +125,6 @@ class GUI_PyGame:
 
     def mainloop(self, filename):
         while True:
-            # Check for events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT: return
-                elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
             # Clear display
             self.clear()
             # Show idle-picture and message
@@ -136,6 +132,13 @@ class GUI_PyGame:
             self.show_message("Hit me!")
             # Render everything
             self.apply()
+            # Wait for event
+            event = pygame.event.wait()
+            # Handle the event
+            if event.type == pygame.QUIT: return
+            elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
+            # Ignore all input that happened inbetween
+            pygame.event.clear()
 
     def teardown(self):
         pygame.quit()
