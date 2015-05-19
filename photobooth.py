@@ -3,11 +3,11 @@
 
 from __future__ import division
 
-import datetime
-import glob
 import subprocess
-import sys
-import time
+from datetime import datetime
+from glob import glob
+from sys import exit
+from time import sleep
 
 import pygame
 
@@ -36,7 +36,7 @@ image_idle = "idle.jpg"
 image_pose = "pose.png"
 
 # Image basename
-image_basename = datetime.datetime.now().strftime("%Y-%m-%d/pic")
+image_basename = datetime.now().strftime("%Y-%m-%d/pic")
 
 # GPIO channel of switch to take pictures
 gpio_trigger_channel = 0 #GPIO23
@@ -60,7 +60,7 @@ class Images:
         self.count_width = 5
         # Find existing files
         count_pattern = "[0-9]" * self.count_width
-        pictures = glob.glob(self.basename + count_pattern + self.suffix)
+        pictures = glob(self.basename + count_pattern + self.suffix)
         # Get number of latest file
         if len(pictures) == 0:
             self.counter = 0
@@ -200,7 +200,7 @@ def take_picture():
     display.show_picture(image_pose)
     display.show_message("POSE! Taking four pictures...");
     display.apply()
-    time.sleep(pose_time)
+    sleep(pose_time)
     # Extract display and image sizes
     size = display.get_size()
     image_size = (int(size[0]/2), int(size[1]/2))
@@ -215,7 +215,7 @@ def take_picture():
     display.show_picture(filenames[2], image_size, (0,image_size[1]))
     display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
     display.apply()
-    time.sleep(display_time)
+    sleep(display_time)
 
 def handle_keypress(key):
     """Implements the actions for the different keypress events"""
@@ -241,7 +241,7 @@ def handle_exception(msg):
     print msg
     display.show_message(msg)
     display.apply()
-    time.sleep(3)
+    sleep(3)
 
 # def setup_gpio():
 #     # Display initial information
@@ -257,7 +257,7 @@ def handle_exception(msg):
 def teardown(exit_code=0):
     display.teardown()
     # GPIO.cleanup()
-    sys.exit(exit_code)
+    exit(exit_code)
 
 def main():
     # setup_gpio()
@@ -278,4 +278,4 @@ images = Images(image_basename)
 camera = Camera()
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit(main())
