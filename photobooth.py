@@ -11,10 +11,10 @@ from time import sleep
 
 import pygame
 
-# try:
-#     import RPi.GPIO as GPIO
-# except RuntimeError:
-#     print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    print("Error importing RPi.GPIO! This is probably because you need superuser privileges.")
 
 #####################
 ### Configuration ###
@@ -68,8 +68,8 @@ class Images:
             pictures.sort()
             last_picture = pictures[-1]
             self.counter = int(last_picture[-(self.count_width+len(self.suffix)):-len(self.suffix)])
-        print "Number of last existing file: " + str(self.counter) + "(" + str(len(pictures)) + ")"
-        print "Saving as: " + self.basename
+        print("Number of last existing file: " + str(self.counter) + "(" + str(len(pictures)) + ")")
+        print("Saving as: " + self.basename)
 
     def get(self, count):
         return self.basename + str(count).zfill(self.count_width) + self.suffix
@@ -226,33 +226,33 @@ def handle_keypress(key):
     elif key == ord('c'):
         take_picture()
 
-# def handle_gpio_event(channel):
-#     """Implements the actions taken for a GPIO event"""
-#     if channel == gpio_trigger_channel:
-#         GPIO.remove_event_detect(gpio_trigger_channel)
-#         take_picture()
-#         GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
-#                               callback=handle_gpio_event, bouncetime=200)
+def handle_gpio_event(channel):
+    """Implements the actions taken for a GPIO event"""
+    if channel == gpio_trigger_channel:
+        GPIO.remove_event_detect(gpio_trigger_channel)
+        take_picture()
+        GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
+                              callback=handle_gpio_event, bouncetime=200)
         
 def handle_exception(msg):
     """Displays an error message and returns"""
     display.clear()
     msg = "Error: " + msg
-    print msg
+    print(msg)
     display.show_message(msg)
     display.apply()
     sleep(3)
 
-# def setup_gpio():
-#     # Display initial information
-#     print "Your Raspberry Pi is board revision " + str(GPIO.RPI_INFO['P1_REVISION'])
-#     print "RPi.GPIO version is " + str(GPIO.VERSION)
-#     # Choose BCM numbering system
-#     GPIO.setmode(GPIO.BCM)
-#     # Setup the trigger channel as input and listen for events
-#     GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#     GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
-#                           callback=handle_gpio_event, bouncetime=200)
+def setup_gpio():
+    # Display initial information
+    print "Your Raspberry Pi is board revision " + str(GPIO.RPI_INFO['P1_REVISION'])
+    print "RPi.GPIO version is " + str(GPIO.VERSION)
+    # Choose BCM numbering system
+    GPIO.setmode(GPIO.BCM)
+    # Setup the trigger channel as input and listen for events
+    GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
+                          callback=handle_gpio_event, bouncetime=200)
 
 def teardown(exit_code=0):
     display.teardown()
