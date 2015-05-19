@@ -10,11 +10,7 @@ from sys import exit
 from time import sleep
 
 import pygame
-
-try:
-    import RPi.GPIO as GPIO
-except RuntimeError:
-    print("Error importing RPi.GPIO! This is probably because you need superuser privileges.")
+import RPi.GPIO as GPIO
 
 #####################
 ### Configuration ###
@@ -250,11 +246,11 @@ def setup_gpio():
 
 def teardown(exit_code=0):
     display.teardown()
-    # GPIO.cleanup()
+    GPIO.cleanup()
     exit(exit_code)
 
 def main():
-    # setup_gpio()
+    setup_gpio()
     while True:
         try:
             display.mainloop(image_idle)
