@@ -29,7 +29,7 @@ image_pose = "pose.png"
 image_basename = datetime.now().strftime("%Y-%m-%d/pic")
 
 # GPIO channel of switch to take pictures
-gpio_trigger_channel = 0 #GPIO23
+gpio_trigger_channel = GPIO23
 
 # Waiting time in seconds for posing
 pose_time = 5
