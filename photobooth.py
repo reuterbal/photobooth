@@ -21,13 +21,7 @@ except RuntimeError:
 #####################
 
 # Screen size
-display_size = (800, 600)
-
-# Image size for displaying
-image_size = (640, 480)
-
-# Display offset for pictures
-image_offset = (80,60)
+display_size = (1024, 600)
 
 # Idle image
 image_idle = "idle.jpg"
