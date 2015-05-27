@@ -135,8 +135,12 @@ class GUI_PyGame:
             # Handle the event
             if event.type == pygame.QUIT: return
             elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
-            elif event.type == pygame.MOUSEBUTTONDOWN: handle_mousebutton(event.button, event.pos)
-            elif event.type == pygame.MOUSEBUTTONUP: handle_mousebutton(event.button, event.pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN: 
+                print("MOUSEBUTTONDOWN")
+                handle_mousebutton(event.button, event.pos)
+            elif event.type == pygame.MOUSEBUTTONUP: 
+                print("MOUSEBUTTONUP")
+                handle_mousebutton(event.button, event.pos)
             # Ignore all input that happened inbetween
             pygame.event.clear()
 
