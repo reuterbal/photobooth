@@ -81,7 +81,7 @@ class GUI_PyGame:
         pygame.mouse.set_visible(False)
         # Store screen and size
         self.size = size
-        self.screen = pygame.display.set_mode(self.size)
+        self.screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
         # Clear screen
         self.clear()
 
@@ -246,11 +246,11 @@ def setup_gpio():
 
 def teardown(exit_code=0):
     display.teardown()
-    GPIO.cleanup()
+    #GPIO.cleanup()
     exit(exit_code)
 
 def main():
-    setup_gpio()
+    #setup_gpio()
     while True:
         try:
             display.mainloop(image_idle)
