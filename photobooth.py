@@ -10,7 +10,7 @@ from sys import exit
 from time import sleep
 
 import pygame
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
 #####################
 ### Configuration ###
@@ -219,6 +219,7 @@ def handle_keypress(key):
 
 def handle_mousebutton(key, pos):
     """Implements the actions for the different mousebutton events"""
+    print("Key="+str(key)+", pos="+str(pos))
     # Take a picture
     if key == 1:
         take_picture()
