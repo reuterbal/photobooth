@@ -113,7 +113,7 @@ class GUI_PyGame:
 
     def show_message(self, msg):
         # Choose font
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, 48)
         # Render text
         text = font.render(msg, 1, (10, 10, 10))
         # Position and display text
@@ -135,6 +135,7 @@ class GUI_PyGame:
             # Handle the event
             if event.type == pygame.QUIT: return
             elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
+            elif event.type == pygame.MOUSEBUTTONDOWN: handle_mousebutton(event.button, event.pos)
             # Ignore all input that happened inbetween
             pygame.event.clear()
 
@@ -214,6 +215,12 @@ def handle_keypress(key):
         teardown()
     # Take pictures
     elif key == ord('c'):
+        take_picture()
+
+def handle_mousebutton(key, pos):
+    """Implements the actions for the different mousebutton events"""
+    # Take a picture
+    if key == 1:
         take_picture()
 
 def handle_gpio_event(channel):
