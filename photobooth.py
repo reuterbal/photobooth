@@ -10,7 +10,12 @@ from sys import exit
 from time import sleep
 
 import pygame
-#import RPi.GPIO as GPIO
+
+try:
+    import RPi.GPIO as GPIO
+    gpio_enabled = True
+except ImportError:
+    gpio_enabled = False
 
 #####################
 ### Configuration ###
@@ -79,7 +84,6 @@ class GUI_PyGame:
         pygame.display.set_caption(name)
         # Hide mouse cursor
         pygame.mouse.set_cursor(*pygame.cursors.load_xbm('transparent.xbm','transparent.msk'))
-        #pygame.mouse.set_visible(False)
         # Store screen and size
         self.size = size
         self.screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
@@ -187,6 +191,7 @@ class Camera:
 #################
 
 def take_picture():
+    """Implements the picture taking routine"""
     display.clear()
     # Show pose message
     display.show_picture(image_pose)
@@ -243,23 +248,29 @@ def handle_exception(msg):
     sleep(3)
 
 def setup_gpio():
-    # Display initial information
-    print "Your Raspberry Pi is board revision " + str(GPIO.RPI_INFO['P1_REVISION'])
-    print "RPi.GPIO version is " + str(GPIO.VERSION)
-    # Choose BCM numbering system
-    GPIO.setmode(GPIO.BCM)
-    # Setup the trigger channel as input and listen for events
-    GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
-                          callback=handle_gpio_event, bouncetime=200)
+    """Enables GPIO in- and output and registers event handles"""
+    if gpio_enabled:
+        # Display initial information
+        print("Your Raspberry Pi is board revision " + str(GPIO.RPI_INFO['P1_REVISION']))
+        print("RPi.GPIO version is " + str(GPIO.VERSION))
+        # Choose BCM numbering system
+        GPIO.setmode(GPIO.BCM)
+        # Setup the trigger channel as input and listen for events
+        GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
+                              callback=handle_gpio_event, bouncetime=200)
+    else:
+        print("Warning: RPi.GPIO could not be loaded. GPIO disabled.")
+
 
 def teardown(exit_code=0):
     display.teardown()
-    #GPIO.cleanup()
+    if gpio_enabled:
+        GPIO.cleanup()
     exit(exit_code)
 
 def main():
-    #setup_gpio()
+    setup_gpio()
     while True:
         try:
             display.mainloop(image_idle)
