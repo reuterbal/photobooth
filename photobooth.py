@@ -203,7 +203,7 @@ class Camera:
 def assemble_pictures(input_filenames, output_filename):
     """Assembles four pictures into a 2x2 grid"""
     # Thumbnail size of pictures
-    size = (int(image_size[0]/2),int(image_size[0]/2))
+    size = (int(image_size[0]/2),int(image_size[1]/2))
     # Create output image
     output_image = Image.new('RGB', image_size)
     # Load images and resize them
@@ -251,7 +251,7 @@ def take_picture():
     assemble_pictures(filenames, outfile)
     # Show pictures for 10 seconds
     display.clear()
-    display.show_picture(outfile, outsize, (0,0))
+    display.show_picture(outfile, size, (0,0))
     # display.show_picture(filenames[0], outsize, (0,0))
     # display.show_picture(filenames[1], outsize, (outsize[0],0))
     # display.show_picture(filenames[2], outsize, (0,outsize[1]))
