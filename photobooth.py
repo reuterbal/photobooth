@@ -118,12 +118,13 @@ class GUI_PyGame:
 
     def show_message(self, msg):
         # Choose font
-        font = pygame.font.Font(None, 48)
+        font = pygame.font.Font(None, 72)
         # Render text
-        text = font.render(msg, 1, (10, 10, 10))
+        text = font.render(msg, 1, (10,10,10))
         # Position and display text
         textpos = text.get_rect()
         textpos.centerx = self.screen.get_rect().centerx
+        textpos.centery = self.screen.get_rect().centery
         self.screen.blit(text, textpos)
 
     def mainloop(self, filename):
@@ -197,7 +198,13 @@ def take_picture():
     display.show_picture(image_pose)
     display.show_message("POSE! Taking four pictures...");
     display.apply()
-    sleep(pose_time)
+    sleep(pose_time - 3)
+    # Countdown
+    for i in range(3):
+        display.clear()
+        display.show_message(str(3 - i))
+        display.apply()
+        sleep(1)
     # Extract display and image sizes
     size = display.get_size()
     image_size = (int(size[0]/2), int(size[1]/2))
