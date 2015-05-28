@@ -225,7 +225,7 @@ def take_picture():
         display.show_message(str(3 - i))
         display.apply()
         sleep(1)
-    #
+    # Show 'Cheese'
     display.clear()
     display.show_message("C H E E S E !")
     display.apply()
@@ -237,6 +237,10 @@ def take_picture():
     for x in range(4):
         # filenames[x] = camera.take_picture(images.get_next())
         filenames[x] = camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
+    # Show 'Wait'
+    display.clear()
+    display.show_message("Please wait! Processing...")
+    display.apply()
     # Assemble them
     outfile = images.get_next()
     assemble_pictures(filenames, outfile)
