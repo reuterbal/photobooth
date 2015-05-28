@@ -78,7 +78,7 @@ class GUI_PyGame:
         # Window name
         pygame.display.set_caption(name)
         # Hide mouse cursor
-        pygame.mouse.set_visible(False)
+        #pygame.mouse.set_visible(False)
         # Store screen and size
         self.size = size
         self.screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
