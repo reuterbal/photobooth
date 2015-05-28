@@ -3,6 +3,7 @@
 
 from __future__ import division
 
+import os
 import subprocess
 from datetime import datetime
 from glob import glob
@@ -57,6 +58,10 @@ class Images:
         self.basename = basename
         self.suffix = ".jpg"
         self.count_width = 5
+        # Ensure directory exists
+        dirname = os.path.dirname(self.basename)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
         # Find existing files
         count_pattern = "[0-9]" * self.count_width
         pictures = glob(self.basename + count_pattern + self.suffix)
