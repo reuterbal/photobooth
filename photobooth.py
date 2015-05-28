@@ -99,7 +99,7 @@ class GUI_PyGame:
         # Clear screen
         self.clear()
 
-    def clear(self, color=(255,255,255)):
+    def clear(self, color=(0,0,0)):
         self.screen.fill(color)
 
     def apply(self):
@@ -129,7 +129,7 @@ class GUI_PyGame:
         # Choose font
         font = pygame.font.Font(None, 48)
         # Render text
-        text = font.render(msg, 1, (10,10,10))
+        text = font.render(msg, 1, (245,245,245))
         # Position and display text
         textpos = text.get_rect()
         textpos.centerx = self.screen.get_rect().centerx
