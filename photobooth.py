@@ -9,6 +9,7 @@ from glob import glob
 from sys import exit
 from time import sleep
 
+from PIL import Image
 import pygame
 
 try:
@@ -23,6 +24,9 @@ except ImportError:
 
 # Screen size
 display_size = (1024, 600)
+
+# Maximum size of assembled image
+image_size = (2352, 1568)
 
 # Idle image
 image_idle = "idle.jpg"
@@ -118,7 +122,7 @@ class GUI_PyGame:
 
     def show_message(self, msg):
         # Choose font
-        font = pygame.font.Font(None, 72)
+        font = pygame.font.Font(None, 48)
         # Render text
         text = font.render(msg, 1, (10,10,10))
         # Position and display text
@@ -171,7 +175,7 @@ class Camera:
             raise CameraException("Can't call gphoto2!")
         # Handle non-fatal errors
         if "Canon EOS Capture failed: 2019" in output:
-            raise CameraException("Cannot focus! Move a little bit and try again!")
+            raise CameraException("Can't focus! Move and try again!")
         elif "ERROR" in output: 
             raise CameraException("Unknown error:\n" + output)
         # Return the command line output
@@ -191,6 +195,22 @@ class Camera:
 ### Functions ###
 #################
 
+def assemble_pictures(input_filenames, output_filename):
+    """Assembles four pictures into a 2x2 grid"""
+    # Thumbnail size of pictures
+    size = (int(image_size[0]/2),int(image_size[0]/2))
+    # Create output image
+    output_image = Image.new('RGB', image_size)
+    # Load images and resize them
+    for i in range(2):
+        for j in range(2):
+            k = i * 2 + j
+            img = Image.open(input_filenames[k])
+            img.thumbnail(size)
+            offset = (j * size[0], i * size[1])
+            output_image.paste(img, offset)
+    output_image.save(output_filename, "JPEG")
+
 def take_picture():
     """Implements the picture taking routine"""
     display.clear()
@@ -205,19 +225,28 @@ def take_picture():
         display.show_message(str(3 - i))
         display.apply()
         sleep(1)
+    #
+    display.clear()
+    display.show_message("C H E E S E !")
+    display.apply()
     # Extract display and image sizes
     size = display.get_size()
-    image_size = (int(size[0]/2), int(size[1]/2))
+    outsize = (int(size[0]/2), int(size[1]/2))
     # Take pictures
     filenames = [i for i in range(4)]
     for x in range(4):
-        filenames[x] = camera.take_picture(images.get_next())
+        # filenames[x] = camera.take_picture(images.get_next())
+        filenames[x] = camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
+    # Assemble them
+    outfile = images.get_next()
+    assemble_pictures(filenames, outfile)
     # Show pictures for 10 seconds
     display.clear()
-    display.show_picture(filenames[0], image_size, (0,0))
-    display.show_picture(filenames[1], image_size, (image_size[0],0))
-    display.show_picture(filenames[2], image_size, (0,image_size[1]))
-    display.show_picture(filenames[3], image_size, (image_size[0],image_size[1]))
+    display.show_picture(outfile, outsize, (0,0))
+    # display.show_picture(filenames[0], outsize, (0,0))
+    # display.show_picture(filenames[1], outsize, (outsize[0],0))
+    # display.show_picture(filenames[2], outsize, (0,outsize[1]))
+    # display.show_picture(filenames[3], outsize, (outsize[0],outsize[1]))
     display.apply()
     sleep(display_time)
 
