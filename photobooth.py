@@ -267,16 +267,24 @@ class Camera:
     def call_gphoto(self, action, filename):
         # Try to run the command
         try:
-            output = subprocess.check_output("gphoto2 --force-overwrite --quiet " 
-                                             + action + " --filename " + filename, 
-                                             shell=True, stderr=subprocess.STDOUT)
+            cmd = "gphoto2 --force-overwrite --quiet " + action + " --filename " + filename
+            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            if "ERROR" in output:
+                raise subprocess.CalledProcessError(returncod=0, cmd=cmd, output=output)
         except subprocess.CalledProcessError as e:
-            raise CameraException("Can't call gphoto2!")
-        # Handle non-fatal errors
-        if "Canon EOS Capture failed: 2019" in output:
-            raise CameraException("Can't focus! Move and try again!")
-        elif "ERROR" in output: 
-            raise CameraException("Unknown error:\n" + output)
+            if "Canon EOS Capture failed: 2019" in e.output:
+                raise CameraException("Can't focus! Move and try again!")
+            elif "Could not detect any camera" in e.output:
+                raise CameraException("No (supported) camera detected!")
+            else:
+                raise CameraException("Unknown error!\n" + '\n'.join(e.output.split('\n')[1:3]))
+        # # Handle non-fatal errors
+        # if "Canon EOS Capture failed: 2019" in output:
+        #     raise CameraException("Can't focus! Move and try again!")
+        # elif "Could not detect any camera" in output:
+        #     raise CameraException("No (supported) camera detected!")
+        # elif "ERROR" in output: 
+        #     raise CameraException("Unknown error:\n" + output)
         # Return the command line output
         return output
 
