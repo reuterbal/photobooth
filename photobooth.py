@@ -35,10 +35,10 @@ display_size = (1024, 600)
 image_size = (2352, 1568)
 
 # Idle image
-image_idle = "idle.jpg"
+image_idle = None
 
 # Pose image
-image_pose = "pose.png"
+image_pose = None
 
 # Image basename
 image_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -93,6 +93,90 @@ class Images:
         self.counter += 1
         return self.get(self.counter)
 
+class TextRectException:
+    def __init__(self, message = None):
+        self.message = message
+    def __str__(self):
+        return self.message
+
+def render_textrect(string, font, rect, text_color, background_color, justification=0):
+    """Returns a surface containing the passed text string, reformatted
+    to fit within the given rect, word-wrapping as necessary. The text
+    will be anti-aliased.
+
+    Source: http://www.pygame.org/pcr/text_rect/index.php
+
+    Takes the following arguments:
+
+    string - the text you wish to render. \n begins a new line.
+    font - a Font object
+    rect - a rectstyle giving the size of the surface requested.
+    text_color - a three-byte tuple of the rgb value of the
+                 text color. ex (0, 0, 0) = BLACK
+    background_color - a three-byte tuple of the rgb value of the surface.
+    justification - 0 (default) left-justified
+                    1 horizontally centered
+                    2 right-justified
+
+    Returns the following values:
+
+    Success - a surface object with the text rendered onto it.
+    Failure - raises a TextRectException if the text won't fit onto the surface.
+    """
+
+    import pygame
+    
+    final_lines = []
+
+    requested_lines = string.splitlines()
+
+    # Create a series of lines that will fit on the provided
+    # rectangle.
+
+    for requested_line in requested_lines:
+        if font.size(requested_line)[0] > rect.width:
+            words = requested_line.split(' ')
+            # if any of our words are too long to fit, return.
+            for word in words:
+                if font.size(word)[0] >= rect.width:
+                    raise TextRectException, "The word " + word + " is too long to fit in the rect passed."
+            # Start a new line
+            accumulated_line = ""
+            for word in words:
+                test_line = accumulated_line + word + " "
+                # Build the line while the words fit.    
+                if font.size(test_line)[0] < rect.width:
+                    accumulated_line = test_line 
+                else: 
+                    final_lines.append(accumulated_line) 
+                    accumulated_line = word + " " 
+            final_lines.append(accumulated_line)
+        else: 
+            final_lines.append(requested_line) 
+
+    # Let's try to write the text out on the surface.
+
+    surface = pygame.Surface(rect.size) 
+    surface.fill(background_color) 
+
+    accumulated_height = 0 
+    for line in final_lines: 
+        if accumulated_height + font.size(line)[1] >= rect.height:
+            raise TextRectException, "Once word-wrapped, the text string was too tall to fit in the rect."
+        if line != "":
+            tempsurface = font.render(line, 1, text_color)
+            if justification == 0:
+                surface.blit(tempsurface, (0, accumulated_height))
+            elif justification == 1:
+                surface.blit(tempsurface, ((rect.width - tempsurface.get_width()) / 2, accumulated_height))
+            elif justification == 2:
+                surface.blit(tempsurface, (rect.width - tempsurface.get_width(), accumulated_height))
+            else:
+                raise TextRectException, "Invalid justification argument: " + str(justification)
+        accumulated_height += font.size(line)[1]
+
+    return surface
+
 class GUI_PyGame:
     """The GUI class using PyGame"""
     def __init__(self, name, size):
@@ -133,26 +217,25 @@ class GUI_PyGame:
         offset = tuple(a+int((b-c)/2) for a,b,c in zip(offset, size, new_size))
         # Apply scaling and display picture
         image = pygame.transform.scale(image, new_size).convert()
-        self.screen.blit(image, offset)
+        self.screen.blit(image, offset)        
 
-    def show_message(self, msg):
+    def show_message(self, msg, color=(245,245,245), bg=(0,0,0)):
         # Choose font
-        font = pygame.font.Font(None, 48)
+        font = pygame.font.Font(None, 144)
+        # Create rectangle for text
+        rect = pygame.Rect((40, 40, self.size[0] - 40, self.size[1] - 40))
         # Render text
-        text = font.render(msg, 1, (245,245,245))
-        # Position and display text
-        textpos = text.get_rect()
-        textpos.centerx = self.screen.get_rect().centerx
-        textpos.centery = self.screen.get_rect().centery
-        self.screen.blit(text, textpos)
+        text = render_textrect(msg, font, rect, color, bg, 1)
+        self.screen.blit(text, rect.topleft)
 
     def mainloop(self, filename):
         while True:
             # Clear display
             self.clear()
             # Show idle-picture and message
-            self.show_picture(filename)
-            self.show_message("Hit me!")
+            if filename != None:
+                self.show_picture(filename)
+            self.show_message("Hit the button!")
             # Render everything
             self.apply()
             # Wait for event
@@ -163,7 +246,6 @@ class GUI_PyGame:
             elif event.type == pygame.MOUSEBUTTONUP: handle_mousebutton(event.button, event.pos)
             elif event.type == gpio_trigger_event: handle_gpio_event(event.channel)
             # Ignore all input that happened inbetween
-            # eventmodule.clear()
             eventmodule.get()
 
     def teardown(self):
@@ -230,44 +312,48 @@ def assemble_pictures(input_filenames, output_filename):
 
 def take_picture():
     """Implements the picture taking routine"""
-    display.clear()
     # Show pose message
-    display.show_picture(image_pose)
-    display.show_message("POSE! Taking four pictures...");
+    display.clear()
+    if image_pose != None:
+        display.show_picture(image_pose)
+    display.show_message("POSE!\n\nTaking four pictures...");
     display.apply()
     sleep(pose_time - 3)
+
     # Countdown
     for i in range(3):
         display.clear()
         display.show_message(str(3 - i))
         display.apply()
         sleep(1)
+
     # Show 'Cheese'
     display.clear()
-    display.show_message("C H E E S E !")
+    display.show_message("\n\nS M I L E !")
     display.apply()
+
     # Extract display and image sizes
     size = display.get_size()
     outsize = (int(size[0]/2), int(size[1]/2))
+
     # Take pictures
     filenames = [i for i in range(4)]
     for x in range(4):
         # filenames[x] = camera.take_picture(images.get_next())
         filenames[x] = camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
+
     # Show 'Wait'
     display.clear()
-    display.show_message("Please wait! Processing...")
+    display.show_message("Please wait!\n\nProcessing...")
     display.apply()
+
     # Assemble them
     outfile = images.get_next()
     assemble_pictures(filenames, outfile)
+
     # Show pictures for 10 seconds
     display.clear()
     display.show_picture(outfile, size, (0,0))
-    # display.show_picture(filenames[0], outsize, (0,0))
-    # display.show_picture(filenames[1], outsize, (outsize[0],0))
-    # display.show_picture(filenames[2], outsize, (0,outsize[1]))
-    # display.show_picture(filenames[3], outsize, (outsize[0],outsize[1]))
     display.apply()
     sleep(display_time)
 
@@ -282,7 +368,6 @@ def handle_keypress(key):
 
 def handle_mousebutton(key, pos):
     """Implements the actions for the different mousebutton events"""
-    print("Key="+str(key)+", pos="+str(pos))
     # Take a picture
     if key == 1:
         take_picture()
@@ -290,17 +375,13 @@ def handle_mousebutton(key, pos):
 def handle_gpio_event(channel):
     """Implements the actions taken for a GPIO event"""
     if channel == gpio_trigger_channel:
-        #GPIO.remove_event_detect(gpio_trigger_channel)
         take_picture()
-        #GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
-        #                      callback=handle_gpio_event, bouncetime=200)
-        
+
 def handle_exception(msg):
     """Displays an error message and returns"""
     display.clear()
-    msg = "Error: " + msg
-    print(msg)
-    display.show_message(msg)
+    print("Error: " + msg)
+    display.show_message("ERROR:\n\n" + msg)
     display.apply()
     sleep(3)
 
@@ -314,14 +395,12 @@ def setup_gpio():
         GPIO.setmode(GPIO.BCM)
         # Setup the trigger channel as input and listen for events
         GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
-                              callback=handle_gpio, bouncetime=200)
+        GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, callback=handle_gpio, bouncetime=200)
     else:
         print("Warning: RPi.GPIO could not be loaded. GPIO disabled.")
 
 def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
-    print("Button pressed")
     eventmodule.post(eventmodule.Event(gpio_trigger_event, channel=channel))
 
 def teardown(exit_code=0):
