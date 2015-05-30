@@ -12,7 +12,7 @@ The code was developed from scratch but inspired by the following tutorials/proj
 ## Requirements
 
 ### Software stack
-The following is required for running this photobooth application. I used only versions available in the package repositories of Raspbian (tested version numbers are given in brackets), others might work just as well.
+The following is required for running this photobooth application. I used the versions given in brackets, others might work just as well.
 
 * [Python](https://www.python.org) (2.7.3)
 * [Pygame](https://www.pygame.org) (1.9.1)
@@ -79,8 +79,11 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
     sudo apt-get install python-dev python-pip libjpeg8 python-tk
     sudo pip install Pillow
     ```
-  * gPhoto2:
-    ```sudo apt-get install gphoto2```
+  * gPhoto2: Unfortunately, the version in the repositories is too old to work (some USB-bugs), hence one must use [Gonzalos installer script]()
+    ```
+    git clone https://github.com/gonzalo/gphoto2-updater
+    sudo gphoto2-updater/gphoto2-updater.sh
+    ```
     To ensure the camera can be controlled properly via USB, remove some files:
     ```
     sudo rm /usr/share/dbus-1/services/org.gtk.Private.GPhoto2VolumeMonitor.service
@@ -95,10 +98,13 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
     ```
     Calibrate by calling `xinput_calibrator` and pasting the showed snippet to a new file `/etc/X11/xorg.conf.d/99-calibration.conf` (Create the directory if necessary).
 
-6. Checkout the Photobooth repository
+6. Reboot.
+
+7. Clone the Photobooth repository
    ```
    git clone https://github.com/reuterbal/photobooth
    ```
+   and run `photobooth.py`
 
 ## Modifications
 In the beginning of `photobooth.py` a number of config options are available. Change them to your liking.
