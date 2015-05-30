@@ -55,8 +55,44 @@ Available actions:
  
 All pictures taken are stored in a subfolder of the current working directory, named `YYYY-mm-dd` after the current date. Existing files are not overwritten.
 
+## Installation
+A brief description on how to set-up a Raspberry Pi to use this photobooth software.
+
+1. Download latest Raspbian image and set-up an SD-card. You can follow [these instruction](https://www.raspberrypi.org/documentation/installation/installing-images/README.md).
+
+   If your display needs some additional configuration, change the file `config.txt` in the `boot`-partition to your needs. For example, I'm using a [Pollin LS-7T touchscreen](http://www.pollin.de/shop/dt/NTMwOTc4OTk-), for which I need to enter the following to avoid overscan:
+   ```
+   hdmi_group=2
+   hdmi_mode=87
+   hdmi_cvt=1024 600 60 6 0 0 0
+   ```
+
+2. Insert the SD-card into your Raspberry Pi and fire it up. Use the `rpi-config` tool that is shown automatically on the first boot to configure your system (e.g., expand partition, change hostname, password, enable SSH, configure to boot into GUI, etc.).
+
+3. Reboot and open a terminal. Type `sudo rpi-update` to install the latest software versions. Reboot.
+
+4. Run `sudo apt-get update` and `sudo apt-get upgrade` to upgrade all installed software.
+
+5. Install any additionally required software:
+  * Pillow: 
+    ```
+    sudo apt-get install python-dev python-pip
+    sudo pip install Pillow
+    ```
+  * xinput_calibrator to calibrate touchscreens:
+    ```
+    wget http://adafruit-download.s3.amazonaws.com/xinput-calibrator_0.7.5-1_armhf.deb
+    sudo dpkg -i -B xinput-calibrator_0.7.5-1_armhf.deb
+    ```
+    Calibrate by calling `xinput_calibrator` and pasting the showed snippet to a new file `/etc/X11/xorg.conf.d/99-calibration.conf` (Create the directory if necessary).
+
+6. Checkout the Photobooth repository
+   ```
+   git clone https://github.com/reuterbal/photobooth
+   ```
+
 ## Modifications
-In the beginning of the file a number of config options are available. Change them to your liking.
+In the beginning of `photobooth.py` a number of config options are available. Change them to your liking.
 
 The GUI-class is separated from the entire functionality. I'm using Pygame because it's so simple to use. Feel free to replace it by your favorite library.
 
