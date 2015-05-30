@@ -39,7 +39,7 @@ image_pose = "pose.png"
 image_basename = datetime.now().strftime("%Y-%m-%d/pic")
 
 # GPIO channel of switch to take pictures
-gpio_trigger_channel = 7 # pin 26 in all Raspi-Versions
+gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions
 
 # Waiting time in seconds for posing
 pose_time = 5
