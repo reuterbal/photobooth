@@ -46,6 +46,9 @@ image_basename = datetime.now().strftime("%Y-%m-%d/pic")
 # GPIO channel of switch to take pictures
 gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions
 
+# PyGame event used to detect GPIO triggers
+gpio_trigger_event = pygame.USEREVENT
+
 # Waiting time in seconds for posing
 pose_time = 5
 
@@ -158,7 +161,7 @@ class GUI_PyGame:
             if event.type == pygame.QUIT: return
             elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
             elif event.type == pygame.MOUSEBUTTONUP: handle_mousebutton(event.button, event.pos)
-            elif event.type == pygame.USEREVENT: handle_gpio_event(event.channel)
+            elif event.type == gpio_trigger_event: handle_gpio_event(event.channel)
             # Ignore all input that happened inbetween
             # eventmodule.clear()
             eventmodule.get()
@@ -318,7 +321,8 @@ def setup_gpio():
 
 def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
-    eventmodule.post(eventmodule.Event(USEREVENT, channel=channel))
+    print("Button pressed")
+    eventmodule.post(eventmodule.Event(gpio_trigger_event, channel=channel))
 
 def teardown(exit_code=0):
     display.teardown()
