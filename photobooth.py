@@ -230,6 +230,8 @@ class GUI_PyGame:
 
     def mainloop(self, filename):
         while True:
+            # Ignore all input that happened before entering the loop
+            eventmodule.get()
             # Clear display
             self.clear()
             # Show idle-picture and message
@@ -245,8 +247,6 @@ class GUI_PyGame:
             elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
             elif event.type == pygame.MOUSEBUTTONUP: handle_mousebutton(event.button, event.pos)
             elif event.type == gpio_trigger_event: handle_gpio_event(event.channel)
-            # Ignore all input that happened inbetween
-            eventmodule.get()
 
     def teardown(self):
         pygame.quit()
@@ -339,7 +339,6 @@ def take_picture():
     # Take pictures
     filenames = [i for i in range(4)]
     for x in range(4):
-        # filenames[x] = camera.take_picture(images.get_next())
         filenames[x] = camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
 
     # Show 'Wait'
