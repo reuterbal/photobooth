@@ -16,8 +16,8 @@ The following is required for running this photobooth application. I used only v
 
 * [Python](https://www.python.org) (2.7.3)
 * [Pygame](https://www.pygame.org) (1.9.1)
+* [Pillow](http://pillow.readthedocs.org) (2.8.1)
 * [gPhoto](http://gphoto.sourceforge.net/) (2.5.6)
-* [Pillow](https://pypi.python.org/pypi/Pillow) (2.8.1)
 * Optional: [RPi.GPIO](https://pypi.python.org/pypi/RPi.GPIO) (0.5.11)
 
 RPi.GPIO is necessary to use external buttons as a trigger but it works just fine without. Triggering is then only possible using touch screen / mouse or key 'c'.
@@ -76,8 +76,17 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
 5. Install any additionally required software:
   * Pillow: 
     ```
-    sudo apt-get install python-dev python-pip
+    sudo apt-get install python-dev python-pip libjpeg8 python-tk
     sudo pip install Pillow
+    ```
+  * gPhoto2:
+    ```sudo apt-get install gphoto2```
+    To ensure the camera can be controlled properly via USB, remove some files:
+    ```
+    sudo rm /usr/share/dbus-1/services/org.gtk.Private.GPhoto2VolumeMonitor.service
+    sudo rm /usr/share/gvfs/mounts/gphoto2.mount
+    sudo rm /usr/share/gvfs/remote-volume-monitors/gphoto2.monitor
+    sudo rm /usr/lib/gvfs/gvfs-gphoto2-volume-monitor
     ```
   * xinput_calibrator to calibrate touchscreens:
     ```
