@@ -270,7 +270,7 @@ class Camera:
             cmd = "gphoto2 --force-overwrite --quiet " + action + " --filename " + filename
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
             if "ERROR" in output:
-                raise subprocess.CalledProcessError(returncod=0, cmd=cmd, output=output)
+                raise subprocess.CalledProcessError(returncode=0, cmd=cmd, output=output)
         except subprocess.CalledProcessError as e:
             if "Canon EOS Capture failed: 2019" in e.output:
                 raise CameraException("Can't focus! Move and try again!")
