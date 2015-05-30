@@ -274,18 +274,10 @@ class Camera:
         except subprocess.CalledProcessError as e:
             if "Canon EOS Capture failed: 2019" in e.output:
                 raise CameraException("Can't focus! Move and try again!")
-            elif "Could not detect any camera" in e.output:
+            elif "No camera found" in e.output:
                 raise CameraException("No (supported) camera detected!")
             else:
                 raise CameraException("Unknown error!\n" + '\n'.join(e.output.split('\n')[1:3]))
-        # # Handle non-fatal errors
-        # if "Canon EOS Capture failed: 2019" in output:
-        #     raise CameraException("Can't focus! Move and try again!")
-        # elif "Could not detect any camera" in output:
-        #     raise CameraException("No (supported) camera detected!")
-        # elif "ERROR" in output: 
-        #     raise CameraException("Unknown error:\n" + output)
-        # Return the command line output
         return output
 
     def preview(self, filename="/tmp/preview.jpg"):
