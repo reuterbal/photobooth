@@ -11,7 +11,12 @@ from sys import exit
 from time import sleep
 
 from PIL import Image
-import pygame
+
+import pygame  
+try:
+    import pygame.fastevent as eventmodule
+except ImportError:
+    import pygame.event as eventmodule
 
 try:
     import RPi.GPIO as GPIO
@@ -89,6 +94,8 @@ class GUI_PyGame:
     """The GUI class using PyGame"""
     def __init__(self, name, size):
         pygame.init()
+        if hasattr(eventmodule, 'init'):
+            eventmodule.init()
         # Window name
         pygame.display.set_caption(name)
         # Hide mouse cursor
@@ -146,13 +153,15 @@ class GUI_PyGame:
             # Render everything
             self.apply()
             # Wait for event
-            event = pygame.event.wait()
+            event = eventmodule.wait()
             # Handle the event
             if event.type == pygame.QUIT: return
             elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
             elif event.type == pygame.MOUSEBUTTONUP: handle_mousebutton(event.button, event.pos)
+            elif event.type == pygame.USEREVENT: handle_gpio_event(event.channel)
             # Ignore all input that happened inbetween
-            pygame.event.clear()
+            # eventmodule.clear()
+            eventmodule.get()
 
     def teardown(self):
         pygame.quit()
@@ -278,10 +287,10 @@ def handle_mousebutton(key, pos):
 def handle_gpio_event(channel):
     """Implements the actions taken for a GPIO event"""
     if channel == gpio_trigger_channel:
-        GPIO.remove_event_detect(gpio_trigger_channel)
+        #GPIO.remove_event_detect(gpio_trigger_channel)
         take_picture()
-        GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
-                              callback=handle_gpio_event, bouncetime=200)
+        #GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
+        #                      callback=handle_gpio_event, bouncetime=200)
         
 def handle_exception(msg):
     """Displays an error message and returns"""
@@ -303,10 +312,13 @@ def setup_gpio():
         # Setup the trigger channel as input and listen for events
         GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, 
-                              callback=handle_gpio_event, bouncetime=200)
+                              callback=handle_gpio, bouncetime=200)
     else:
         print("Warning: RPi.GPIO could not be loaded. GPIO disabled.")
 
+def handle_gpio(channel):
+    """Interrupt handler for GPIO events"""
+    eventmodule.post(eventmodule.Event(USEREVENT, channel=channel))
 
 def teardown(exit_code=0):
     display.teardown()
