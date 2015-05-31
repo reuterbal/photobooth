@@ -238,7 +238,7 @@ class GUI_PyGame:
             # Show idle-picture and message
             if filename != None:
                 self.show_picture(filename)
-            self.show_message("Hit the button!")
+            self.show_message("\n\nHit the button!")
             # Render everything
             self.apply()
             # Wait for event
@@ -324,7 +324,7 @@ def take_picture():
     # Countdown
     for i in range(3):
         display.clear()
-        display.show_message(str(3 - i))
+        display.show_message("\n\n" + str(3 - i))
         display.apply()
         sleep(1)
 
