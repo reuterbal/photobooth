@@ -76,7 +76,7 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
 5. Install any additionally required software:
   * Pillow: 
     ```
-    sudo apt-get install python-dev python-pip libjpeg8 python-tk
+    sudo apt-get install python-dev python-pip libjpeg8-dev
     sudo pip install Pillow
     ```
   * gPhoto2: Unfortunately, the version in the repositories is too old to work (some USB-bugs), hence one must use [Gonzalos installer script]()
