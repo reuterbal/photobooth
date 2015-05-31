@@ -124,8 +124,6 @@ def render_textrect(string, font, rect, text_color, background_color, justificat
     Failure - raises a TextRectException if the text won't fit onto the surface.
     """
 
-    import pygame
-    
     final_lines = []
 
     requested_lines = string.splitlines()
@@ -201,6 +199,9 @@ class GUI_PyGame:
 
     def get_size(self):
         return self.size
+
+    def trigger_event(self, event_id, event_channel):
+        eventmodule.post(eventmodule.Event(event_id, channel=event_channel))
 
     def show_picture(self, filename, size=(0,0), offset=(0,0)):
         # Use window size if none given
@@ -400,7 +401,7 @@ def setup_gpio():
 
 def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
-    eventmodule.post(eventmodule.Event(gpio_trigger_event, channel=channel))
+    display.trigger_event(gpio_trigger_event, channel)
 
 def teardown(exit_code=0):
     display.teardown()
