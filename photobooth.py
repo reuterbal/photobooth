@@ -43,11 +43,14 @@ image_pose = None
 # Image basename
 image_basename = datetime.now().strftime("%Y-%m-%d/pic")
 
+# GPIO channel of switch to shutdown the Pi
+gpio_shutdown_channel = 24 # pin 18 in all Raspi-Versions
+
 # GPIO channel of switch to take pictures
 gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions
 
 # PyGame event used to detect GPIO triggers
-gpio_trigger_event = pygame.USEREVENT
+gpio_pygame_event = pygame.USEREVENT
 
 # Waiting time in seconds for posing
 pose_time = 5
@@ -247,7 +250,7 @@ class GUI_PyGame:
             if event.type == pygame.QUIT: return
             elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
             elif event.type == pygame.MOUSEBUTTONUP: handle_mousebutton(event.button, event.pos)
-            elif event.type == gpio_trigger_event: handle_gpio_event(event.channel)
+            elif event.type == gpio_pygame_event: handle_gpio_event(event.channel)
 
     def teardown(self):
         pygame.quit()
@@ -376,6 +379,13 @@ def handle_gpio_event(channel):
     """Implements the actions taken for a GPIO event"""
     if channel == gpio_trigger_channel:
         take_picture()
+    elif channel == gpio_shutdown_channel:
+        display.clear()
+        print("Shutting down!")
+        display.show_message("Shutting down!")
+        display.apply()
+        sleep(1)
+        os.system("shutdown -h now")
 
 def handle_exception(msg):
     """Displays an error message and returns"""
@@ -401,7 +411,7 @@ def setup_gpio():
 
 def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
-    display.trigger_event(gpio_trigger_event, channel)
+    display.trigger_event(gpio_pygame_event, channel)
 
 def teardown(exit_code=0):
     display.teardown()
