@@ -412,7 +412,7 @@ def setup_gpio():
 
 def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
-    print("Channel " + channel + " triggered")
+    print("Channel " + str(channel) + " triggered")
     display.trigger_event(gpio_pygame_event, channel)
 
 def teardown(exit_code=0):
