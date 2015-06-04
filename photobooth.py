@@ -382,10 +382,10 @@ def handle_gpio_event(channel):
     elif channel == gpio_shutdown_channel:
         display.clear()
         print("Shutting down!")
-        display.show_message("Shutting down!")
+        display.show_message("\n\nShutting down!")
         display.apply()
         sleep(1)
-        os.system("shutdown -h now")
+        teardown(0, True)
 
 def handle_exception(msg):
     """Displays an error message and returns"""
@@ -413,14 +413,15 @@ def setup_gpio():
 
 def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
-    print("Channel " + str(channel) + " triggered")
     display.trigger_event(gpio_pygame_event, channel)
 
-def teardown(exit_code=0):
+def teardown(exit_code=0, shutdown=False):
     display.teardown()
     if gpio_enabled:
         GPIO.cleanup()
     exit(exit_code)
+    if shutdown:
+        os.system("shutdown -h now")
 
 def main():
     setup_gpio()
@@ -429,7 +430,7 @@ def main():
             display.mainloop(image_idle)
         except CameraException as e:
             handle_exception(e.message)
-    display.teardown()
+    teardown()
     return 0
 
 ########################
