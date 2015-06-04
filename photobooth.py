@@ -407,6 +407,7 @@ def setup_gpio():
         GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(gpio_shutdown_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, callback=handle_gpio, bouncetime=200)
+        GPIO.add_event_detect(gpio_shutdown_channel, GPIO.RISING, callback=handle_gpio, bouncetime=200)
     else:
         print("Warning: RPi.GPIO could not be loaded. GPIO disabled.")
 
