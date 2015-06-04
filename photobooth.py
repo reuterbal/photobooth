@@ -385,7 +385,7 @@ def handle_gpio_event(channel):
         display.show_message("\n\nShutting down!")
         display.apply()
         sleep(1)
-        teardown(0, True)
+        teardown()
 
 def handle_exception(msg):
     """Displays an error message and returns"""
@@ -415,13 +415,11 @@ def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
     display.trigger_event(gpio_pygame_event, channel)
 
-def teardown(exit_code=0, shutdown=False):
+def teardown(exit_code=0):
     display.teardown()
     if gpio_enabled:
         GPIO.cleanup()
     exit(exit_code)
-    if shutdown:
-        os.system("shutdown -h now")
 
 def main():
     setup_gpio()
