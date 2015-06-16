@@ -49,6 +49,9 @@ gpio_shutdown_channel = 24 # pin 18 in all Raspi-Versions
 # GPIO channel of switch to take pictures
 gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions
 
+# GPIO output channel for (blinking) lamp
+gpio_lamp_channel = 4 # pin 7 in all Raspi-Versions
+
 # PyGame event used to detect GPIO triggers
 gpio_pygame_event = pygame.USEREVENT
 
@@ -102,7 +105,7 @@ class TextRectException:
     def __str__(self):
         return self.message
 
-def render_textrect(string, font, rect, text_color, background_color, justification=0):
+def render_textrect(string, font, rect, text_color, background_color, justification=0, valign=0):
     """Returns a surface containing the passed text string, reformatted
     to fit within the given rect, word-wrapping as necessary. The text
     will be anti-aliased.
@@ -120,6 +123,9 @@ def render_textrect(string, font, rect, text_color, background_color, justificat
     justification - 0 (default) left-justified
                     1 horizontally centered
                     2 right-justified
+    valign - 0 (default) top aligned
+             1 vertically centered
+             2 bottom aligned
 
     Returns the following values:
 
@@ -134,6 +140,7 @@ def render_textrect(string, font, rect, text_color, background_color, justificat
     # Create a series of lines that will fit on the provided
     # rectangle.
 
+    accumulated_height = 0
     for requested_line in requested_lines:
         if font.size(requested_line)[0] > rect.width:
             words = requested_line.split(' ')
@@ -149,11 +156,28 @@ def render_textrect(string, font, rect, text_color, background_color, justificat
                 if font.size(test_line)[0] < rect.width:
                     accumulated_line = test_line 
                 else: 
+                    accumulated_height += font.size(test_line)[1]
                     final_lines.append(accumulated_line) 
                     accumulated_line = word + " " 
+            accumulated_height += font.size(accumulated_line)[1]
             final_lines.append(accumulated_line)
-        else: 
+        else:
+            accumulated_height += font.size(requested_line)[1] 
             final_lines.append(requested_line) 
+
+    # Check height of the text and align vertically
+
+    if accumulated_height >= rect.height:
+        raise TextRectException, "Once word-wrapped, the text string was too tall to fit in the rect."
+
+    if valign == 0:
+        voffset = 0
+    elif valign == 1:
+        voffset = int((rect.height - accumulated_height) / 2)
+    elif valign == 2:
+        voffset = rect.height - accumulated_height
+    else:
+        raise TextRectException, "Invalid valign argument: " + str(valign)
 
     # Let's try to write the text out on the surface.
 
@@ -162,16 +186,14 @@ def render_textrect(string, font, rect, text_color, background_color, justificat
 
     accumulated_height = 0 
     for line in final_lines: 
-        if accumulated_height + font.size(line)[1] >= rect.height:
-            raise TextRectException, "Once word-wrapped, the text string was too tall to fit in the rect."
         if line != "":
             tempsurface = font.render(line, 1, text_color)
             if justification == 0:
-                surface.blit(tempsurface, (0, accumulated_height))
+                surface.blit(tempsurface, (0, voffset + accumulated_height))
             elif justification == 1:
-                surface.blit(tempsurface, ((rect.width - tempsurface.get_width()) / 2, accumulated_height))
+                surface.blit(tempsurface, ((rect.width - tempsurface.get_width()) / 2, voffset + accumulated_height))
             elif justification == 2:
-                surface.blit(tempsurface, (rect.width - tempsurface.get_width(), accumulated_height))
+                surface.blit(tempsurface, (rect.width - tempsurface.get_width(), voffset + accumulated_height))
             else:
                 raise TextRectException, "Invalid justification argument: " + str(justification)
         accumulated_height += font.size(line)[1]
@@ -227,9 +249,9 @@ class GUI_PyGame:
         # Choose font
         font = pygame.font.Font(None, 144)
         # Create rectangle for text
-        rect = pygame.Rect((40, 40, self.size[0] - 40, self.size[1] - 40))
+        rect = pygame.Rect((0, 0, self.size[0], self.size[1]))
         # Render text
-        text = render_textrect(msg, font, rect, color, bg, 1)
+        text = render_textrect(msg, font, rect, color, bg, 1, 1)
         self.screen.blit(text, rect.topleft)
 
     def mainloop(self, filename):
@@ -241,7 +263,7 @@ class GUI_PyGame:
             # Show idle-picture and message
             if filename != None:
                 self.show_picture(filename)
-            self.show_message("\n\nHit the button!")
+            self.show_message("Hit the button!")
             # Render everything
             self.apply()
             # Wait for event
@@ -300,10 +322,13 @@ class Camera:
 
 def assemble_pictures(input_filenames, output_filename):
     """Assembles four pictures into a 2x2 grid"""
+
     # Thumbnail size of pictures
     size = (int(image_size[0]/2),int(image_size[1]/2))
+
     # Create output image
     output_image = Image.new('RGB', image_size)
+
     # Load images and resize them
     for i in range(2):
         for j in range(2):
@@ -312,10 +337,14 @@ def assemble_pictures(input_filenames, output_filename):
             img.thumbnail(size)
             offset = (j * size[0], i * size[1])
             output_image.paste(img, offset)
+
     output_image.save(output_filename, "JPEG")
 
 def take_picture():
     """Implements the picture taking routine"""
+    # Disable the lamp
+    set_lamp(0)
+
     # Show pose message
     display.clear()
     if image_pose != None:
@@ -327,13 +356,13 @@ def take_picture():
     # Countdown
     for i in range(3):
         display.clear()
-        display.show_message("\n\n" + str(3 - i))
+        display.show_message(str(3 - i))
         display.apply()
         sleep(1)
 
     # Show 'Cheese'
     display.clear()
-    display.show_message("\n\nS M I L E !")
+    display.show_message("S M I L E !")
     display.apply()
 
     # Extract display and image sizes
@@ -360,11 +389,16 @@ def take_picture():
     display.apply()
     sleep(display_time)
 
+    # Reenable lamp
+    set_lamp(1)
+
 def handle_keypress(key):
     """Implements the actions for the different keypress events"""
+
     # Exit the application
     if key == ord('q'):
         teardown()
+
     # Take pictures
     elif key == ord('c'):
         take_picture()
@@ -377,12 +411,14 @@ def handle_mousebutton(key, pos):
 
 def handle_gpio_event(channel):
     """Implements the actions taken for a GPIO event"""
+
     if channel == gpio_trigger_channel:
         take_picture()
+
     elif channel == gpio_shutdown_channel:
         display.clear()
         print("Shutting down!")
-        display.show_message("\n\nShutting down!")
+        display.show_message("Shutting down!")
         display.apply()
         sleep(1)
         teardown()
@@ -401,19 +437,30 @@ def setup_gpio():
         # Display initial information
         print("Your Raspberry Pi is board revision " + str(GPIO.RPI_INFO['P1_REVISION']))
         print("RPi.GPIO version is " + str(GPIO.VERSION))
+
         # Choose BCM numbering system
         GPIO.setmode(GPIO.BCM)
+
         # Setup the trigger channel as input and listen for events
         GPIO.setup(gpio_trigger_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(gpio_shutdown_channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.add_event_detect(gpio_trigger_channel, GPIO.RISING, callback=handle_gpio, bouncetime=200)
         GPIO.add_event_detect(gpio_shutdown_channel, GPIO.RISING, callback=handle_gpio, bouncetime=200)
+
+        # Setup the lamp channel as output
+        GPIO.setup(gpio_lamp_channel, GPIO.OUT)
+        GPIO.output(gpio_lamp_channel, GPIO.LOW)
     else:
         print("Warning: RPi.GPIO could not be loaded. GPIO disabled.")
 
 def handle_gpio(channel):
     """Interrupt handler for GPIO events"""
     display.trigger_event(gpio_pygame_event, channel)
+
+def set_lamp(status=0):
+    """Switch the lamp on"""
+    if gpio_enabled:
+        GPIO.output(gpio_lamp_channel, GPIO.HIGH if status==1 else GPIO.LOW)
 
 def teardown(exit_code=0):
     display.teardown()
@@ -425,6 +472,7 @@ def main():
     setup_gpio()
     while True:
         try:
+            set_lamp(1)
             display.mainloop(image_idle)
         except CameraException as e:
             handle_exception(e.message)
