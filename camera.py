@@ -10,9 +10,9 @@ class CameraException(Exception):
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
 
-    def __init__(self):
+    #def __init__(self):
         # Print the abilities of the connected camera
-        print(self.call_gphoto("-a", "/dev/null"))
+        # print(self.call_gphoto("-a", "/dev/null"))
 
     def call_gphoto(self, action, filename):
         # Try to run the command
