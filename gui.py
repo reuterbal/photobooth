@@ -13,6 +13,8 @@ try:
 except ImportError:
     import pygame.event as EventModule
 
+from events import Event
+
 
 class TextRectException:
     def __init__(self, message = None):
@@ -120,7 +122,7 @@ class GUI_PyGame:
     """A GUI class using PyGame"""
 
     def __init__(self, name, size):
-    	# Call init routines
+        # Call init routines
         pygame.init()
         if hasattr(EventModule, 'init'):
             EventModule.init()
@@ -147,8 +149,8 @@ class GUI_PyGame:
     def get_size(self):
         return self.size
 
-    def trigger_event(self, event_id, event_channel):
-        EventModule.post(EventModule.Event(event_id, channel=event_channel))
+    def trigger_event(self, event_channel):
+        EventModule.post(EventModule.Event(pygame.USEREVENT, channel=event_channel))
 
     def show_picture(self, filename, size=(0,0), offset=(0,0)):
         # Use window size if none given
@@ -175,6 +177,26 @@ class GUI_PyGame:
         # Render text
         text = render_textrect(msg, font, rect, color, bg, 1, 1)
         self.screen.blit(text, rect.topleft)
+
+    def wait_for_event(self):
+        # Repeat until a relevant event happened
+        while True:
+            # Discard all input that happened before entering the loop
+            EventModule.get()
+
+            # Wait for event
+            event = EventModule.wait()
+
+            # Return Event-Object
+            if event.type == pygame.QUIT: 
+                return Event(0, 0)
+            elif event.type == pygame.KEYDOWN: 
+                return Event(1, event.key)
+            elif event.type == pygame.MOUSEBUTTONUP: 
+                return Event(2, (event.button, event.pos))
+            elif event.type >= pygame.USEREVENT: 
+                return Event(3, event.channel)
+
 
     def mainloop(self, filename, handle_keypress, handle_mousebutton, handle_gpio_event):
         while True:
