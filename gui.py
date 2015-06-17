@@ -6,6 +6,8 @@
 # - incorporate render_textrect
 # - restructure mainloop
 
+from __future__ import division
+
 import pygame  
 
 try:
@@ -142,8 +144,11 @@ class GUI_PyGame:
 
     def clear(self, color=(0,0,0)):
         self.screen.fill(color)
+        self.surface_list = []
 
     def apply(self):
+        for surface in self.surface_list:
+            self.screen.blit(surface[0], surface[1])
         pygame.display.update()
 
     def get_size(self):
@@ -167,16 +172,21 @@ class GUI_PyGame:
         offset = tuple(a+int((b-c)/2) for a,b,c in zip(offset, size, new_size))
         # Apply scaling and display picture
         image = pygame.transform.scale(image, new_size).convert()
-        self.screen.blit(image, offset)        
+        # Create surface and blit the image to it
+        surface = pygame.Surface(new_size)
+        surface.blit(image, (0,0))
+        self.surface_list.append((surface, offset))
 
-    def show_message(self, msg, color=(245,245,245), bg=(0,0,0)):
+    def show_message(self, msg, color=(245,245,245), bg=(0,0,0), transparency=True):
         # Choose font
         font = pygame.font.Font(None, 144)
         # Create rectangle for text
         rect = pygame.Rect((0, 0, self.size[0], self.size[1]))
         # Render text
         text = render_textrect(msg, font, rect, color, bg, 1, 1)
-        self.screen.blit(text, rect.topleft)
+        if transparency:
+            text.set_colorkey(bg)
+        self.surface_list.append((text, rect.topleft))
 
     def wait_for_event(self):
         # Repeat until a relevant event happened

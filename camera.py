@@ -9,17 +9,17 @@ try:
 except ImportError:
     cv_enabled = False
 
-
 class CameraException(Exception):
     """Custom exception class to handle camera class errors"""
     pass
 
+
 class Camera_cv:
-    def __init__(self):
+    def __init__(self, picture_size):
         if cv_enabled:
             self.cap = cv.VideoCapture(0)
-            self.cap.set(3, 640)
-            self.cap.set(4, 480)
+            self.cap.set(3, picture_size[0])
+            self.cap.set(4, picture_size[1])
 
     def take_picture(self, filename="/tmp/picture.jpg"):
         if cv_enabled:
@@ -27,13 +27,14 @@ class Camera_cv:
             cv.imwrite(filename, frame)
             return filename
         else:
-            return "/dev/null"
+            raise CameraException("OpenCV not available!")
 
 
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
 
-    # def __init__(self):
+    def __init__(self, picture_size):
+        self.picture_size = picture_size
         # Print the abilities of the connected camera
         # print(self.call_gphoto("-a", "/dev/null"))
 

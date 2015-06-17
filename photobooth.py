@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 # Created by br@re-web.eu, 2015
 
-from __future__ import division
-
 import os
 from datetime import datetime
 from glob import glob
 from sys import exit
-from time import sleep
+from time import sleep, clock
 
 from PIL import Image
 
 from gui import GUI_PyGame as GuiModule
-
-from camera import Camera_gPhoto as CameraModule
-from camera import CameraException
-
+from camera import CameraException, Camera_gPhoto as CameraModule
 from events import Rpi_GPIO as GPIO
 
 #####################
@@ -90,7 +85,7 @@ class Photobooth:
                  trigger_channel, shutdown_channel, lamp_channel):
         self.display      = GuiModule('Photobooth', display_size)
         self.pictures     = PictureList(picture_basename)
-        self.camera       = CameraModule()
+        self.camera       = CameraModule(picture_size)
 
         self.pic_size     = picture_size
         self.pose_time    = pose_time
@@ -105,6 +100,10 @@ class Photobooth:
         self.gpio         = GPIO(self.handle_gpio, input_channels, output_channels)
 
     def teardown(self):
+        self.display.clear()
+        self.display.show_message("Shutting down...")
+        self.display.apply()
+        sleep(1)
         self.display.teardown()
         self.gpio.teardown()
         exit(0)
@@ -172,7 +171,7 @@ class Photobooth:
         sleep(3)
 
 
-    def assemble_pictures(self, input_filenames, output_filename):
+    def assemble_pictures(self, input_filenames):
         """Assembles four pictures into a 2x2 grid"""
 
         # Thumbnail size of pictures
@@ -191,7 +190,9 @@ class Photobooth:
                 output_image.paste(img, offset)
 
         # Save resized image
+        output_filename = self.pictures.get_next()
         output_image.save(output_filename, "JPEG")
+        return output_filename
 
     def take_picture(self):
         """Implements the picture taking routine"""
@@ -223,7 +224,11 @@ class Photobooth:
         # Take pictures
         filenames = [i for i in range(4)]
         for x in range(4):
+            tic = clock()
             filenames[x] = self.camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
+            toc = clock() - tic
+            if toc < 1.0:
+                sleep(1.0 - toc)
 
         # Show 'Wait'
         self.display.clear()
@@ -231,8 +236,7 @@ class Photobooth:
         self.display.apply()
 
         # Assemble them
-        outfile = self.pictures.get_next()
-        self.assemble_pictures(filenames, outfile)
+        outfile = self.assemble_pictures(filenames)
 
         # Show pictures for 10 seconds
         self.display.clear()
@@ -254,7 +258,8 @@ def main():
     photobooth = Photobooth(picture_basename, image_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel)
     photobooth.run()
-    return photobooth.teardown()
+    photobooth.teardown()
+    return 0
 
 if __name__ == "__main__":
     exit(main())
