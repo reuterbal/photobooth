@@ -137,7 +137,7 @@ class GUI_PyGame:
 
         # Store screen and size
         self.size = size
-        self.screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
 
         # Clear screen
         self.clear()

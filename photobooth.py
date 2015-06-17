@@ -255,7 +255,7 @@ class Photobooth:
 #################
 
 def main():
-    photobooth = Photobooth(picture_basename, display_size, image_size, pose_time, display_time, 
+    photobooth = Photobooth(display_size, picture_basename, image_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel)
     photobooth.run()
     photobooth.teardown()
