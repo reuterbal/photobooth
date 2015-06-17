@@ -3,14 +3,37 @@
 
 import subprocess
 
+try:
+    import cv2 as cv
+    cv_enabled = True
+except ImportError:
+    cv_enabled = False
+
+
 class CameraException(Exception):
     """Custom exception class to handle camera class errors"""
     pass
 
+class Camera_cv:
+    def __init__(self):
+        if cv_enabled:
+            self.cap = cv.VideoCapture(0)
+            self.cap.set(3, 640)
+            self.cap.set(4, 480)
+
+    def take_picture(self, filename="/tmp/picture.jpg"):
+        if cv_enabled:
+            r, frame = self.cap.read()
+            cv.imwrite(filename, frame)
+            return filename
+        else:
+            return "/dev/null"
+
+
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
 
-    #def __init__(self):
+    # def __init__(self):
         # Print the abilities of the connected camera
         # print(self.call_gphoto("-a", "/dev/null"))
 

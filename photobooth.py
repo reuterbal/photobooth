@@ -190,6 +190,7 @@ class Photobooth:
                 offset = (j * thumb_size[0], i * thumb_size[1])
                 output_image.paste(img, offset)
 
+        # Save resized image
         output_image.save(output_filename, "JPEG")
 
     def take_picture(self):
