@@ -81,7 +81,7 @@ class PictureList:
 
 
 class Photobooth:
-    def __init__(self, picture_basename, picture_size, pose_time, display_time,
+    def __init__(self, display_size, picture_basename, picture_size, pose_time, display_time,
                  trigger_channel, shutdown_channel, lamp_channel):
         self.display      = GuiModule('Photobooth', display_size)
         self.pictures     = PictureList(picture_basename)
@@ -157,10 +157,10 @@ class Photobooth:
 
     def handle_gpio_event(self, channel):
         """Implements the actions taken for a GPIO event"""
-        if channel == gpio_trigger_channel:
+        if channel == self.trigger_channel:
             self.take_picture()
-        elif channel == gpio_shutdown_channel:
-            self.display.clear()
+        elif channel == self.shutdown_channel:
+            self.teardown()
 
     def handle_exception(self, msg):
         """Displays an error message and returns"""
@@ -255,7 +255,7 @@ class Photobooth:
 #################
 
 def main():
-    photobooth = Photobooth(picture_basename, image_size, pose_time, display_time, 
+    photobooth = Photobooth(picture_basename, display_size, image_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel)
     photobooth.run()
     photobooth.teardown()
