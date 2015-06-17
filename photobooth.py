@@ -31,7 +31,7 @@ image_size = (2352, 1568)
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
 
-# GPIO channel of switch to shutdown the Pi
+# GPIO channel of switch to shutdown the Photobooth
 gpio_shutdown_channel = 24 # pin 18 in all Raspi-Versions
 
 # GPIO channel of switch to take pictures
@@ -86,11 +86,15 @@ class PictureList:
 
 
 class Photobooth:
-    def __init__(self, picture_basename, picture_size, trigger_channel, shutdown_channel, lamp_channel):
+    def __init__(self, picture_basename, picture_size, pose_time, display_time,
+                 trigger_channel, shutdown_channel, lamp_channel):
         self.display      = GuiModule('Photobooth', display_size)
         self.pictures     = PictureList(picture_basename)
         self.camera       = CameraModule()
+
         self.pic_size     = picture_size
+        self.pose_time    = pose_time
+        self.display_time = display_time
 
         self.trigger_channel  = trigger_channel
         self.shutdown_channel = shutdown_channel
@@ -172,18 +176,18 @@ class Photobooth:
         """Assembles four pictures into a 2x2 grid"""
 
         # Thumbnail size of pictures
-        size = (int(image_size[0]/2),int(image_size[1]/2))
+        thumb_size = (int(self.pic_size[0]/2),int(self.pic_size[1]/2))
 
         # Create output image
-        output_image = Image.new('RGB', image_size)
+        output_image = Image.new('RGB', self.pic_size)
 
         # Load images and resize them
         for i in range(2):
             for j in range(2):
                 k = i * 2 + j
                 img = Image.open(input_filenames[k])
-                img.thumbnail(size)
-                offset = (j * size[0], i * size[1])
+                img.thumbnail(thumb_size)
+                offset = (j * thumb_size[0], i * thumb_size[1])
                 output_image.paste(img, offset)
 
         output_image.save(output_filename, "JPEG")
@@ -197,7 +201,7 @@ class Photobooth:
         self.display.clear()
         self.display.show_message("POSE!\n\nTaking four pictures...");
         self.display.apply()
-        sleep(pose_time - 3)
+        sleep(self.pose_time - 3)
 
         # Countdown
         for i in range(3):
@@ -233,7 +237,7 @@ class Photobooth:
         self.display.clear()
         self.display.show_picture(outfile, size, (0,0))
         self.display.apply()
-        sleep(display_time)
+        sleep(self.display_time)
 
         # Reenable lamp
         self.gpio.set_output(self.lamp_channel, 1)
@@ -246,7 +250,8 @@ class Photobooth:
 #################
 
 def main():
-    photobooth = Photobooth(picture_basename, image_size, gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel)
+    photobooth = Photobooth(picture_basename, image_size, pose_time, display_time, 
+                            gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel)
     photobooth.run()
     return photobooth.teardown()
 
