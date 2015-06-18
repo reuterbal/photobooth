@@ -2,6 +2,9 @@
 # Created by br@re-web.eu, 2015
 
 import os
+from time import sleep
+
+from gui import GUI_PyGame as GuiModule
 
 #####################
 ### Configuration ###
@@ -21,10 +24,12 @@ display_time = 3
 ###############
 
 class Slideshow:
-	def __init__(self, directory, recursive=True):
-		self.directory = directory
-		self.recursive = recursive
-		self.filelist  = []
+	def __init__(self, display_size, display_time, directory, recursive=True):
+		self.directory    = directory
+		self.recursive    = recursive
+		self.filelist     = []
+		self.display      = GuiModule("Slideshow", display_size)
+		self.display_time = display_time
 
 	def scan(self):
 		filelist = []
@@ -43,14 +48,24 @@ class Slideshow:
 
 		self.filelist = filelist
 
+	def run(self):
+		while True:
+			for filename in self.filelist:
+				self.display.clear()
+				self.display.show_picture(filename)
+				self.display.apply()
+				sleep(self.display_time)
+
+
+
 #################
 ### Functions ###
 #################
 
 def main():
-    slideshow = Slideshow(directory, False)
+    slideshow = Slideshow(display_size, display_time, directory, False)
     slideshow.scan()
-    print(slideshow.filelist)
+    slideshow.run()
     return 0
 
 if __name__ == "__main__":
