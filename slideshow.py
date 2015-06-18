@@ -3,6 +3,7 @@
 
 import os
 from time import sleep
+import subprocess
 
 from gui import GUI_PyGame as GuiModule
 
@@ -19,9 +20,22 @@ directory = "2015-06-18"
 # Display time for slideshow pictures
 display_time = 3
 
+# Waiting time between synchronizations
+sync_time = 60
+
 ###############
 ### Classes ###
 ###############
+
+class RoutineRunner:
+    def __init__(self, cmd):
+        self.cmd = cmd
+
+    def run(self, interval):
+        while True:
+            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            sleep(interval)
+
 
 class Slideshow:
     def __init__(self, display_size, display_time, directory, recursive=True):
