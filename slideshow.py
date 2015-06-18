@@ -33,7 +33,8 @@ class RoutineRunner:
 
     def run(self, interval):
         while True:
-            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            output = subprocess.check_output(self.cmd, shell=True, stderr=subprocess.STDOUT)
+            print(output)
             sleep(interval)
 
 
@@ -94,6 +95,8 @@ class Slideshow:
 #################
 
 def main():
+    # sync = RoutineRunner("ls")
+    # sync.run(sync_time)
     slideshow = Slideshow(display_size, display_time, directory, True)
     slideshow.scan()
     slideshow.run()
