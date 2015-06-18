@@ -137,7 +137,7 @@ class GUI_PyGame:
 
         # Store screen and size
         self.size = size
-        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode(size) #, pygame.FULLSCREEN)
 
         # Clear screen
         self.clear()
@@ -188,6 +188,25 @@ class GUI_PyGame:
             text.set_colorkey(bg)
         self.surface_list.append((text, rect.topleft))
 
+    def convert_event(self, event):
+        if event.type == pygame.QUIT: 
+            return True, Event(0, 0)
+        elif event.type == pygame.KEYDOWN: 
+            return True, Event(1, event.key)
+        elif event.type == pygame.MOUSEBUTTONUP: 
+            return True, Event(2, (event.button, event.pos))
+        elif event.type >= pygame.USEREVENT: 
+            return True, Event(3, event.channel)
+        else:
+            return False, ''
+
+    def check_for_event(self):
+        for event in EventModule.get():
+            r, e = self.convert_event(event)
+            if r:
+                return r, e
+        return False, ''
+
     def wait_for_event(self):
         # Repeat until a relevant event happened
         while True:
@@ -198,14 +217,9 @@ class GUI_PyGame:
             event = EventModule.wait()
 
             # Return Event-Object
-            if event.type == pygame.QUIT: 
-                return Event(0, 0)
-            elif event.type == pygame.KEYDOWN: 
-                return Event(1, event.key)
-            elif event.type == pygame.MOUSEBUTTONUP: 
-                return Event(2, (event.button, event.pos))
-            elif event.type >= pygame.USEREVENT: 
-                return Event(3, event.channel)
+            r, e = self.convert_event(event)
+            if r:
+                return e
 
 
     def mainloop(self, filename, handle_keypress, handle_mousebutton, handle_gpio_event):
