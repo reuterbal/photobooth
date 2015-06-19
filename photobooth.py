@@ -23,6 +23,9 @@ display_size = (1024, 600)
 # Maximum size of assembled image
 image_size = (2352, 1568)
 
+
+thumb_size = (1176, 784)
+
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
 
@@ -103,7 +106,7 @@ class Photobooth:
         self.display.clear()
         self.display.show_message("Shutting down...")
         self.display.apply()
-        sleep(1)
+        sleep(0.5)
         self.display.teardown()
         self.gpio.teardown()
         exit(0)
@@ -172,24 +175,78 @@ class Photobooth:
 
 
     def assemble_pictures(self, input_filenames):
-        """Assembles four pictures into a 2x2 grid"""
+        """Assembles four pictures into a 2x2 grid
+
+        It assumes, all original pictures have the same aspect ratio as
+        the resulting image.
+
+        For the thumbnail sizes we have:
+        h = (H - 2 * a - 2 * b) / 2
+        w = (W - 2 * a - 2 * b) / 2
+
+                                    W
+               |---------------------------------------|
+
+          ---  +---+-------------+---+-------------+---+  ---
+           |   |                                       |   |  a
+           |   |   +-------------+   +-------------+   |  ---
+           |   |   |             |   |             |   |   |
+           |   |   |      0      |   |      1      |   |   |  h
+           |   |   |             |   |             |   |   |
+           |   |   +-------------+   +-------------+   |  ---
+         H |   |                                       |   |  2*b
+           |   |   +-------------+   +-------------+   |  ---
+           |   |   |             |   |             |   |   |
+           |   |   |      2      |   |      3      |   |   |  h
+           |   |   |             |   |             |   |   |
+           |   |   +-------------+   +-------------+   |  ---
+           |   |                                       |   |  a
+          ---  +---+-------------+---+-------------+---+  ---
+
+               |---|-------------|---|-------------|---|
+                 a        w       2*b       w        a
+        """
 
         # Thumbnail size of pictures
-        thumb_size = (int(self.pic_size[0]/2),int(self.pic_size[1]/2))
+        outer_border = 50
+        inner_border = 20
+        thumb_box = ( int( self.pic_size[0] / 2 ) ,
+                      int( self.pic_size[1] / 2 ) )
+        thumb_size = ( thumb_box[0] - outer_border - inner_border ,
+                       thumb_box[1] - outer_border - inner_border )
 
-        # Create output image
-        output_image = Image.new('RGB', self.pic_size)
+        # Create output image with white background
+        output_image = Image.new('RGB', self.pic_size, (255, 255, 255))
 
-        # Load images and resize them
-        for i in range(2):
-            for j in range(2):
-                k = i * 2 + j
-                img = Image.open(input_filenames[k])
-                img.thumbnail(thumb_size)
-                offset = (j * thumb_size[0], i * thumb_size[1])
-                output_image.paste(img, offset)
+        # Image 0
+        img = Image.open(input_filenames[0])
+        img.thumbnail(thumb_size)
+        offset = ( thumb_box[0] - inner_border - img.size[0] ,
+                   thumb_box[1] - inner_border - img.size[1] )
+        output_image.paste(img, offset)
 
-        # Save resized image
+        # Image 1
+        img = Image.open(input_filenames[1])
+        img.thumbnail(thumb_size)
+        offset = ( thumb_box[0] + inner_border,
+                   thumb_box[1] - inner_border - img.size[1] )
+        output_image.paste(img, offset)
+
+        # Image 2
+        img = Image.open(input_filenames[2])
+        img.thumbnail(thumb_size)
+        offset = ( thumb_box[0] - inner_border - img.size[0] ,
+                   thumb_box[1] + inner_border )
+        output_image.paste(img, offset)
+
+        # Image 3
+        img = Image.open(input_filenames[3])
+        img.thumbnail(thumb_size)
+        offset = ( thumb_box[0] + inner_border ,
+                   thumb_box[1] + inner_border )
+        output_image.paste(img, offset)
+
+        # Save assembled image
         output_filename = self.pictures.get_next()
         output_image.save(output_filename, "JPEG")
         return output_filename
@@ -205,6 +262,10 @@ class Photobooth:
         self.display.apply()
         sleep(self.pose_time - 3)
 
+        # Extract display and image sizes
+        size = self.display.get_size()
+        outsize = (int(size[0]/2), int(size[1]/2))
+
         # Countdown
         for i in range(3):
             self.display.clear()
@@ -212,21 +273,17 @@ class Photobooth:
             self.display.apply()
             sleep(1)
 
-        # Show 'Cheese'
-        self.display.clear()
-        self.display.show_message("S M I L E !")
-        self.display.apply()
-
-        # Extract display and image sizes
-        size = self.display.get_size()
-        outsize = (int(size[0]/2), int(size[1]/2))
-
         # Take pictures
         filenames = [i for i in range(4)]
         for x in range(4):
+            self.display.clear()
+            self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
+            self.display.apply()
+
             tic = clock()
             filenames[x] = self.camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
             toc = clock() - tic
+
             if toc < 1.0:
                 sleep(1.0 - toc)
 

@@ -2,6 +2,7 @@
 # Created by br@re-web.eu, 2015
 
 import os
+from datetime import datetime
 from time import sleep
 import subprocess
 
@@ -12,10 +13,10 @@ from gui import GUI_PyGame as GuiModule
 #####################
 
 # Screen size
-display_size = (1024, 600)
+display_size = (1024, 768)
 
 # Directory name
-directory = "2015-06-18"
+directory = datetime.now().strftime("%Y-%m-%d")
 
 # Display time for slideshow pictures
 display_time = 3
