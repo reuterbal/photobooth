@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 from time import sleep
 import subprocess
-from threading import Thread
+import thread
 
 #####################
 ### Configuration ###
@@ -92,15 +92,14 @@ class Slideshow:
 def routine_command(cmd, interval):
     while True:
         print("Running routine")
-        #output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-        #print("Output is " + output)
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+        print("Output is " + output)
         sleep(interval)
 
 def main():
-    show = Slideshow(display_size, display_time, directory, True)
-    sync = Thread(target=routine_command, args=("/bin/echo 'Routine executed'", 5) )
+    thread.start_new_thread(routine_command, ("rsync -rt " + directory + "/ slideshow/", 3))
     
-    #sync.run()
+    show = Slideshow(display_size, display_time, directory, True)
     show.run()
 
     sync.join()
