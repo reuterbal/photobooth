@@ -5,9 +5,9 @@ from gui import GUI_PyGame as GuiModule
 
 import os
 from datetime import datetime
-from time import sleep
 import subprocess
 import thread
+from time import sleep
 
 #####################
 ### Configuration ###
@@ -16,16 +16,18 @@ import thread
 # Screen size
 display_size = (1024, 768)
 
-# Directory name
-directory = datetime.now().strftime("%Y-%m-%d")
+# Directory for slideshow pictures
+slideshow_directory = "slideshow/"
 
-# Display time for slideshow pictures
+# Source directory, can also be remote.
+# Leave empty to disable sync
+source_directory = "2015-06-18"
+
+# Display time (in seconds) for slideshow pictures
 display_time = 3
 
-# Waiting time between synchronizations
-sync_time = 60
-
-#keep_running = True
+# Waiting time (in seconds) between synchronizations
+sync_time = 20
 
 ###############
 ### Classes ###
@@ -81,7 +83,6 @@ class Slideshow:
 
     def teardown(self):
         self.display.teardown()
-        #keep_running = False
         exit(0)
 
 
@@ -89,20 +90,23 @@ class Slideshow:
 ### Functions ###
 #################
 
-def routine_command(cmd, interval):
+def sync_folders(source_directory, target_directory, wait_time):
     while True:
-        print("Running routine")
+        print("[" + datetime.now().strftime("%H:%M:%S") + "] Sync " 
+                + source_directory + " --> " + target_directory)
+        cmd = "rsync -rtu " + source_directory + " " + target_directory
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-        print("Output is " + output)
-        sleep(interval)
+        sleep(wait_time)
 
 def main():
-    thread.start_new_thread(routine_command, ("rsync -rt " + directory + "/ slideshow/", 3))
+    # Start a thread for syncing files
+    if len(source_directory) > 0:
+        thread.start_new_thread(sync_folders, (source_directory, slideshow_directory, sync_time) )
     
-    show = Slideshow(display_size, display_time, directory, True)
-    show.run()
+    # Start the slideshow
+    slideshow = Slideshow(display_size, display_time, slideshow_directory, True)
+    slideshow.run()
 
-    sync.join()
     return 0
 
 if __name__ == "__main__":
