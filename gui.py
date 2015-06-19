@@ -141,6 +141,7 @@ class GUI_PyGame:
 
         # Clear screen
         self.clear()
+        self.apply()
 
     def clear(self, color=(0,0,0)):
         self.screen.fill(color)
@@ -220,27 +221,6 @@ class GUI_PyGame:
             r, e = self.convert_event(event)
             if r:
                 return e
-
-
-    def mainloop(self, filename, handle_keypress, handle_mousebutton, handle_gpio_event):
-        while True:
-            # Ignore all input that happened before entering the loop
-            EventModule.get()
-            # Clear display
-            self.clear()
-            # Show idle-picture and message
-            if filename != None:
-                self.show_picture(filename)
-            self.show_message("Hit the button!")
-            # Render everything
-            self.apply()
-            # Wait for event
-            event = EventModule.wait()
-            # Handle the event
-            if event.type == pygame.QUIT: return
-            elif event.type == pygame.KEYDOWN: handle_keypress(event.key)
-            elif event.type == pygame.MOUSEBUTTONUP: handle_mousebutton(event.button, event.pos)
-            elif event.type == gpio_pygame_event: handle_gpio_event(event.channel)
 
     def teardown(self):
         pygame.quit()

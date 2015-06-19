@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # Created by br@re-web.eu, 2015
 
+from gui import GUI_PyGame as GuiModule
+
 import os
 from datetime import datetime
 from time import sleep
 import subprocess
-
-from gui import GUI_PyGame as GuiModule
+from threading import Thread
 
 #####################
 ### Configuration ###
@@ -24,20 +25,11 @@ display_time = 3
 # Waiting time between synchronizations
 sync_time = 60
 
+#keep_running = True
+
 ###############
 ### Classes ###
 ###############
-
-class RoutineRunner:
-    def __init__(self, cmd):
-        self.cmd = cmd
-
-    def run(self, interval):
-        while True:
-            output = subprocess.check_output(self.cmd, shell=True, stderr=subprocess.STDOUT)
-            print(output)
-            sleep(interval)
-
 
 class Slideshow:
     def __init__(self, display_size, display_time, directory, recursive=True):
@@ -77,6 +69,7 @@ class Slideshow:
 
     def run(self):
         while True:
+            self.scan()
             for filename in self.filelist:
                 self.display.clear()
                 self.display.show_picture(filename)
@@ -88,6 +81,7 @@ class Slideshow:
 
     def teardown(self):
         self.display.teardown()
+        #keep_running = False
         exit(0)
 
 
@@ -95,12 +89,21 @@ class Slideshow:
 ### Functions ###
 #################
 
+def routine_command(cmd, interval):
+    while True:
+        print("Running routine")
+        #output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+        #print("Output is " + output)
+        sleep(interval)
+
 def main():
-    # sync = RoutineRunner("ls")
-    # sync.run(sync_time)
-    slideshow = Slideshow(display_size, display_time, directory, True)
-    slideshow.scan()
-    slideshow.run()
+    show = Slideshow(display_size, display_time, directory, True)
+    sync = Thread(target=routine_command, args=("/bin/echo 'Routine executed'", 5) )
+    
+    #sync.run()
+    show.run()
+
+    sync.join()
     return 0
 
 if __name__ == "__main__":
