@@ -162,8 +162,11 @@ class GUI_PyGame:
         # Use window size if none given
         if size == (0,0):
             size = self.size
-        # Load image from file
-        image = pygame.image.load(filename)
+        try:
+            # Load image from file
+            image = pygame.image.load(filename)
+        except pygame.error as e:
+            print("ERROR: Can't open image '" + filename + "': " + e.message)
         # Extract image size and determine scaling
         image_size = image.get_rect().size
         image_scale = min([min(a,b)/b for a,b in zip(size, image_size)])
