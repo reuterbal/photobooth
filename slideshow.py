@@ -21,13 +21,13 @@ slideshow_directory = "slideshow/"
 
 # Source directory, can also be remote.
 # Leave empty to disable sync
-source_directory = "2015-06-18"
+source_directory = "pi@photobooth:photobooth/" + datetime.now().strftime("%Y-%m-%d")
 
 # Display time (in seconds) for slideshow pictures
 display_time = 3
 
 # Waiting time (in seconds) between synchronizations
-sync_time = 20
+sync_time = 60
 
 ###############
 ### Classes ###
@@ -94,8 +94,11 @@ def sync_folders(source_directory, target_directory, wait_time):
     while True:
         print("[" + datetime.now().strftime("%H:%M:%S") + "] Sync " 
                 + source_directory + " --> " + target_directory)
-        cmd = "rsync -rtu " + source_directory + " " + target_directory
-        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+        try:
+            cmd = "rsync -rtu " + source_directory + " " + target_directory
+            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            print("ERROR executing '" + e.cmd + "':\n" + e.output)
         sleep(wait_time)
 
 def main():
