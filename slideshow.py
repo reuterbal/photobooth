@@ -72,14 +72,20 @@ class Slideshow:
     def run(self):
         while True:
             self.scan()
-            for filename in self.filelist:
+            if len(self.filelist) == 0:
                 self.display.clear()
-                self.display.show_picture(filename)
+                self.display.show_message("No pictures available!")
                 self.display.apply()
-                sleep(self.display_time)
-                r, e = self.display.check_for_event()
-                if r:
-                    self.handle_event(e)
+                sleep(10)
+            else:
+                for filename in self.filelist:
+                    self.display.clear()
+                    self.display.show_picture(filename)
+                    self.display.apply()
+                    sleep(self.display_time)
+                    r, e = self.display.check_for_event()
+                    if r:
+                        self.handle_event(e)
 
     def teardown(self):
         self.display.teardown()
@@ -91,6 +97,7 @@ class Slideshow:
 #################
 
 def sync_folders(source_directory, target_directory, wait_time):
+    sleep(5)
     while True:
         print("[" + datetime.now().strftime("%H:%M:%S") + "] Sync " 
                 + source_directory + " --> " + target_directory)
