@@ -23,7 +23,7 @@ display_size = (1024, 600)
 # Maximum size of assembled image
 image_size = (2352, 1568)
 
-
+# Size of pictures in the assembled image
 thumb_size = (1176, 784)
 
 # Image basename
@@ -106,6 +106,7 @@ class Photobooth:
         self.display.clear()
         self.display.show_message("Shutting down...")
         self.display.apply()
+        self.gpio.set_output(self.lamp_channel, 0)
         sleep(0.5)
         self.display.teardown()
         self.gpio.teardown()
