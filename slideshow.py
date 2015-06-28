@@ -46,7 +46,7 @@ class Slideshow:
 
         if self.recursive:
             # Recursively walk all entries in the directory
-            for root, dirnames, filenames in os.walk(self.directory):
+            for root, dirnames, filenames in os.walk(self.directory, followlinks=True):
                 for filename in filenames:
                     filelist.append(os.path.join(root, filename))
         else:
