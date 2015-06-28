@@ -144,18 +144,17 @@ class GUI_PyGame:
         # Blit one line after another
         accumulated_height = 0 
         for line in text: 
-            if line != "":
-                tempsurface = font.render(line, 1, color)
-                if halign == 0:     # left aligned
-                    hoffset = 0
-                elif halign == 1:   # centered
-                    hoffset = (self.size[0] - tempsurface.get_width()) / 2
-                elif halign == 2:   # right aligned
-                    hoffset = rect.width - tempsurface.get_width()
-                else:
-                    raise GuiException("Invalid halign argument: " + str(justification))
-                surface.blit(tempsurface, (hoffset, voffset + accumulated_height))
-                accumulated_height += font.size(line)[1]
+            tempsurface = font.render(line, 1, color)
+            if halign == 0:     # left aligned
+                hoffset = 0
+            elif halign == 1:   # centered
+                hoffset = (self.size[0] - tempsurface.get_width()) / 2
+            elif halign == 2:   # right aligned
+                hoffset = rect.width - tempsurface.get_width()
+            else:
+                raise GuiException("Invalid halign argument: " + str(justification))
+            surface.blit(tempsurface, (hoffset, voffset + accumulated_height))
+            accumulated_height += font.size(line)[1]
 
         # Make background color transparent
         if transparency:
