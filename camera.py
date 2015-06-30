@@ -11,7 +11,9 @@ except ImportError:
 
 class CameraException(Exception):
     """Custom exception class to handle camera class errors"""
-    pass
+    def __init__(self, message, recoverable=False):
+        self.message = message
+        self.recoverable = recoverable
 
 
 class Camera_cv:
@@ -35,23 +37,28 @@ class Camera_gPhoto:
 
     def __init__(self, picture_size):
         self.picture_size = picture_size
-        # Print the abilities of the connected camera
-        # print(self.call_gphoto("-a", "/dev/null"))
+        # Print the capabilities of the connected camera
+        try:
+            print(self.call_gphoto("-a", "/dev/null"))
+        except:
+            print("Warning: Can't list camera capabilities. Do you have gPhoto2 installed?")
 
     def call_gphoto(self, action, filename):
         # Try to run the command
         try:
-            cmd = "gphoto2 --force-overwrite --quiet " + action + " --filename " + filename
+            cmd = [ "gphoto2", "--force-overwrite", "--quiet", action, "--filename " + filename ]
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
             if "ERROR" in output:
                 raise subprocess.CalledProcessError(returncode=0, cmd=cmd, output=output)
         except subprocess.CalledProcessError as e:
             if "Canon EOS Capture failed: 2019" in e.output:
-                raise CameraException("Can't focus! Move and try again!")
+                raise CameraException("Can't focus! Move a little bit!", True)
             elif "No camera found" in e.output:
-                raise CameraException("No (supported) camera detected!")
+                raise CameraException("No (supported) camera detected!", False)
+            elif "command not found" in e.output:
+                raise CameraException("gPhoto2 not found!", False)
             else:
-                raise CameraException("Unknown error!\n" + '\n'.join(e.output.split('\n')[1:3]))
+                raise CameraException("Unknown error!\n" + '\n'.join(e.output.split('\n')[1:3]), False)
         return output
 
     def take_picture(self, filename="/tmp/picture.jpg"):

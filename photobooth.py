@@ -49,19 +49,31 @@ display_time = 10
 ###############
 
 class PictureList:
-    """Class to manage images and count them"""
+    """A simple helper class.
+
+    It provides the filenames for the assembled pictures and keeps count
+    of taken and previously existing pictures.
+    """
+
     def __init__(self, basename):
+        """Initialize filenames to the given basename and search for
+        existing files. Set the counter accordingly.
+        """
+
         # Set basename and suffix
         self.basename = basename
         self.suffix = ".jpg"
         self.count_width = 5
+
         # Ensure directory exists
         dirname = os.path.dirname(self.basename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
+
         # Find existing files
         count_pattern = "[0-9]" * self.count_width
         pictures = glob(self.basename + count_pattern + self.suffix)
+
         # Get number of latest file
         if len(pictures) == 0:
             self.counter = 0
@@ -69,8 +81,10 @@ class PictureList:
             pictures.sort()
             last_picture = pictures[-1]
             self.counter = int(last_picture[-(self.count_width+len(self.suffix)):-len(self.suffix)])
-        print("Number of last existing file: " + str(self.counter) + "(" + str(len(pictures)) + ")")
-        print("Saving as: " + self.basename)
+
+        # Print initial infos
+        print("Info: Number of last existing file: " + str(self.counter))
+        print("Info: Saving assembled pictures as: " + self.basename + "XXXXX.jpg")
 
     def get(self, count):
         return self.basename + str(count).zfill(self.count_width) + self.suffix
@@ -84,6 +98,11 @@ class PictureList:
 
 
 class Photobooth:
+    """The main class.
+
+    It contains all the logic for the photobooth.
+    """
+
     def __init__(self, display_size, picture_basename, picture_size, pose_time, display_time,
                  trigger_channel, shutdown_channel, lamp_channel):
         self.display      = GuiModule('Photobooth', display_size)
@@ -277,16 +296,34 @@ class Photobooth:
         # Take pictures
         filenames = [i for i in range(4)]
         for x in range(4):
-            self.display.clear()
-            self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
-            self.display.apply()
+            # Try each picture up to 3 times
+            for attempt in range(3):
+                self.display.clear()
+                self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
+                self.display.apply()
 
-            tic = clock()
-            filenames[x] = self.camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
-            toc = clock() - tic
+                tic = clock()
 
-            if toc < 1.0:
-                sleep(1.0 - toc)
+                try:
+                    filenames[x] = self.camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
+                    break
+                except CameraException as e:
+                    # On recoverable errors: display message and retry
+                    if e.recoverable:
+                        if attempt < 3:
+                            self.display.clear()
+                            self.display.show_message(e.message)  
+                            self.display.apply()
+                            sleep(1)
+                        else:
+                            raise CameraException("Giving up! Please start again!", False)
+                    else:
+                        raise e
+
+                # Sleep for a little bit if necessary
+                toc = clock() - tic
+                if toc < 1.0:
+                    sleep(1.0 - toc)
 
         # Show 'Wait'
         self.display.clear()
