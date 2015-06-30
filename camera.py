@@ -51,8 +51,7 @@ class Camera_gPhoto:
             if "ERROR" in output:
                 raise subprocess.CalledProcessError(returncode=0, cmd=cmd, output=output)
         except subprocess.CalledProcessError as e:
-            if "Canon EOS Capture failed: 2019" in e.output or
-               "Perhaps no focus" in e.output:
+            if "EOS Capture failed: 2019" in e.output or "Perhaps no focus" in e.output:
                 raise CameraException("Can't focus!\nMove a little bit!", True)
             elif "No camera found" in e.output:
                 raise CameraException("No (supported) camera detected!", False)
