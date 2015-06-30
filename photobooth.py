@@ -148,6 +148,9 @@ class Photobooth:
 
             except CameraException as e:
                 self.handle_exception(e.message)
+            except Exception as e:
+                print("SERIOUS ERROR!")
+                self.handle_exception(e.message)
 
     def handle_gpio(self, channel):
         if channel in [ self.trigger_channel, self.shutdown_channel ]:
