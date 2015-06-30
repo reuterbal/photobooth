@@ -318,8 +318,7 @@ class Photobooth:
                     remaining_attempts = 0
                 except CameraException as e:
                     # On recoverable errors: display message and retry
-                    #if e.recoverable:
-                        print remaining_attempts
+                    if e.recoverable:
                         if remaining_attempts > 0:
                             self.display.clear()
                             self.display.show_message(e.message)  
@@ -327,8 +326,8 @@ class Photobooth:
                             sleep(5)
                         else:
                             raise CameraException("Giving up! Please start over!", False)
-                    #else:
-                    #    raise e
+                    else:
+                       raise e
 
                 # Sleep for a little bit if necessary
                 toc = clock() - tic
