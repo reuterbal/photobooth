@@ -96,10 +96,10 @@ class GUI_PyGame:
             if font.size(requested_line)[0] > size[0]:
                 # Split at white spaces
                 words = requested_line.split(' ')
-                # if any of our words are too long to fit, return.
+                # if any of our words are too long to fit, trim them
                 for word in words:
-                    if font.size(word)[0] >= size[0]:
-                        raise GuiException("The word " + word + " is too long to fit.")
+                    while font.size(word)[0] >= size[0]:
+                        word = word[:-1]
                 # Start a new line
                 accumulated_line = ""
                 # Put words on the line as long as they fit
@@ -108,13 +108,22 @@ class GUI_PyGame:
                     # Build the line while the words fit.   
                     if font.size(test_line)[0] < size[0]:
                         accumulated_line = test_line 
-                    else: 
-                        accumulated_height += font.size(test_line)[1]
-                        final_lines.append(accumulated_line) 
-                        accumulated_line = word + " " 
+                    else:
+                        # Start a new line
+                        line_height = font.size(accumulated_line)[1]
+                        if accumulated_height + line_height > size[1]:
+                            break
+                        else:
+                            accumulated_height += line_height
+                            final_lines.append(accumulated_line)
+                            accumulated_line = word + " " 
                 # Finish requested_line
-                accumulated_height += font.size(accumulated_line)[1]
-                final_lines.append(accumulated_line)
+                line_height = font.size(accumulated_line)[1]
+                if accumulated_height + line_height > size[1]:
+                    break
+                else:
+                    accumulated_height += line_height
+                    final_lines.append(accumulated_line)
             # Line fits as it is
             else:
                 accumulated_height += font.size(requested_line)[1] 

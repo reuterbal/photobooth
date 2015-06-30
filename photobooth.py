@@ -320,7 +320,7 @@ class Photobooth:
                             self.display.clear()
                             self.display.show_message(e.message)  
                             self.display.apply()
-                            sleep(2)
+                            sleep(3)
                         else:
                             raise CameraException("Giving up! Please start again!", False)
                     else:

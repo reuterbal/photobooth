@@ -4,5 +4,7 @@ PHOTOBOOTH_DIR=/home/pi/photobooth
 
 cd "${PHOTOBOOTH_DIR}"
 
-sudo ./photobooth.py 2>&1 > photobooth.log
+sudo ./photobooth.py > photobooth.log 2> photobooth.err
+
+cd -
 
