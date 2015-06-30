@@ -46,7 +46,7 @@ class Camera_gPhoto:
     def call_gphoto(self, action, filename):
         # Try to run the command
         try:
-            cmd = [ "gphoto2", "--force-overwrite", "--quiet", action, "--filename " + filename ]
+            cmd = "gphoto2 --force-overwrite --quiet " + action + " --filename " + filename
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
             if "ERROR" in output:
                 raise subprocess.CalledProcessError(returncode=0, cmd=cmd, output=output)
