@@ -146,11 +146,14 @@ class Photobooth:
                     event = self.display.wait_for_event()
                     self.handle_event(event)
 
+            # Catch exceptions and display message
             except CameraException as e:
                 self.handle_exception(e.message)
-            except Exception as e:
-                print("SERIOUS ERROR!")
-                self.handle_exception(e.message)
+            # Do not catch KeyboardInterrupt and SystemExit
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                self.handle_exception("SERIOUS ERROR!")
 
     def handle_gpio(self, channel):
         if channel in [ self.trigger_channel, self.shutdown_channel ]:
@@ -317,7 +320,7 @@ class Photobooth:
                             self.display.clear()
                             self.display.show_message(e.message)  
                             self.display.apply()
-                            sleep(1)
+                            sleep(2)
                         else:
                             raise CameraException("Giving up! Please start again!", False)
                     else:
