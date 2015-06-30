@@ -303,7 +303,10 @@ class Photobooth:
         filenames = [i for i in range(4)]
         for x in range(4):
             # Try each picture up to 3 times
-            for attempt in range(3):
+            remaining_attempts = 3
+            while remaining_attempts > 0:
+                remaining_attempts = remaining_attempts - 1
+
                 self.display.clear()
                 self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
                 self.display.apply()
@@ -312,19 +315,20 @@ class Photobooth:
 
                 try:
                     filenames[x] = self.camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
-                    break
+                    remaining_attempts = 0
                 except CameraException as e:
                     # On recoverable errors: display message and retry
-                    if e.recoverable:
-                        if attempt < 3:
+                    #if e.recoverable:
+                        print remaining_attempts
+                        if remaining_attempts > 0:
                             self.display.clear()
                             self.display.show_message(e.message)  
                             self.display.apply()
                             sleep(5)
                         else:
-                            raise CameraException("Giving up! Please start again!", False)
-                    else:
-                        raise e
+                            raise CameraException("Giving up! Please start over!", False)
+                    #else:
+                    #    raise e
 
                 # Sleep for a little bit if necessary
                 toc = clock() - tic
