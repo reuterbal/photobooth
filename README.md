@@ -114,13 +114,15 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
    ```
    and run `photobooth.py`
 
-8. Optionally make the software run automatically on startup. To do that, you must simply add a corresponding line in the autostart file of LXDE, which can be found at `~/.config/lxsession/LXDE-pi/autostart`. Assuming you cloned the Photobooth repository into `/home/pi/photobooth`, add the following line into the autostart-file:
+8. Optional but highly recommended, as it improves performance significantly: Download the gPhoto2 Python-bindings [Piggyphoto](https://github.com/alexdu/piggyphoto) and put the folder `piggyphoto` into the Photobooth-directory.
+
+9. Optionally make the software run automatically on startup. To do that, you must simply add a corresponding line in the autostart file of LXDE, which can be found at `~/.config/lxsession/LXDE-pi/autostart`. Assuming you cloned the Photobooth repository into `/home/pi/photobooth`, add the following line into the autostart-file:
    ```
    lxterminal -e "/home/pi/photobooth/photobooth.sh set-time"
    ```
    For this to work you must install `gnome-control-center` by running `sudo apt-get install gnome-control-center` (Unfortunately, this brings along a lot of dependencies - however, I haven't found any lightweight alternative that would allow to simply set date and time using the touch screen).
 
-9. Alternatively, you can also add a Desktop shortcut. Create a file `/home/pi/Desktop/Photobooth.desktop` and enter the following:
+10. Alternatively, you can also add a Desktop shortcut. Create a file `/home/pi/Desktop/Photobooth.desktop` and enter the following:
    ```
    [Desktop Entry]
    Encoding=UTF-8

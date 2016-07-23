@@ -10,6 +10,7 @@ from time import sleep, clock
 from PIL import Image
 
 from gui import GUI_PyGame as GuiModule
+#from camera import CameraException, Camera_cv as CameraModule
 from camera import CameraException, Camera_gPhoto as CameraModule
 from events import Rpi_GPIO as GPIO
 
@@ -152,7 +153,8 @@ class Photobooth:
             # Do not catch KeyboardInterrupt and SystemExit
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except:
+            except Exception as e:
+                print('SERIOUS ERROR: ' + repr(e))
                 self.handle_exception("SERIOUS ERROR!")
 
     def handle_gpio(self, channel):
@@ -277,6 +279,23 @@ class Photobooth:
         output_image.save(output_filename, "JPEG")
         return output_filename
 
+    def show_counter(self, seconds):
+        if self.camera.has_preview():
+            tic, toc = clock(), 0
+            while toc < self.pose_time:
+                self.display.clear()
+                self.camera.take_preview("/tmp/photobooth_preview.jpg")
+                self.display.show_picture("/tmp/photobooth_preview.jpg", flip=True) 
+                self.display.show_message(str(seconds - int(clock() - tic)))
+                self.display.apply()
+                toc = clock() - tic
+        else:
+            for i in range(seconds):
+                self.display.clear()
+                self.display.show_message(str(seconds - i))
+                self.display.apply()
+                sleep(1)
+
     def take_picture(self):
         """Implements the picture taking routine"""
         # Disable lamp
@@ -286,22 +305,18 @@ class Photobooth:
         self.display.clear()
         self.display.show_message("POSE!\n\nTaking four pictures...");
         self.display.apply()
-        sleep(self.pose_time - 3)
+        sleep(2)
 
         # Extract display and image sizes
         size = self.display.get_size()
         outsize = (int(size[0]/2), int(size[1]/2))
 
-        # Countdown
-        for i in range(3):
-            self.display.clear()
-            self.display.show_message(str(3 - i))
-            self.display.apply()
-            sleep(1)
-
         # Take pictures
         filenames = [i for i in range(4)]
         for x in range(4):
+            # Countdown
+            self.show_counter(self.pose_time)
+
             # Try each picture up to 3 times
             remaining_attempts = 3
             while remaining_attempts > 0:
@@ -329,7 +344,7 @@ class Photobooth:
                     else:
                        raise e
 
-                # Sleep for a little bit if necessary
+                # Measure used time and sleep a second if too fast 
                 toc = clock() - tic
                 if toc < 1.0:
                     sleep(1.0 - toc)

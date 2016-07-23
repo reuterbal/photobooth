@@ -53,7 +53,7 @@ class GUI_PyGame:
     def trigger_event(self, event_channel):
         EventModule.post(EventModule.Event(pygame.USEREVENT, channel=event_channel))
 
-    def show_picture(self, filename, size=(0,0), offset=(0,0)):
+    def show_picture(self, filename, size=(0,0), offset=(0,0), flip=False):
         # Use window size if none given
         if size == (0,0):
             size = self.size
@@ -74,6 +74,8 @@ class GUI_PyGame:
         # Create surface and blit the image to it
         surface = pygame.Surface(new_size)
         surface.blit(image, (0,0))
+        if flip:
+            surface = pygame.transform.flip(surface, True, False)
         self.surface_list.append((surface, offset))
 
     def show_message(self, msg, color=(245,245,245), bg=(0,0,0), transparency=True):

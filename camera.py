@@ -6,8 +6,16 @@ import subprocess
 try:
     import cv2 as cv
     cv_enabled = True
+    print('OpenCV available')
 except ImportError:
     cv_enabled = False
+
+try:
+    import piggyphoto
+    piggyphoto_enabled = True
+    print('Piggyphoto available')
+except ImportError:
+    piggyphoto_enabled = False
 
 class CameraException(Exception):
     """Custom exception class to handle camera class errors"""
@@ -22,6 +30,12 @@ class Camera_cv:
             self.cap = cv.VideoCapture(0)
             self.cap.set(3, picture_size[0])
             self.cap.set(4, picture_size[1])
+
+    def has_preview(self):
+        return True 
+
+    def take_preview(self, filename="/tmp/preview.jpg"):
+        self.take_picture(filename)
 
     def take_picture(self, filename="/tmp/picture.jpg"):
         if cv_enabled:
@@ -39,9 +53,15 @@ class Camera_gPhoto:
         self.picture_size = picture_size
         # Print the capabilities of the connected camera
         try:
-            print(self.call_gphoto("-a", "/dev/null"))
-        except:
-            print("Warning: Can't list camera capabilities. Do you have gPhoto2 installed?")
+            if piggyphoto_enabled:
+                self.cap = piggyphoto.camera()
+                print(self.cap.abilities)
+            else:
+                print(self.call_gphoto("-a", "/dev/null"))
+        except CameraException as e:
+            print('Warning: Listing camera capabilities failed (' + e.message + ')')
+        except piggyphoto.libgphoto2error as e:
+            print('Warning: Listing camera capabilities failed (' + e.message + ')')
 
     def call_gphoto(self, action, filename):
         # Try to run the command
@@ -61,6 +81,18 @@ class Camera_gPhoto:
                 raise CameraException("Unknown error!\n" + '\n'.join(e.output.split('\n')[1:3]), False)
         return output
 
+    def has_preview(self):
+        return piggyphoto_enabled
+
+    def take_preview(self, filename="/tmp/preview.jpg"):
+        if piggyphoto_enabled:
+            self.cap.capture_preview(filename)	
+        else:
+            raise CameraException("No preview supported!")
+
     def take_picture(self, filename="/tmp/picture.jpg"):
-        self.call_gphoto("--capture-image-and-download", filename)
+        if piggyphoto_enabled:
+            self.cap.capture_image(filename)
+        else:
+            self.call_gphoto("--capture-image-and-download", filename)
         return filename
