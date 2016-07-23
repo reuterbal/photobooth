@@ -17,8 +17,9 @@ The following is required for running this photobooth application. I used the ve
 * [Python](https://www.python.org) (2.7.3)
 * [Pygame](https://www.pygame.org) (1.9.1)
 * [Pillow](http://pillow.readthedocs.org) (2.8.1)
-* [gPhoto](http://gphoto.sourceforge.net/) (2.5.6)
+* [gPhoto](http://gphoto.sourceforge.net/) (2.5.6 or later) or [OpenCV](http://opencv.org)
 * Optional: [RPi.GPIO](https://pypi.python.org/pypi/RPi.GPIO) (0.5.11)
+* Optional: [Piggyphoto](https://github.com/alexdu/piggyphoto)
 
 RPi.GPIO is necessary to use external buttons as a trigger but it works just fine without. Triggering is then only possible using touch screen / mouse or key 'c'.
 
