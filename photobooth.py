@@ -25,7 +25,7 @@ display_size = (1024, 600)
 image_size = (2352, 1568)
 
 # Size of pictures in the assembled image
-thumb_size = (1176, 784)
+thumb_size = (2352, 1568)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -40,10 +40,10 @@ gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions
 gpio_lamp_channel = 4 # pin 7 in all Raspi-Versions
 
 # Waiting time in seconds for posing
-pose_time = 5
+pose_time = 3
 
 # Display time for taken pictures
-display_time = 10
+display_time = 5
 
 ###############
 ### Classes ###
@@ -236,8 +236,8 @@ class Photobooth:
         """
 
         # Thumbnail size of pictures
-        outer_border = 50
-        inner_border = 20
+        outer_border = 0
+        inner_border = 0
         thumb_box = ( int( self.pic_size[0] / 2 ) ,
                       int( self.pic_size[1] / 2 ) )
         thumb_size = ( thumb_box[0] - outer_border - inner_border ,
@@ -312,8 +312,8 @@ class Photobooth:
         outsize = (int(size[0]/2), int(size[1]/2))
 
         # Take pictures
-        filenames = [i for i in range(4)]
-        for x in range(4):
+        filenames = [i for i in range(1)]
+        for x in range(1):
             # Countdown
             self.show_counter(self.pose_time)
 
