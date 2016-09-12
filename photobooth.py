@@ -124,7 +124,7 @@ class Photobooth:
 
     def teardown(self):
         self.display.clear()
-        self.display.show_message("Shutting down...")
+        self.display.show_message("Extinction...")
         self.display.apply()
         self.gpio.set_output(self.lamp_channel, 0)
         sleep(0.5)
@@ -141,7 +141,7 @@ class Photobooth:
                 while True:
                     # Display default message
                     self.display.clear()
-                    self.display.show_message("Hit the button!")
+                    self.display.show_message("Appuyez sur le bouton!")
                     self.display.apply()
                     # Wait for an event and handle it
                     event = self.display.wait_for_event()
@@ -303,7 +303,7 @@ class Photobooth:
 
         # Show pose message
         self.display.clear()
-        self.display.show_message("POSE!\n\nTaking four pictures...");
+        self.display.show_message("Prêt?!\n\nPrise de vue...");
         self.display.apply()
         sleep(2)
 
@@ -318,12 +318,12 @@ class Photobooth:
             self.show_counter(self.pose_time)
 
             # Try each picture up to 3 times
-            remaining_attempts = 3
+            remaining_attempts = 1
             while remaining_attempts > 0:
                 remaining_attempts = remaining_attempts - 1
 
                 self.display.clear()
-                self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
+                self.display.show_message("Cheese !!!")
                 self.display.apply()
 
                 tic = clock()
@@ -351,7 +351,7 @@ class Photobooth:
 
         # Show 'Wait'
         self.display.clear()
-        self.display.show_message("Please wait!\n\nProcessing...")
+        self.display.show_message("Patientez!\n\nAffichage...")
         self.display.apply()
 
         # Assemble them
