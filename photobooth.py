@@ -240,8 +240,7 @@ class Photobooth:
         inner_border = 0
         thumb_box = ( int( self.pic_size[0] ) ,
                       int( self.pic_size[1] ) )
-        thumb_size = ( thumb_box[0] - outer_border - inner_border ,
-                       thumb_box[1] - outer_border - inner_border )
+        thumb_size = ( 2352, 1568)
 
         # Create output image with white background
         output_image = Image.new('RGB', self.pic_size, (255, 255, 255))
@@ -254,25 +253,25 @@ class Photobooth:
         output_image.paste(img, offset)
 
         # Image 1
-        img = Image.open(input_filenames[1])
-        img.thumbnail(thumb_size)
-        offset = ( thumb_box[0] + inner_border,
-                   thumb_box[1] - inner_border - img.size[1] )
-        output_image.paste(img, offset)
+        #img = Image.open(input_filenames[1])
+        #img.thumbnail(thumb_size)
+        #offset = ( thumb_box[0] + inner_border,
+                   #thumb_box[1] - inner_border - img.size[1] )
+        #output_image.paste(img, offset)
 
         # Image 2
-        img = Image.open(input_filenames[2])
-        img.thumbnail(thumb_size)
-        offset = ( thumb_box[0] - inner_border - img.size[0] ,
-                   thumb_box[1] + inner_border )
-        output_image.paste(img, offset)
+        #img = Image.open(input_filenames[2])
+        #img.thumbnail(thumb_size)
+        #offset = ( thumb_box[0] - inner_border - img.size[0] ,
+                   #thumb_box[1] + inner_border )
+        #output_image.paste(img, offset)
 
         # Image 3
-        img = Image.open(input_filenames[3])
-        img.thumbnail(thumb_size)
-        offset = ( thumb_box[0] + inner_border ,
-                   thumb_box[1] + inner_border )
-        output_image.paste(img, offset)
+        #img = Image.open(input_filenames[3])
+        #img.thumbnail(thumb_size)
+        #offset = ( thumb_box[0] + inner_border ,
+                   #thumb_box[1] + inner_border )
+        #output_image.paste(img, offset)
 
         # Save assembled image
         output_filename = self.pictures.get_next()
@@ -312,15 +311,15 @@ class Photobooth:
         outsize = (int(size[0]/2), int(size[1]/2))
 
         # Take pictures
-        filenames = [i for i in range(1)]
-        for x in range(1):
+        filenames =# [i for i in range(1)]
+        #for x in range(1):
             # Countdown
             self.show_counter(self.pose_time)
 
             # Try each picture up to 3 times
-            remaining_attempts = 1
-            while remaining_attempts > 0:
-                remaining_attempts = remaining_attempts - 1
+            #remaining_attempts = 1
+            #while remaining_attempts > 0:
+                #remaining_attempts = remaining_attempts - 1
 
                 self.display.clear()
                 self.display.show_message("Cheese !!!")
@@ -330,11 +329,11 @@ class Photobooth:
 
                 try:
                     filenames[x] = self.camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
-                    remaining_attempts = 0
+                    #remaining_attempts = 0
                 except CameraException as e:
                     # On recoverable errors: display message and retry
                     if e.recoverable:
-                        if remaining_attempts > 0:
+                        #if remaining_attempts > 0:
                             self.display.clear()
                             self.display.show_message(e.message)  
                             self.display.apply()
