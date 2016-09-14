@@ -19,7 +19,7 @@ The following is required for running this photobooth application. I used the ve
 * [Pillow](http://pillow.readthedocs.org) (2.8.1)
 * [gPhoto](http://gphoto.sourceforge.net/) (2.5.6 or later) or [OpenCV](http://opencv.org)
 * Optional: [RPi.GPIO](https://pypi.python.org/pypi/RPi.GPIO) (0.5.11)
-* Optional: [Piggyphoto](https://github.com/alexdu/piggyphoto)
+* Optional: [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi) or [Piggyphoto](https://github.com/alexdu/piggyphoto)
 
 RPi.GPIO is necessary to use external buttons as a trigger but it works just fine without. Triggering is then only possible using touch screen / mouse or key 'c'.
 
@@ -115,7 +115,23 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
    ```
    and run `photobooth.py`
 
-8. Optional but highly recommended, as it improves performance significantly: Download the gPhoto2 Python-bindings [Piggyphoto](https://github.com/alexdu/piggyphoto) and put the folder `piggyphoto` into the Photobooth-directory.
+8. Optional but highly recommended, as it improves performance significantly: install some Python bindings for gPhoto2. For that, either [Piggyphoto](https://github.com/alexdu/piggyphoto) or [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi) can be used. At the moment, Piggyphoto doesn't allow to disable the sensor while idle, so gphoto2-cffi is preferred.
+
+   8.1 Installing gphoto2-cffi:
+   Install [cffi](https://bitbucket.org/cffi/cffi)
+   ```
+   sudo apt-get install libffi6 libffi-dev python-cffi
+   ```
+   Download and install gphoto2-cffi for gPhoto2
+   ```
+   git clone https://github.com/jbaiter/gphoto2-cffi.git
+   cd gphoto2-cffi
+   python setup.py build
+   sudo python setup.py install
+   ```
+
+   8.2 Install Piggyphoto:
+   Download [Piggyphoto](https://github.com/alexdu/piggyphoto) and put the folder `piggyphoto` into the Photobooth-directory.
 
 9. Optionally make the software run automatically on startup. To do that, you must simply add a corresponding line in the autostart file of LXDE, which can be found at `~/.config/lxsession/LXDE-pi/autostart`. Assuming you cloned the Photobooth repository into `/home/pi/photobooth`, add the following line into the autostart-file:
    ```

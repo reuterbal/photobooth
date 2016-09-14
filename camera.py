@@ -3,19 +3,33 @@
 
 import subprocess
 
+cv_enabled = False
+gphoto2cffi_enabled = False
+piggyphoto_enabled = False
+
 try:
     import cv2 as cv
     cv_enabled = True
     print('OpenCV available')
 except ImportError:
-    cv_enabled = False
+    pass
 
 try:
-    import piggyphoto
-    piggyphoto_enabled = True
-    print('Piggyphoto available')
+    import gphoto2cffi as gp
+    gpExcept = gp.errors.GPhoto2Error
+    gphoto2cffi_enabled = True
+    print('Gphoto2cffi available')
 except ImportError:
-    piggyphoto_enabled = False
+    pass
+
+if not gphoto2cffi_enabled:
+    try:
+        import piggyphoto as gp
+        gpExcept = gp.libgphoto2error
+        piggyphoto_enabled = True
+        print('Piggyphoto available')
+    except ImportError:
+        pass
 
 class CameraException(Exception):
     """Custom exception class to handle camera class errors"""
@@ -45,6 +59,9 @@ class Camera_cv:
         else:
             raise CameraException("OpenCV not available!")
 
+    def set_idle(self):
+        pass
+
 
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
@@ -53,14 +70,16 @@ class Camera_gPhoto:
         self.picture_size = picture_size
         # Print the capabilities of the connected camera
         try:
-            if piggyphoto_enabled:
-                self.cap = piggyphoto.camera()
+            if gphoto2cffi_enabled:
+                self.cap = gp.Camera()
+            elif piggyphoto_enabled:
+                self.cap = gp.camera()
                 print(self.cap.abilities)
             else:
                 print(self.call_gphoto("-a", "/dev/null"))
         except CameraException as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
-        except piggyphoto.libgphoto2error as e:
+        except gpExcept as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
 
     def call_gphoto(self, action, filename):
@@ -82,17 +101,33 @@ class Camera_gPhoto:
         return output
 
     def has_preview(self):
-        return piggyphoto_enabled
+        return gphoto2cffi_enabled or piggyphoto_enabled
 
     def take_preview(self, filename="/tmp/preview.jpg"):
-        if piggyphoto_enabled:
+        if gphoto2cffi_enabled:
+            self._save_picture(filename, self.cap.get_preview())
+        elif piggyphoto_enabled:
             self.cap.capture_preview(filename)	
         else:
             raise CameraException("No preview supported!")
 
     def take_picture(self, filename="/tmp/picture.jpg"):
-        if piggyphoto_enabled:
+        if gphoto2cffi_enabled:
+            self._save_picture(filename, self.cap.capture())
+        elif piggyphoto_enabled:
             self.cap.capture_image(filename)
         else:
             self.call_gphoto("--capture-image-and-download", filename)
         return filename
+
+    def _save_picture(self, filename, data):
+        f = open(filename, 'wb')
+        f.write(data)
+        f.close()
+
+    def set_idle(self):
+        if gphoto2cffi_enabled:
+            self.cap._get_config()['actions']['viewfinder'].set(False)
+        elif piggyphoto_enabled:
+            # This doesn't work...
+            self.cap.config.main.actions.viewfinder.value = 0

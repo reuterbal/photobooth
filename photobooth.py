@@ -139,6 +139,7 @@ class Photobooth:
                 self.gpio.set_output(self.lamp_channel, 1)
 
                 while True:
+                    self.camera.set_idle()
                     # Display default message
                     self.display.clear()
                     self.display.show_message("Hit the button!")
