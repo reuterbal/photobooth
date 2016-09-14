@@ -78,12 +78,12 @@ class GUI_PyGame:
             surface = pygame.transform.flip(surface, True, False)
         self.surface_list.append((surface, offset))
 
-    def show_message(self, msg, color=(245,245,245), bg=(0,0,0), transparency=True):
+    def show_message(self, msg, color=(0,0,0), bg=(230,230,230), transparency=True, outline=(245,245,245)):
         # Choose font
         font = pygame.font.Font(None, 144)
         # Wrap and render text
         wrapped_text, text_height = self.wrap_text(msg, font, self.size)
-        rendered_text = self.render_text(wrapped_text, text_height, 1, 1, font, color, bg, transparency)
+        rendered_text = self.render_text(wrapped_text, text_height, 1, 1, font, color, bg, transparency, outline)
 
         self.surface_list.append((rendered_text, (0,0)))
 
@@ -137,7 +137,7 @@ class GUI_PyGame:
 
         return final_lines, accumulated_height
 
-    def render_text(self, text, text_height, valign, halign, font, color, bg, transparency):
+    def render_text(self, text, text_height, valign, halign, font, color, bg, transparency, outline):
         # Determine vertical position
         if valign == 0:     # top aligned
             voffset = 0
@@ -155,16 +155,24 @@ class GUI_PyGame:
         # Blit one line after another
         accumulated_height = 0 
         for line in text: 
-            tempsurface = font.render(line, 1, color)
+            maintext = font.render(line, 1, color)
+            shadow = font.render(line, 1, outline)
             if halign == 0:     # left aligned
                 hoffset = 0
             elif halign == 1:   # centered
-                hoffset = (self.size[0] - tempsurface.get_width()) / 2
+                hoffset = (self.size[0] - maintext.get_width()) / 2
             elif halign == 2:   # right aligned
-                hoffset = rect.width - tempsurface.get_width()
+                hoffset = rect.width - maintext.get_width()
             else:
                 raise GuiException("Invalid halign argument: " + str(justification))
-            surface.blit(tempsurface, (hoffset, voffset + accumulated_height))
+            pos = (hoffset, voffset + accumulated_height)
+            # Outline
+            surface.blit(shadow, (pos[0]-1,pos[1]-1))
+            surface.blit(shadow, (pos[0]-1,pos[1]+1))
+            surface.blit(shadow, (pos[0]+1,pos[1]-1))
+            surface.blit(shadow, (pos[0]+1,pos[1]+1))
+            # Text
+            surface.blit(maintext, pos)
             accumulated_height += font.size(line)[1]
 
         # Make background color transparent

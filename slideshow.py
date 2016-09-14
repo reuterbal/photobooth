@@ -40,6 +40,7 @@ class Slideshow:
         self.filelist     = []
         self.display      = GuiModule("Slideshow", display_size)
         self.display_time = display_time
+        self.next         = 0
 
     def scan(self):
         filelist = []
@@ -57,6 +58,7 @@ class Slideshow:
                     filelist.append(filename)
 
         self.filelist = filelist
+        self.next = 0
 
     def handle_event(self, event):
         if event.type == 0:
@@ -69,23 +71,32 @@ class Slideshow:
         if key == ord('q'):
             self.teardown()
 
+    def display_next(self, text=""):
+        if self.next >= len(self.filelist):
+            self.scan()
+        if not self.filelist:
+            self.display.clear()
+            if text:
+                self.display.show_message(text)
+            else:
+                self.display.show_message("No pictures available!")
+            self.display.apply()
+        else:
+            filename = self.filelist[self.next]
+            self.next += 1
+            self.display.clear()
+            self.display.show_picture(filename)
+            if text:
+                self.display.show_message(text)
+            self.display.apply()
+
     def run(self):
         while True:
-            self.scan()
-            if len(self.filelist) == 0:
-                self.display.clear()
-                self.display.show_message("No pictures available!")
-                self.display.apply()
-                sleep(10)
-            else:
-                for filename in self.filelist:
-                    self.display.clear()
-                    self.display.show_picture(filename)
-                    self.display.apply()
-                    sleep(self.display_time)
-                    r, e = self.display.check_for_event()
-                    if r:
-                        self.handle_event(e)
+            self.display_next()
+            sleep(self.display_time)
+            r, e = self.display.check_for_event()
+            if r:
+                self.handle_event(e)
 
     def teardown(self):
         self.display.teardown()

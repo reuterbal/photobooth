@@ -10,8 +10,9 @@ from time import sleep, clock
 from PIL import Image
 
 from gui import GUI_PyGame as GuiModule
-#from camera import CameraException, Camera_cv as CameraModule
+# from camera import CameraException, Camera_cv as CameraModule
 from camera import CameraException, Camera_gPhoto as CameraModule
+from slideshow import Slideshow
 from events import Rpi_GPIO as GPIO
 
 #####################
@@ -42,8 +43,14 @@ gpio_lamp_channel = 4 # pin 7 in all Raspi-Versions
 # Waiting time in seconds for posing
 pose_time = 5
 
-# Display time for taken pictures
+# Display time for assembled picture
 display_time = 10
+
+# Show a slideshow of existing pictures when idle
+idle_slideshow = True
+
+# Display time of pictures in the slideshow
+slideshow_display_time = 5
 
 ###############
 ### Classes ###
@@ -105,7 +112,7 @@ class Photobooth:
     """
 
     def __init__(self, display_size, picture_basename, picture_size, pose_time, display_time,
-                 trigger_channel, shutdown_channel, lamp_channel):
+                 trigger_channel, shutdown_channel, lamp_channel, idle_slideshow, slideshow_display_time):
         self.display      = GuiModule('Photobooth', display_size)
         self.pictures     = PictureList(picture_basename)
         self.camera       = CameraModule(picture_size)
@@ -117,6 +124,12 @@ class Photobooth:
         self.trigger_channel  = trigger_channel
         self.shutdown_channel = shutdown_channel
         self.lamp_channel     = lamp_channel
+
+        self.idle_slideshow = idle_slideshow
+        if self.idle_slideshow:
+            self.slideshow_display_time = slideshow_display_time
+            self.slideshow = Slideshow(display_size, display_time, 
+                                       os.path.dirname(os.path.realpath(picture_basename)))
 
         input_channels    = [ trigger_channel, shutdown_channel ]
         output_channels   = [ lamp_channel ]
@@ -132,21 +145,38 @@ class Photobooth:
         self.gpio.teardown()
         exit(0)
 
+    def _run_plain(self):
+        while True:
+            self.camera.set_idle()
+
+            # Display default message
+            self.display.clear()
+            self.display.show_message("Hit the button!")
+            self.display.apply()
+
+            # Wait for an event and handle it
+            event = self.display.wait_for_event()
+            self.handle_event(event)
+
+    def _run_slideshow(self):
+        while True:
+            self.camera.set_idle()
+            self.slideshow.display_next("Hit the button!")
+            tic = clock()
+            while clock() - tic < self.slideshow_display_time:
+                self.check_and_handle_events()
+
     def run(self):
         while True:
             try:
                 # Enable lamp
                 self.gpio.set_output(self.lamp_channel, 1)
 
-                while True:
-                    self.camera.set_idle()
-                    # Display default message
-                    self.display.clear()
-                    self.display.show_message("Hit the button!")
-                    self.display.apply()
-                    # Wait for an event and handle it
-                    event = self.display.wait_for_event()
-                    self.handle_event(event)
+                # Select idle screen type
+                if self.idle_slideshow:
+                    self._run_slideshow()
+                else:
+                    self._run_plain()
 
             # Catch exceptions and display message
             except CameraException as e:
@@ -157,6 +187,12 @@ class Photobooth:
             except Exception as e:
                 print('SERIOUS ERROR: ' + repr(e))
                 self.handle_exception("SERIOUS ERROR!")
+
+    def check_and_handle_events(self):
+        r, e = self.display.check_for_event()
+        while r:
+            self.handle_event(e)
+            r, e = self.display.check_for_event()
 
     def handle_gpio(self, channel):
         if channel in [ self.trigger_channel, self.shutdown_channel ]:
@@ -282,14 +318,13 @@ class Photobooth:
 
     def show_counter(self, seconds):
         if self.camera.has_preview():
-            tic, toc = clock(), 0
-            while toc < self.pose_time:
+            tic = clock()
+            while clock() - tic < seconds:
                 self.display.clear()
                 self.camera.take_preview("/tmp/photobooth_preview.jpg")
                 self.display.show_picture("/tmp/photobooth_preview.jpg", flip=True) 
                 self.display.show_message(str(seconds - int(clock() - tic)))
                 self.display.apply()
-                toc = clock() - tic
         else:
             for i in range(seconds):
                 self.display.clear()
@@ -376,7 +411,8 @@ class Photobooth:
 
 def main():
     photobooth = Photobooth(display_size, picture_basename, image_size, pose_time, display_time, 
-                            gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel)
+                            gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel, 
+                            idle_slideshow, slideshow_display_time)
     photobooth.run()
     photobooth.teardown()
     return 0
