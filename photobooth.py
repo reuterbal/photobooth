@@ -41,7 +41,7 @@ gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions
 gpio_lamp_channel = 4 # pin 7 in all Raspi-Versions
 
 # Waiting time in seconds for posing
-pose_time = 5
+pose_time = 3
 
 # Display time for assembled picture
 display_time = 10
@@ -319,12 +319,16 @@ class Photobooth:
     def show_counter(self, seconds):
         if self.camera.has_preview():
             tic = clock()
-            while clock() - tic < seconds:
+            toc = clock() - tic
+            while toc < seconds:
                 self.display.clear()
                 self.camera.take_preview("/tmp/photobooth_preview.jpg")
                 self.display.show_picture("/tmp/photobooth_preview.jpg", flip=True) 
-                self.display.show_message(str(seconds - int(clock() - tic)))
+                self.display.show_message(str(seconds - int(toc)))
                 self.display.apply()
+
+                # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
+                toc = min(toc + 1, clock() - tic)
         else:
             for i in range(seconds):
                 self.display.clear()
