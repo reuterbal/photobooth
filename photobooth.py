@@ -10,8 +10,8 @@ from time import sleep, clock
 from PIL import Image
 
 from gui import GUI_PyGame as GuiModule
-from camera import CameraException, Camera_cv as CameraModule
-#from camera import CameraException, Camera_gPhoto as CameraModule
+# from camera import CameraException, Camera_cv as CameraModule
+from camera import CameraException, Camera_gPhoto as CameraModule
 from slideshow import Slideshow
 from events import Rpi_GPIO as GPIO
 

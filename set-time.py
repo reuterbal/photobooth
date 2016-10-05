@@ -65,8 +65,10 @@ def main():
 
 		digit_done = False
 		while not digit_done:
-			event = display.wait_for_event()
-			digit_done = handle_event(event, digit, date_digits, numpad)
+			r, e = display.check_for_event()
+			while r:
+				digit_done = handle_event(e, digit, date_digits, numpad)
+				r, e = display.check_for_event()
 
 	for digit in range(len(time_digits)):
 		display.clear()
