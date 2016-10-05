@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Created by br@re-web.eu, 2015
+# Created by br _at_ re-web _dot_ eu, 2015
 
 try:
     import RPi.GPIO as GPIO

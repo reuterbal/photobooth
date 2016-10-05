@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# Created by br@re-web.eu, 2015
+# Created by br _at_ re-web _dot_ eu, 2015
 
 from __future__ import division
 
-import pygame  
+import pygame
 
 try:
     import pygame.fastevent as EventModule
@@ -18,7 +18,7 @@ class GuiException(Exception):
 class GUI_PyGame:
     """A GUI class using PyGame"""
 
-    def __init__(self, name, size):
+    def __init__(self, name, size, hide_mouse=True):
         # Call init routines
         pygame.init()
         if hasattr(EventModule, 'init'):
@@ -28,7 +28,8 @@ class GUI_PyGame:
         pygame.display.set_caption(name)
 
         # Hide mouse cursor
-        pygame.mouse.set_cursor(*pygame.cursors.load_xbm('transparent.xbm','transparent.msk'))
+        if hide_mouse:
+            pygame.mouse.set_cursor(*pygame.cursors.load_xbm('transparent.xbm','transparent.msk'))
 
         # Store screen and size
         self.size = size
@@ -86,6 +87,31 @@ class GUI_PyGame:
         rendered_text = self.render_text(wrapped_text, text_height, 1, 1, font, color, bg, transparency, outline)
 
         self.surface_list.append((rendered_text, (0,0)))
+
+    def show_button(self, text, pos, size=(0,0), color=(230,230,230), bg=(0,0,0), transparency=True, outline=(230,230,230)):
+        # Choose font
+        font = pygame.font.Font(None, 72)
+        text_size = font.size(text)
+        if size == (0,0):
+            size = (text_size[0] + 4, text_size[1] + 4)
+        offset = ( (size[0] - text_size[0]) // 2, (size[1] - text_size[1]) // 2 )
+
+        # Create Surface object and fill it with the given background
+        surface = pygame.Surface(self.size) 
+        surface.fill(bg) 
+
+        # Render text
+        rendered_text = font.render(text, 1, color)
+        surface.blit(rendered_text, pos)
+
+        # Render outline
+        pygame.draw.rect(surface, outline, (pos[0]-offset[0], pos[1]-offset[0], size[0], size[1]), 1)
+
+        # Make background color transparent
+        if transparency:
+            surface.set_colorkey(bg)
+
+        self.surface_list.append((surface, (0,0)))
 
     def wrap_text(self, msg, font, size):
         final_lines = []                   # resulting wrapped text
