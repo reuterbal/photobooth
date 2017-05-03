@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PHOTOBOOTH_DIR=/home/pi/photobooth
+PHOTOBOOTH_DIR=$(dirname $0)	# Directory of this script
 
 cd "${PHOTOBOOTH_DIR}"
 
