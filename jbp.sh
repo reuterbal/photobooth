@@ -17,7 +17,7 @@ if [ "${v%.*}" != "8" ]; then
     echo -n "If you know what you're doing, type Y: "
     read -n 1
     echo
-    if [ "$REPLY" != "Y" and "$REPLY" != "y" ]; then
+    if [ "$REPLY" != "Y" -a "$REPLY" != "y" ]; then
 	echo "Exiting"
 	exit
     else
