@@ -66,6 +66,12 @@ slideshow_display_time = 5
 # Default to sending every montage to the printer?
 auto_print = True
 
+# Temp directory for storing pictures
+if os.access("/dev/shm", os.W_OK):
+    tmp_dir = "/dev/shm/"       # Don't abuse Raspberry Pi SD card, if possible
+else:
+    tmp_dir = "/tmp/"
+    
 
 ###############
 ### Classes ###
@@ -460,8 +466,8 @@ class Photobooth:
         """ 
         self.display.clear()
         if self.camera.has_preview():
-            self.camera.take_preview("/tmp/photobooth_preview.jpg")
-            self.display.show_picture("/tmp/photobooth_preview.jpg", flip=True) 
+            self.camera.take_preview(tmp_dir + "photobooth_preview.jpg")
+            self.display.show_picture(tmp_dir + "photobooth_preview.jpg", flip=True) 
         self.display.show_message(message)
         self.display.apply()
 
@@ -517,7 +523,7 @@ class Photobooth:
                 tic = clock()
 
                 try:
-                    filenames[x] = self.camera.take_picture("/tmp/photobooth_%02d.jpg" % x)
+                    filenames[x] = self.camera.take_picture(tmp_dir + "photobooth_%02d.jpg" % x)
                     remaining_attempts = 0
                 except CameraException as e:
                     # On recoverable errors: display message and retry
