@@ -64,7 +64,7 @@ idle_slideshow = True
 slideshow_display_time = 5
 
 # Default to sending every montage to the printer?
-auto_print = False 
+auto_print = True
 
 
 ###############
@@ -551,7 +551,7 @@ class Photobooth:
                 if t != old_t:
                     self.display.clear()
                     self.display.show_picture(outfile, size, (0,0))
-                    self.display.show_message("Press button to %s\n%d" % ("cancel printing" if auto_print else "print photo", t))
+                    self.display.show_message("%s%d" % ("Printing in " if auto_print else "Print photo?\n", t))
                     self.display.apply()
                     old_t=t
                 
