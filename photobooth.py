@@ -526,6 +526,7 @@ class Photobooth:
                 if self.camera.has_preview():
                     self.camera.take_preview(tmp_dir + "photobooth_preview.jpg")
                     self.display.show_picture(tmp_dir + "photobooth_preview.jpg", flip=True) 
+                self.display.show_message(str(seconds - int(toc)))
                 self.display.apply()
             else:
                 r, f = self.camera.cap.read()
