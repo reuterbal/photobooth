@@ -474,16 +474,26 @@ class Photobooth:
             # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
             toc = min(toc + 1, clock() - tic)
 
+    def show_pose(self, seconds, message=""):
+        """Loop over showing the preview (if possible), with a static message.
+
+        Note that this is *necessary* for OpenCV webcams as V4L will ramp the
+        brightness level only after a certain number of frames have been taken.
+        """
+        tic = clock()
+        toc = clock() - tic
+        while toc < seconds:
+            self.show_preview(message)
+            # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
+            toc = min(toc + 1, clock() - tic)
+
     def take_picture(self):
         """Implements the picture taking routine"""
         # Disable lamp
         self.gpio.set_output(self.lamp_channel, 0)
 
         # Show pose message
-        self.display.clear()
-        self.display.show_message("POSE!\n\nTaking four pictures...");
-        self.display.apply()
-        sleep(2)
+        self.show_pose(2, "POSE!\n\nTaking four pictures...");
 
         # Extract display and image sizes
         size = self.display.get_size()
