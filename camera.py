@@ -45,6 +45,9 @@ class Camera_cv:
             self.cap.set(3, picture_size[0])
             self.cap.set(4, picture_size[1])
 
+            # Warm up web cam for quick start later
+            self.cap.read()
+
     def has_preview(self):
         return True 
 
