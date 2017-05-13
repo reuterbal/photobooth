@@ -10,10 +10,19 @@ from time import sleep, clock
 from PIL import Image
 
 from gui import GUI_PyGame as GuiModule
-# from camera import CameraException, Camera_cv as CameraModule
-from camera import CameraException, Camera_gPhoto as CameraModule
+from camera import CameraException, Camera_cv as CameraModule
+# from camera import CameraException, Camera_gPhoto as CameraModule
 from slideshow import Slideshow
 from events import Rpi_GPIO as GPIO
+
+# Printing depends on the optional python-cups module
+try:
+    import cups
+except ImportError:
+    print "cups module missing, so photo printing is disabled. To fix, please run:"
+    print "sudo apt-get install python-cups"
+
+
 
 #####################
 ### Configuration ###
@@ -21,6 +30,7 @@ from events import Rpi_GPIO as GPIO
 
 # Screen size
 display_size = (1024, 600)
+#display_size = (1824, 984)
 
 # Maximum size of assembled image
 image_size = (2352, 1568)
@@ -51,6 +61,10 @@ idle_slideshow = True
 
 # Display time of pictures in the slideshow
 slideshow_display_time = 5
+
+# Automatically send every montage to the printer, if possible
+auto_printer = True 
+
 
 ###############
 ### Classes ###
@@ -105,6 +119,122 @@ class PictureList:
         return self.get(self.counter)
 
 
+class PictureList:
+    """A simple helper class.
+
+    It provides the filenames for the assembled pictures and keeps count
+    of taken and previously existing pictures.
+    """
+
+    def __init__(self, basename):
+        """Initialize filenames to the given basename and search for
+        existing files. Set the counter accordingly.
+        """
+
+        # Set basename and suffix
+        self.basename = basename
+        self.suffix = ".jpg"
+        self.count_width = 5
+
+        # Ensure directory exists
+        dirname = os.path.dirname(self.basename)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        # Find existing files
+        count_pattern = "[0-9]" * self.count_width
+        pictures = glob(self.basename + count_pattern + self.suffix)
+
+        # Get number of latest file
+        if len(pictures) == 0:
+            self.counter = 0
+        else:
+            pictures.sort()
+            last_picture = pictures[-1]
+            self.counter = int(last_picture[-(self.count_width+len(self.suffix)):-len(self.suffix)])
+
+        # Print initial infos
+        print("Info: Number of last existing file: " + str(self.counter))
+        print("Info: Saving assembled pictures as: " + self.basename + "XXXXX.jpg")
+
+    def get(self, count):
+        return self.basename + str(count).zfill(self.count_width) + self.suffix
+
+    def get_last(self):
+        return self.get(self.counter)
+
+    def get_next(self):
+        self.counter += 1
+        return self.get(self.counter)
+
+
+class PrinterModule:
+    """Encapsulate all the photobooth printing functionality.
+
+    It allows the photobooth to enqueue a JPG to be printed on the
+    locally connected printer.
+    """
+
+    c=False                     # This module's connection to CUPS
+    printer=False               # The default printer to print to
+    options = {}                # Options for printing
+
+    def __init__(self):
+        """Initialize printer defaults
+        """
+
+        # If we don't have python-cups installed, don't do anything
+        if not cups:
+            print ("Notice: python-cups is not installed, so printing is disabled")
+            print ("To fix, run: sudo apt-get install python-cups")
+            return
+
+        # Create the connection to the default CUPS server
+        try:
+            self.c = cups.Connection()
+        except RuntimeError as e:
+            self.c = False
+            print ("Error: Could not connect to CUPS server for printing: " + repr(e))
+            print ("To fix, run: sudo apt-get install cups")
+            return
+
+        # Discover available printers 
+        # Use default destination, if no queue is already defined
+        if not self.printer:
+            self.printer=self.c.getDefault()
+        if not self.printer:
+            # NO DEFAULT PRINTER! Let the user know how to fix it.
+            if not self.c.getDests():
+                print "Error: CUPS is running, but no printers are setup yet."
+                print "To fix this error, first run: sudo addgroup $USER lpadmin"
+                print "then, go to http://localhost:631/admin"
+                return
+            else:
+                print "AVAILABLE PRINTERS"
+                print self.c.getDests()
+                print "Error: CUPS is running and at least one printer exists, but there is no server default printer."
+                print "To fix this error: go to http://localhost:631/printers"
+                return
+
+        print "DEFAULT DESTINATION: " + self.printer
+    
+        # Set default printing options
+        if not self.options:
+            self.options = {}
+        
+    def can_print(self):
+        "Return True if printing is possible (CUPS running and default printer exists)"
+        return self.c and self.printer
+
+    def enqueue(self, filename):
+        "Send a JPEG file to the printer using CUPS."
+        if self.can_print():
+            print "Now printing file " + filename + " to printer " + self.printer + ", using options " + repr(self.options)
+            try: 
+                self.c.printFile(self.printer, filename, filename, self.options)
+            except cups.IPPError as e:
+                print ("Error: Failed to print " + filename + ": " + repr(e))
+                
 class Photobooth:
     """The main class.
 
@@ -134,6 +264,8 @@ class Photobooth:
         input_channels    = [ trigger_channel, shutdown_channel ]
         output_channels   = [ lamp_channel ]
         self.gpio         = GPIO(self.handle_gpio, input_channels, output_channels)
+
+        self.printer_module  = PrinterModule()
 
     def teardown(self):
         self.display.clear()
@@ -192,6 +324,11 @@ class Photobooth:
         r, e = self.display.check_for_event()
         while r:
             self.handle_event(e)
+            r, e = self.display.check_for_event()
+
+    def clear_event_queue(self):
+        r, e = self.display.check_for_event()
+        while r:
             r, e = self.display.check_for_event()
 
     def handle_gpio(self, channel):
@@ -397,11 +534,50 @@ class Photobooth:
         # Assemble them
         outfile = self.assemble_pictures(filenames)
 
-        # Show pictures for 10 seconds
-        self.display.clear()
-        self.display.show_picture(outfile, size, (0,0))
-        self.display.apply()
-        sleep(self.display_time)
+        if auto_printer and self.printer_module.can_print():
+            # Show picture for 10 seconds and then send it to the printer.
+            # Allow user to cancel printing by hitting the button
+            tic = clock()
+            t = int(self.display_time - (clock() - tic))
+            old_t = self.display_time+1
+            aborted=False
+
+            # Clear event queue (in case they hit the button twice accidentally) 
+            self.clear_event_queue()
+
+            while t > 0:
+                if t != old_t:
+                    self.display.clear()
+                    self.display.show_picture(outfile, size, (0,0))
+                    self.display.show_message("Printing in %d second%s" % (t, "s" if t!=1 else ""))
+                    self.display.apply()
+                    old_t=t
+                
+                # Watch for any event and cancel the printing
+                r, e = self.display.check_for_event()
+                if r:
+                    self.display.clear()
+                    self.display.show_picture(outfile, size, (0,0))
+                    self.display.show_message("Printing cancelled")
+                    self.display.apply()
+                    sleep(1)
+                
+                    # Discard extra events (e.g., they hit the button a bunch)
+                    self.clear_event_queue() 
+
+                    aborted=True
+                    break
+
+                t = int(self.display_time - (clock() - tic))
+
+            if not aborted:
+                self.printer_module.enqueue(outfile)
+        else:
+            # No autoprinting, so just show pictures for 10 seconds
+            self.display.clear()
+            self.display.show_picture(outfile, size, (0,0))
+            self.display.apply()
+            sleep(self.display_time)
 
         # Reenable lamp
         self.gpio.set_output(self.lamp_channel, 1)
