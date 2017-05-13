@@ -454,25 +454,25 @@ class Photobooth:
         output_image.save(output_filename, "JPEG")
         return output_filename
 
-    def show_counter(self, seconds):
+    def show_preview(self, message=""):
+        """If camera allows previews, take a photo and show it so people can
+        pose before the shot. 
+        """ 
+        self.display.clear()
         if self.camera.has_preview():
-            tic = clock()
-            toc = clock() - tic
-            while toc < seconds:
-                self.display.clear()
-                self.camera.take_preview("/tmp/photobooth_preview.jpg")
-                self.display.show_picture("/tmp/photobooth_preview.jpg", flip=True) 
-                self.display.show_message(str(seconds - int(toc)))
-                self.display.apply()
+            self.camera.take_preview("/tmp/photobooth_preview.jpg")
+            self.display.show_picture("/tmp/photobooth_preview.jpg", flip=True) 
+        self.display.show_message(message)
+        self.display.apply()
 
-                # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
-                toc = min(toc + 1, clock() - tic)
-        else:
-            for i in range(seconds):
-                self.display.clear()
-                self.display.show_message(str(seconds - i))
-                self.display.apply()
-                sleep(1)
+    def show_counter(self, seconds):
+        """Loop over showing the preview (if possible), with a count down"""
+        tic = clock()
+        toc = clock() - tic
+        while toc < seconds:
+            self.show_preview(str(seconds - int(toc)))
+            # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
+            toc = min(toc + 1, clock() - tic)
 
     def take_picture(self):
         """Implements the picture taking routine"""
