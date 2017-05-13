@@ -275,9 +275,7 @@ class Photobooth:
         self.printer_module  = PrinterModule()
 
     def teardown(self):
-        self.display.clear()
-        self.display.show_message("Shutting down...")
-        self.display.apply()
+        self.display.msg("Shutting down...")
         self.gpio.set_output(self.lamp_channel, 0)
         sleep(0.5)
         self.display.teardown()
@@ -297,9 +295,7 @@ class Photobooth:
             self.camera.set_idle()
 
             # Display default message
-            self.display.clear()
-            self.display.show_message("Hit the button!")
-            self.display.apply()
+            self.display.msg("Hit the button!")
 
             # Wait for an event and handle it
             event = self.display.wait_for_event()
@@ -333,7 +329,7 @@ class Photobooth:
                 raise
             except Exception as e:
                 print('SERIOUS ERROR: ' + repr(e))
-                self.handle_exception("SERIOUS ERROR!")
+                self.handle_exception("SERIOUS ERROR!\n(see log file)")
 
     def check_and_handle_events(self):
         r, e = self.display.check_for_event()
@@ -368,6 +364,11 @@ class Photobooth:
         # Take pictures
         elif key == ord('c'):
             self.take_picture()
+        # Toggle autoprinting
+        elif key == ord('p'):
+            global auto_print
+            auto_print = not auto_print
+            self.display.msg("Autoprinting %s" % ("enabled" if auto_print else "disabled"))
 
     def handle_mousebutton(self, key, pos):
         """Implements the actions for the different mousebutton events"""
@@ -384,10 +385,8 @@ class Photobooth:
 
     def handle_exception(self, msg):
         """Displays an error message and returns"""
-        self.display.clear()
         print("Error: " + msg)
-        self.display.show_message("ERROR:\n\n" + msg)
-        self.display.apply()
+        self.display.msg("ERROR:\n\n" + msg)
         sleep(3)
 
 
@@ -524,9 +523,7 @@ class Photobooth:
             while remaining_attempts > 0:
                 remaining_attempts = remaining_attempts - 1
 
-                self.display.clear()
-                self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
-                self.display.apply()
+                self.display.msg("S M I L E !!!\n\n" + str(x+1) + " of 4")
 
                 tic = clock()
 
@@ -537,9 +534,7 @@ class Photobooth:
                     # On recoverable errors: display message and retry
                     if e.recoverable:
                         if remaining_attempts > 0:
-                            self.display.clear()
-                            self.display.show_message(e.message)  
-                            self.display.apply()
+                            self.display.msg(e.message)  
                             sleep(5)
                         else:
                             raise CameraException("Giving up! Please start over!", False)
@@ -552,9 +547,7 @@ class Photobooth:
                     sleep(1.0 - toc)
 
         # Show 'Wait'
-        self.display.clear()
-        self.display.show_message("Please wait!\n\nProcessing...")
-        self.display.apply()
+        self.display.msg("Please wait!\n\nProcessing...")
 
         # Assemble them
         outfile = self.assemble_pictures(filenames)
@@ -579,7 +572,7 @@ class Photobooth:
                     self.display.apply()
                     old_t=t
                 
-                # Watch for button press to cancel/enable printing
+                # Watch for button, gpio, mouse press to cancel/enable printing
                 r, e = self.display.check_for_event()
                 if r:
                     self.display.clear()
