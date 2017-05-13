@@ -555,7 +555,7 @@ class Photobooth:
                     self.display.apply()
                     old_t=t
                 
-                # Watch for button press to send to printer (or cancel autoprint)
+                # Watch for button press to cancel/enable printing
                 r, e = self.display.check_for_event()
                 if r:
                     self.display.clear()
