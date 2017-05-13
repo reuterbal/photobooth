@@ -88,6 +88,12 @@ class GUI_PyGame:
 
         self.surface_list.append((rendered_text, (0,0)))
 
+    def msg(self, text):
+        "Just a convenience wrapper to splat text to a blank screen"
+        self.clear()
+        self.show_message(text)
+        self.apply()
+        
     def show_button(self, text, pos, size=(0,0), color=(230,230,230), bg=(0,0,0), transparency=True, outline=(230,230,230)):
         # Choose font
         font = pygame.font.Font(None, 72)
