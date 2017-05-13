@@ -63,8 +63,8 @@ idle_slideshow = True
 # Display time of pictures in the slideshow
 slideshow_display_time = 5
 
-# Automatically send every montage to the printer, if possible
-auto_printer = True 
+# Default to sending every montage to the printer?
+auto_print = False 
 
 
 ###############
@@ -217,7 +217,7 @@ class PrinterModule:
                 print "To fix this error: go to http://localhost:631/printers"
                 return
 
-        print "DEFAULT DESTINATION: " + self.printer
+        print "Printing enabled to: " + self.printer
     
         # Set default printing options
         if not self.options:
@@ -535,13 +535,14 @@ class Photobooth:
         # Assemble them
         outfile = self.assemble_pictures(filenames)
 
-        if auto_printer and self.printer_module.can_print():
+        if self.printer_module.can_print():
             # Show picture for 10 seconds and then send it to the printer.
-            # Allow user to cancel printing by hitting the button
+            # If auto_print is True,  hitting the button cancels the print.
+            # If auto_print is False, hitting the button sends the print
             tic = clock()
             t = int(self.display_time - (clock() - tic))
             old_t = self.display_time+1
-            aborted=False
+            button_pressed=False
 
             # Clear event queue (in case they hit the button twice accidentally) 
             self.clear_event_queue()
@@ -550,31 +551,31 @@ class Photobooth:
                 if t != old_t:
                     self.display.clear()
                     self.display.show_picture(outfile, size, (0,0))
-                    self.display.show_message("Printing in %d second%s" % (t, "s" if t!=1 else ""))
+                    self.display.show_message("Press button to %s\n%d" % ("cancel printing" if auto_print else "print photo", t))
                     self.display.apply()
                     old_t=t
                 
-                # Watch for any event and cancel the printing
+                # Watch for button press to send to printer (or cancel autoprint)
                 r, e = self.display.check_for_event()
                 if r:
                     self.display.clear()
                     self.display.show_picture(outfile, size, (0,0))
-                    self.display.show_message("Printing cancelled")
+                    self.display.show_message("Printing%s" % (" cancelled" if auto_print else ""))
                     self.display.apply()
                     sleep(1)
                 
                     # Discard extra events (e.g., they hit the button a bunch)
                     self.clear_event_queue() 
 
-                    aborted=True
+                    button_pressed=True
                     break
 
                 t = int(self.display_time - (clock() - tic))
 
-            if not aborted:
+            if auto_print ^ button_pressed:
                 self.printer_module.enqueue(outfile)
         else:
-            # No autoprinting, so just show pictures for 10 seconds
+            # No printer available, so just show pictures for 10 seconds
             self.display.clear()
             self.display.show_picture(outfile, size, (0,0))
             self.display.apply()
