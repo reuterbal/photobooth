@@ -366,9 +366,16 @@ class Photobooth:
             self.take_picture()
         # Toggle autoprinting
         elif key == ord('p'):
+            self.toggle_auto_print()
+
+    def toggle_auto_print(self):
+        "Toggle auto print and show an error message if printing isn't possible."
+        if self.printer_module.can_print():
             global auto_print
             auto_print = not auto_print
             self.display.msg("Autoprinting %s" % ("enabled" if auto_print else "disabled"))
+        else:
+            self.display.msg("Printing not configured\n(see log file)")
 
     def handle_mousebutton(self, key, pos):
         """Implements the actions for the different mousebutton events"""
