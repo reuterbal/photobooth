@@ -41,7 +41,7 @@ class CameraException(Exception):
 class Camera_cv:
     def __init__(self, picture_size):
         if cv_enabled:
-            self.cap = cv.VideoCapture(0)
+            self.cap = cv.VideoCapture(-1)
             self.cap.set(3, picture_size[0])
             self.cap.set(4, picture_size[1])
 
