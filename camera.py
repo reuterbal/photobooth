@@ -40,13 +40,22 @@ class CameraException(Exception):
 
 class Camera_cv:
     def __init__(self, picture_size):
+        global cv_enabled
         if cv_enabled:
             self.cap = cv.VideoCapture(-1)
+            if not self.cap.isOpened:
+                print "Warning: Failed to open camera using OpenCV"
+                cv_enabled=False
+                return
             self.cap.set(3, picture_size[0])
             self.cap.set(4, picture_size[1])
 
-            # Warm up web cam for quick start later
-            self.cap.read()
+            # Warm up web cam for quick start later and to double check driver
+            r, dummy = self.cap.read()
+            if not r:
+                print "Warning: Failed to read from camera using OpenCV"
+                cv_enabled=False
+                return
 
     def has_preview(self):
         return True 
