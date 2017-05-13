@@ -599,7 +599,7 @@ class Photobooth:
             if auto_print ^ button_pressed:
                 self.printer_module.enqueue(outfile)
         else:
-            # No printer available, so just show pictures for 10 seconds
+            # No printer available, so just show montage for 10 seconds
             self.display.clear()
             self.display.show_picture(outfile, size, (0,0))
             self.display.apply()
