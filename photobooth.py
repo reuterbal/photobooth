@@ -19,6 +19,7 @@ from events import Rpi_GPIO as GPIO
 try:
     import cups
 except ImportError:
+    cups=None
     print "cups module missing, so photo printing is disabled. To fix, please run:"
     print "sudo apt-get install python-cups"
 
@@ -175,8 +176,8 @@ class PrinterModule:
     locally connected printer.
     """
 
-    c=False                     # This module's connection to CUPS
-    printer=False               # The default printer to print to
+    c=None                      # This module's connection to CUPS
+    printer=None                # The default printer to print to
     options = {}                # Options for printing
 
     def __init__(self):
