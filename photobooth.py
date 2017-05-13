@@ -282,8 +282,16 @@ class Photobooth:
         sleep(0.5)
         self.display.teardown()
         self.gpio.teardown()
+        self.remove_tempfiles()
         exit(0)
 
+    def remove_tempfiles(self):
+        for filename in glob(tmp_dir + "photobooth_*.jpg"):
+            try:
+                os.remove(filename)
+            except OSError:
+                pass
+            
     def _run_plain(self):
         while True:
             self.camera.set_idle()
