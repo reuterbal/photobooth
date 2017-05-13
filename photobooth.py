@@ -367,6 +367,8 @@ class Photobooth:
         # Toggle autoprinting
         elif key == ord('p'):
             self.toggle_auto_print()
+        elif key == ord('1'):   # Just for debugging
+            self.show_preview_fps(5)
 
     def toggle_auto_print(self):
         "Toggle auto print and show an error message if printing isn't possible."
@@ -493,6 +495,50 @@ class Photobooth:
             self.show_preview(str(seconds - int(toc)))
             # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
             toc = min(toc + 1, clock() - tic)
+
+    def show_preview_fps(self, seconds):
+        """XXX Debugging code for benchmarking XXX
+
+        Using camera.take_preview(), display.show_picture() is very
+        slow. How slow? 5 frames per second! This is true even when
+        using shared memory instead of /tmp. 
+
+        As a test, I'm trying a direct conversion from OpenCV to a
+        PyGame Surface in memory and it's much faster. >20fps
+
+        Note that the conversion takes up time. Without the
+        conversion, the loop is limited by the speed from which we can
+        read from the camera (about 30fps).
+
+        Blitting a static image without reading from a camera is
+        giving me about 180fps on a Raspberry Pi3b.
+
+        """
+        import cv2, pygame, numpy
+        tic = clock()
+        toc = 0
+        frames=0
+
+        while toc < seconds:
+            frames=frames+1
+            if True:
+                self.display.clear()
+                if self.camera.has_preview():
+                    self.camera.take_preview(tmp_dir + "photobooth_preview.jpg")
+                    self.display.show_picture(tmp_dir + "photobooth_preview.jpg", flip=True) 
+                self.display.apply()
+            else:
+                r, f = self.camera.cap.read()
+                f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
+                f=numpy.rot90(f)
+                f=pygame.surfarray.make_surface(f)
+                self.display.screen.blit(f, (0,0))
+                pygame.display.update()
+
+            toc = clock() - tic
+        self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        print("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        sleep(3)
 
     def show_pose(self, seconds, message=""):
         """Loop over showing the preview (if possible), with a static message.
