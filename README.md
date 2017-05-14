@@ -12,6 +12,9 @@ The code was developed from scratch but inspired by the following tutorials/proj
 ## Requirements
 
 ### Software stack
+
+    TLDR: sudo apt-get install python-pygame gphoto2 python-opencv python-cups
+
 The following is required for running this photobooth application. I used the versions given in brackets, others might work just as well.
 
 * [Python](https://www.python.org) (2.7.3)
