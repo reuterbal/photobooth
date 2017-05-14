@@ -604,7 +604,8 @@ class Photobooth:
             s = pygame.transform.scale(s, new_size).convert()
 
             # Display it using kludge to GUI_Pygame
-	    self.display.surface_list.append((s, offset))
+            self.display.surface_list.append((s, offset))
+
             self.display.show_message(str(seconds - int(toc)))
             self.display.apply()
 
@@ -646,8 +647,8 @@ class Photobooth:
             y=(dh-h)/2
 
             # Fastest is to blit directly to a subsurface of the display
-            s=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
-            pygame.surfarray.blit_array(s, f)
+            subsurface=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
+            pygame.surfarray.blit_array(subsurface, f)
 
             self.display.show_message(str(seconds - int(toc)))
             self.display.apply()
