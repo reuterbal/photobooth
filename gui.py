@@ -32,8 +32,11 @@ class GUI_PyGame:
             pygame.mouse.set_cursor(*pygame.cursors.load_xbm('transparent.xbm','transparent.msk'))
 
         # Store screen and size
-        self.size = size
         self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        
+        # Always find the real resolution (e.g., if size==(0,0))
+        i = pygame.display.Info()
+        self.size = (i.current_w, i.current_h)
 
         # Clear screen
         self.clear()
