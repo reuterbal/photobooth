@@ -30,8 +30,8 @@ except ImportError:
 #####################
 
 # Screen size (set to 0,0 to use native resolution)
-#display_size = (1824, 984)
 display_size = (0, 0)
+#display_size = (1824, 984)
 
 # Maximum size of assembled image
 image_size = (2352, 1568)
@@ -370,7 +370,11 @@ class Photobooth:
         elif key == ord('p'):
             self.toggle_auto_print()
         elif key == ord('1'):   # Just for debugging
-            self.show_preview_fps(5)
+            self.show_preview_fps_1(5)
+        elif key == ord('2'):   # Just for debugging
+            self.show_preview_fps_2(5)
+        elif key == ord('3'):   # Just for debugging
+            self.show_preview_fps_3(5)
 
     def toggle_auto_print(self):
         "Toggle auto print and show an error message if printing isn't possible."
@@ -498,12 +502,48 @@ class Photobooth:
             # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
             toc = min(toc + 1, clock() - tic)
 
-    def show_preview_fps(self, seconds):
+    def show_preview_fps_1(self, seconds):
         """XXX Debugging code for benchmarking XXX
+
+        This is the original show_countdown preview code. 
 
         Using camera.take_preview(), display.show_picture() is very
         slow. How slow? 5 frames per second! This is true even when
         using shared memory instead of /tmp. 
+
+        While show_message() and clear() also drop fps significantly,
+        they are not as much of a bottleneck.
+
+        On an iMac:
+        * take_preview() -5 fps
+        * show_picture() -9 fps
+        * show_message() -2 fps
+        * clear()	 -0.5 fps
+
+        """
+        import cv2, pygame, numpy
+        tic = clock()
+        toc = 0
+        frames=0
+
+        while toc < seconds:
+            frames=frames+1
+
+            self.display.clear()
+            if self.camera.has_preview():
+                self.camera.take_preview(tmp_dir + "photobooth_preview.jpg")
+                self.display.show_picture(tmp_dir + "photobooth_preview.jpg", flip=True) 
+            self.display.show_message(str(seconds - int(toc)))
+            self.display.apply()
+
+            toc = clock() - tic
+
+        self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        print("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        sleep(3)
+
+    def show_preview_fps_2(self, seconds):
+        """XXX Debugging code for benchmarking XXX
 
         As a test, I'm trying a direct conversion from OpenCV to a
         PyGame Surface in memory and it's much faster. >20fps
@@ -523,40 +563,69 @@ class Photobooth:
 
         while toc < seconds:
             frames=frames+1
-            if False:
-                self.display.clear()
-                if self.camera.has_preview():
-                    self.camera.take_preview(tmp_dir + "photobooth_preview.jpg")
-                    self.display.show_picture(tmp_dir + "photobooth_preview.jpg", flip=True) 
-                self.display.show_message(str(seconds - int(toc)))
-                self.display.apply()
-            else:
-                r, f = self.camera.cap.read()
-                f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
-                f=numpy.rot90(f)
 
-                # Make sure preview fits on the screen so we can blit directly
-                ( w,  h) = ( len(f), len(f[0]) )
-                (dw, dh) = self.display.get_size()
-                while (w>dw or h>dh):
-                    f=f[::2, ::2]   # Decimate preview by taking every other row & column.
-                    w=len(f); h=len(f[0])
-                x=(dw-w)/2
-                y=(dh-h)/2
+            #self.display.clear()
 
-                if (x>=0) and (y>=0):
-                    # Fastest is to blit directly to a subsurface of the display
-                    s=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
-                    pygame.surfarray.blit_array(s, f)
-                else:
-                    # Slower method using make_surface
-                    # (should never happen; see decimation step above).
-                    s=pygame.surfarray.make_surface(f)
-                    s=pygame.transform.scale(s, (dw, dh))
-                    self.display.screen.blit(s, (0,0))
-                pygame.display.update()
+            r, f = self.camera.cap.read()
+            f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
+            f=numpy.rot90(f)
+
+            # This is the slower method, using make_surface
+            # (It's faster to use subsurfaces, see below).
+            s=pygame.surfarray.make_surface(f)
+            (dw, dh) = self.display.get_size()
+            s=pygame.transform.smoothscale(s, (dw, dh))
+            self.display.screen.blit(s, (0,0))
+            #self.display.show_message(str(seconds - int(toc)))
+            #self.display.apply()
+            pygame.display.update()
 
             toc = clock() - tic
+
+        self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        print("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        sleep(3)
+
+    def show_preview_fps_3(self, seconds):
+        """XXX Debugging code for benchmarking XXX
+
+        This is the fastest method, which decimates the array and
+        blits it directly to a subsurface of the display.
+
+        """
+        import cv2, pygame, numpy
+        tic = clock()
+        toc = 0
+        frames=0
+
+        while toc < seconds:
+            frames=frames+1
+
+            self.display.clear()
+
+            r, f = self.camera.cap.read()
+            f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
+            f=numpy.rot90(f)
+
+            # Make sure preview fits on the screen so we can blit directly
+            ( w,  h) = ( len(f), len(f[0]) )
+            (dw, dh) = self.display.get_size()
+            while (w>dw or h>dh):
+                # Decimate preview by taking every other row & column.
+                f=f[::2, ::2]
+                w=len(f); h=len(f[0])
+            x=(dw-w)/2
+            y=(dh-h)/2
+
+            # Fastest is to blit directly to a subsurface of the display
+            s=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
+            pygame.surfarray.blit_array(s, f)
+
+            self.display.show_message(str(seconds - int(toc)))
+            self.display.apply()
+
+            toc = clock() - tic
+
         self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
         print("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
         sleep(3)
