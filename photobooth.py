@@ -30,7 +30,7 @@ except ImportError:
 #####################
 
 # Screen size
-display_size = (1024, 600)
+display_size = (1280, 1024)
 #display_size = (1824, 984)
 
 # Maximum size of assembled image
@@ -521,7 +521,7 @@ class Photobooth:
 
         while toc < seconds:
             frames=frames+1
-            if True:
+            if False:
                 self.display.clear()
                 if self.camera.has_preview():
                     self.camera.take_preview(tmp_dir + "photobooth_preview.jpg")
@@ -532,8 +532,24 @@ class Photobooth:
                 r, f = self.camera.cap.read()
                 f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
                 f=numpy.rot90(f)
-                f=pygame.surfarray.make_surface(f)
-                self.display.screen.blit(f, (0,0))
+
+                w=len(f); h=len(f[0])
+                # Make sure preview fits on the screen so we can blit directly
+                while (w>display_size[0] or h>display_size[1]):
+                    f=f[::2, ::2]   # Decimate preview by taking every other row & column.
+                    w=len(f); h=len(f[0])
+                x=(display_size[0]-w)/2
+                y=(display_size[1]-h)/2
+
+                if (x>=0) and (y>=0):
+                    # Fastest is to blit the surfarray directly to a subsurface of the display
+                    s=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
+                    pygame.surfarray.blit_array(s, f)
+                else:
+                    # This slower method should never happen (see decimation step above).
+                    s=pygame.surfarray.make_surface(f)
+                    s=pygame.transform.scale(s, display_size)
+                    self.display.screen.blit(s, (0,0))
                 pygame.display.update()
 
             toc = clock() - tic
