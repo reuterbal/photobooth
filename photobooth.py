@@ -29,9 +29,9 @@ except ImportError:
 ### Configuration ###
 #####################
 
-# Screen size
-display_size = (1280, 1024)
+# Screen size (set to 0,0 to use native resolution)
 #display_size = (1824, 984)
+display_size = (0, 0)
 
 # Maximum size of assembled image
 image_size = (2352, 1568)
@@ -251,6 +251,8 @@ class Photobooth:
     def __init__(self, display_size, picture_basename, picture_size, pose_time, display_time,
                  trigger_channel, shutdown_channel, lamp_channel, idle_slideshow, slideshow_display_time):
         self.display      = GuiModule('Photobooth', display_size)
+        if (display_size == (0,0)):
+            display_size = self.display.get_size()    # Get actual resolution
         self.pictures     = PictureList(picture_basename)
         self.camera       = CameraModule(picture_size)
 
@@ -533,22 +535,24 @@ class Photobooth:
                 f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
                 f=numpy.rot90(f)
 
-                w=len(f); h=len(f[0])
                 # Make sure preview fits on the screen so we can blit directly
-                while (w>display_size[0] or h>display_size[1]):
+                ( w,  h) = ( len(f), len(f[0]) )
+                (dw, dh) = self.display.get_size()
+                while (w>dw or h>dh):
                     f=f[::2, ::2]   # Decimate preview by taking every other row & column.
                     w=len(f); h=len(f[0])
-                x=(display_size[0]-w)/2
-                y=(display_size[1]-h)/2
+                x=(dw-w)/2
+                y=(dh-h)/2
 
                 if (x>=0) and (y>=0):
-                    # Fastest is to blit the surfarray directly to a subsurface of the display
+                    # Fastest is to blit directly to a subsurface of the display
                     s=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
                     pygame.surfarray.blit_array(s, f)
                 else:
-                    # This slower method should never happen (see decimation step above).
+                    # Slower method using make_surface
+                    # (should never happen; see decimation step above).
                     s=pygame.surfarray.make_surface(f)
-                    s=pygame.transform.scale(s, display_size)
+                    s=pygame.transform.scale(s, (dw, dh))
                     self.display.screen.blit(s, (0,0))
                 pygame.display.update()
 
