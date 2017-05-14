@@ -545,12 +545,15 @@ class Photobooth:
     def show_preview_fps_2(self, seconds):
         """XXX Debugging code for benchmarking XXX
 
+        This is the slower method, using make_surface
+        (It's faster to use subsurfaces, see below).
+
         As a test, I'm trying a direct conversion from OpenCV to a
         PyGame Surface in memory and it's much faster. >20fps
 
-        Note that the conversion takes up time. Without the
-        conversion, the loop is limited by the speed from which we can
-        read from the camera (about 30fps).
+        Note that the conversion (cvtColor, rot90) takes up time.
+        Without the conversion, the loop is limited by the speed from
+        which we can read from the camera (about 30fps).
 
         Blitting a static image without reading from a camera is
         giving me about 180fps on a Raspberry Pi3b.
@@ -560,25 +563,50 @@ class Photobooth:
         tic = clock()
         toc = 0
         frames=0
+        
+        r, f = self.camera.cap.read()
+        f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
+        f=numpy.rot90(f)
+        s=pygame.surfarray.make_surface(f)
+
 
         while toc < seconds:
             frames=frames+1
 
-            #self.display.clear()
+            self.display.clear()
 
             r, f = self.camera.cap.read()
             f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
             f=numpy.rot90(f)
 
-            # This is the slower method, using make_surface
-            # (It's faster to use subsurfaces, see below).
-            s=pygame.surfarray.make_surface(f)
+            ( w,  h) = ( len(f), len(f[0]) )
             (dw, dh) = self.display.get_size()
-            s=pygame.transform.smoothscale(s, (dw, dh))
-            self.display.screen.blit(s, (0,0))
-            #self.display.show_message(str(seconds - int(toc)))
-            #self.display.apply()
-            pygame.display.update()
+
+            # For some reason make_surface is slower on an iMac than
+            # creating a new surface and blitting the image to it. Weird!
+            # I think this is the opposite for the Raspberry Pi 3b.
+            if False:
+                s=pygame.surfarray.make_surface(f)
+            else:
+                s = pygame.Surface((w,h))
+                pygame.surfarray.blit_array(s, f)
+
+            # Figure out maximum proportional scaling
+            size=(dw, dh)
+            image_size = (w, h)
+            offset=(0,0)
+            image_scale = min([min(a,b)/b for a,b in zip(size, image_size)])
+            # New image size
+            new_size = [int(a*image_scale) for a in image_size]
+            # Update offset
+            offset = tuple(a+int((b-c)/2) for a,b,c in zip(offset, size, new_size))
+            # Apply scaling
+            s = pygame.transform.scale(s, new_size).convert()
+
+            # Display it using kludge to GUI_Pygame
+	    self.display.surface_list.append((s, offset))
+            self.display.show_message(str(seconds - int(toc)))
+            self.display.apply()
 
             toc = clock() - tic
 
