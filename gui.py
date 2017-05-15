@@ -51,6 +51,39 @@ class GUI_PyGame:
             self.screen.blit(surface[0], surface[1])
         pygame.display.update()
 
+    def blit_array(self, f):
+        """Given a 2-D array (Numpy style), blit it directly to the screen
+        using pygame.surfarray, which is significantly faster than
+        creating a new Surface and then blitting that.
+
+        Note that 2-D arrays cannot be scaled easily, so this has the
+        downside that the image may be smaller than the screen. This code
+        will compensate by centering the image.
+        
+        Also note, if you pass in an array that's *larger* than the
+        screen, then this will arbitrarily decimate the array for you
+        using nearest neighbor.
+        """
+
+        # Find size of image array and of screen
+        (    w,     h) = (len(f), len(f[0]))
+        (max_w, max_h) = self.get_size()                            
+
+        # Decimate size if image is too large.
+        if w>max_w or h>max_h:
+            w_factor = (w/max_w) + (1 if (w%max_w) else 0)
+            h_factor = (h/max_h) + (1 if (h%max_h) else 0)
+            scaling_factor = int(max( (w_factor, h_factor) ))
+            f=f[::scaling_factor, ::scaling_factor]
+            (w, h) = (len(f), len(f[0]))
+
+        # Center the preview on the screen
+        x=(max_w-w)/2
+        y=(max_h-h)/2
+
+        subsurface=pygame.Surface.subsurface(self.screen, ( (x,y), (w, h) ))
+        pygame.surfarray.blit_array(subsurface, f)
+
     def get_size(self):
         return self.size
 
