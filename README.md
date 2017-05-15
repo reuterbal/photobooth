@@ -8,13 +8,10 @@ project.  --b9
 
 ## Major differences
 * Automatically prints to default printer if python-cups is installed.
-** The idea is that you'll set up the default queue to be a photo printer
-set to 4x6 (or whatever paper size you use).
-** Automatic printing can be disabled by default in the program by setting
-auto_print=False at the top of photobooth.py.
-** Automatic printing can be toggled at run time by hitting the 'p' key.
-** An individual print can be cancelled during a 10 second countdown. If the button is
-pressed (or actually any event happens) during that time, printing will be cancelled.
+  * The idea is that you'll set up the default queue to be a photo printer set to 4x6 (or whatever paper size you use).
+  * Automatic printing can be disabled by default in the program by setting auto_print=False at the top of photobooth.py.
+  * Automatic printing can be toggled at run time by hitting the 'p' key.
+  * An individual print can be cancelled during a 10 second countdown. If the button is pressed (or actually any event happens) during that time, printing will be cancelled.
 * Much improved display handling. Now defaults to native resolution instead
 of being hardcoded to 1824x984. (You can still force a resolution by
 setting display_size in photobooth.py).
