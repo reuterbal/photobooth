@@ -488,8 +488,20 @@ class Photobooth:
         """ 
         self.display.clear()
         if self.camera.has_preview():
-            self.camera.take_preview(tmp_dir + "photobooth_preview.jpg")
-            self.display.show_picture(tmp_dir + "photobooth_preview.jpg", flip=True) 
+            # Grab a preview, decimated to fit within the screen size
+            f = self.camera.get_preview_array(self.display.get_size())
+
+            # Center the preview on the screen
+            ( w,  h) = ( len(f), len(f[0]) )                              
+            (dw, dh) = self.display.get_size()                            
+            x=(dw-w)/2
+            y=(dh-h)/2
+
+            # Tis a bit ugly, but it's much faster blitting an array
+            # directly to a subsurface of the display
+            subsurface=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
+            pygame.surfarray.blit_array(subsurface, f)
+
         self.display.show_message(message)
         self.display.apply()
 
@@ -564,12 +576,6 @@ class Photobooth:
         toc = 0
         frames=0
         
-        r, f = self.camera.cap.read()
-        f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
-        f=numpy.rot90(f)
-        s=pygame.surfarray.make_surface(f)
-
-
         while toc < seconds:
             frames=frames+1
 
@@ -582,14 +588,8 @@ class Photobooth:
             ( w,  h) = ( len(f), len(f[0]) )
             (dw, dh) = self.display.get_size()
 
-            # For some reason make_surface is slower on an iMac than
-            # creating a new surface and blitting the image to it. Weird!
-            # I think this is the opposite for the Raspberry Pi 3b.
-            if False:
-                s=pygame.surfarray.make_surface(f)
-            else:
-                s = pygame.Surface((w,h))
-                pygame.surfarray.blit_array(s, f)
+            # Capture a preview image from the camera as a pygame surface.
+            s = self.camera.get_preview_pygame_surface()
 
             # Figure out maximum proportional scaling
             size=(dw, dh)
@@ -632,21 +632,16 @@ class Photobooth:
 
             self.display.clear()
 
-            r, f = self.camera.cap.read()
-            f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
-            f=numpy.rot90(f)
+            # Grab a preview, decimated to fit within the screen size
+            f = self.camera.get_preview_array(self.display.get_size())
 
-            # Make sure preview fits on the screen so we can blit directly
-            ( w,  h) = ( len(f), len(f[0]) )
-            (dw, dh) = self.display.get_size()
-            while (w>dw or h>dh):
-                # Decimate preview by taking every other row & column.
-                f=f[::2, ::2]
-                w=len(f); h=len(f[0])
+            # Center the preview on the screen
+            ( w,  h) = ( len(f), len(f[0]) )                              
+            (dw, dh) = self.display.get_size()                            
             x=(dw-w)/2
             y=(dh-h)/2
 
-            # Fastest is to blit directly to a subsurface of the display
+            # Fastest preview is by blitting directly to a subsurface of the display
             subsurface=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
             pygame.surfarray.blit_array(subsurface, f)
 
