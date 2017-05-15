@@ -2,6 +2,8 @@
 # Created by br@re-web.eu, 2015
 
 import subprocess
+import pygame
+import numpy
 
 cv_enabled = False
 gphoto2cffi_enabled = False
@@ -62,6 +64,51 @@ class Camera_cv:
 
     def take_preview(self, filename="/tmp/preview.jpg"):
         self.take_picture(filename)
+
+    def get_preview_array(self, max_size=None):
+        """Get a quick preview from the camera and return it as a 2D array
+        suitable for quick display using pygame.surfarray.blit_array().
+
+        If a maximum size -- (w,h) -- is passed in, the returned image
+        will be quickly decimated using numpy to be at most that large.
+        """
+
+        # Grab a camera frame
+        r, f = self.cap.read()
+
+        # Optionally reduce frame size by decimation (nearest neighbor)
+        if max_size:
+            (max_w, max_h) = map(int, max_size)
+            (    h,     w) = ( len(f), len(f[0]) ) # Note OpenCV swaps rows and columns
+            w_factor = (w/max_w) + (1 if (w%max_w) else 0)
+            h_factor = (h/max_h) + (1 if (h%max_h) else 0)
+            scaling_factor = max( (w_factor, h_factor) )
+            f=f[::scaling_factor, ::scaling_factor]
+
+        # Convert from OpenCV format to Surfarray
+        f=cv.cvtColor(f,cv.COLOR_BGR2RGB)
+        f=numpy.rot90(f)
+        return f
+
+    def get_preview_pygame_surface(self, max_size=None):
+        """Get a quick preview from the camera and return it as a Pygame
+        Surface suitable for transformation and display using GUI.py's
+        surface_list.
+        """
+        f = self.get_preview_array(max_size)
+        ( w,  h) = ( len(f), len(f[0]) )
+
+        # For some reason make_surface() is slower on an iMac than
+        # creating a new surface and blitting the image to it. Weird!
+        # I think this is the opposite for the Raspberry Pi 3b.
+        if False:
+            s=pygame.surfarray.make_surface(f)
+        else:
+            s = pygame.Surface((w,h))
+            pygame.surfarray.blit_array(s, f)
+
+        return s
+
 
     def take_picture(self, filename="/tmp/picture.jpg"):
         if cv_enabled:
