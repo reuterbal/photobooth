@@ -670,7 +670,9 @@ class Photobooth:
             while remaining_attempts > 0:
                 remaining_attempts = remaining_attempts - 1
 
-                self.display.msg("S M I L E !!!\n\n" + str(x+1) + " of 4")
+                self.display.clear((255,230,200))
+                self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
+                self.display.apply()
 
                 tic = clock()
 
