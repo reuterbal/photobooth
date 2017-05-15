@@ -644,7 +644,7 @@ class Photobooth:
             toc = clock() - tic
 
         self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
-        print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc),2)
+        print "FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc)
         sleep(3)
 
     def show_pose(self, seconds, message=""):
