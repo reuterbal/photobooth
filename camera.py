@@ -4,6 +4,8 @@
 import subprocess
 import pygame
 import numpy
+from PIL import Image
+
 
 cv_enabled = False
 gphoto2cffi_enabled = False
@@ -169,6 +171,56 @@ class Camera_gPhoto:
             self.cap.capture_preview(filename)	
         else:
             raise CameraException("No preview supported!")
+
+    def get_preview_array(self, max_size=None):
+        """Get a quick preview from the camera and return it as a 2D array
+        suitable for quick display using pygame.surfarray.blit_array().
+
+        If a maximum size -- (w,h) -- is passed in, the returned image
+        will be quickly decimated using numpy to be at most that large.
+        """
+        if gphoto2cffi_enabled:        # XXXX PLEASE TEST PLEASE TEST  XXXX
+            jpeg=self.cap.get_preview()
+            f=numpy.array(Image(jpeg)) # Untested, but should work
+
+        elif piggyphoto_enabled:        # XXXX PLEASE TEST PLEASE TEST  XXXX
+            # Piggyphoto requires saving previews on filesystem!
+            # XXX BUG. Shouldn't presume /dev/shm/ exists everywhere.
+            piggy_preview = "/dev/shm/photobooth_piggy_preview.jpg"
+            self.cap.capture_preview(piggy_preview)
+            f=Image.open(piggy_preview)
+        else:
+            raise CameraException("No preview supported!")
+
+        # Optionally reduce frame size by decimation (nearest neighbor)
+        if max_size:
+            (max_w, max_h) = map(int, max_size)
+            (    w,     h) = ( len(f), len(f[0]) )
+            w_factor = (w/max_w) + (1 if (w%max_w) else 0)
+            h_factor = (h/max_h) + (1 if (h%max_h) else 0)
+            scaling_factor = max( (w_factor, h_factor) )
+            f=f[::scaling_factor, ::scaling_factor]
+        return f
+
+
+    def get_preview_pygame_surface(self, max_size=None):
+        """Get a quick preview from the camera and return it as a Pygame
+        Surface suitable for transformation and display using GUI.py's
+        surface_list.
+        """
+        f = self.get_preview_array(max_size)
+        ( w,  h) = ( len(f), len(f[0]) )
+
+        # For some reason make_surface() is slower on an iMac than
+        # creating a new surface and blitting the image to it. Weird!
+        # I think this is the opposite for the Raspberry Pi 3b.
+        if False:
+            s=pygame.surfarray.make_surface(f)
+        else:
+            s = pygame.Surface((w,h))
+            pygame.surfarray.blit_array(s, f)
+
+        return s
 
     def take_picture(self, filename="/tmp/picture.jpg"):
         if gphoto2cffi_enabled:
