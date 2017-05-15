@@ -484,24 +484,16 @@ class Photobooth:
 
     def show_preview(self, message=""):
         """If camera allows previews, take a photo and show it so people can
-        pose before the shot. 
+        pose before the shot. For speed, previews are decimated to fit
+        within the screen instead of being scaled. For even more
+        speed, the previews are blitted directly to a subsurface of
+        the display. (Converting to a pygame Surface would have been slow). 
+
         """ 
         self.display.clear()
         if self.camera.has_preview():
-            # Grab a preview, decimated to fit within the screen size
             f = self.camera.get_preview_array(self.display.get_size())
-
-            # Center the preview on the screen
-            ( w,  h) = ( len(f), len(f[0]) )                              
-            (dw, dh) = self.display.get_size()                            
-            x=(dw-w)/2
-            y=(dh-h)/2
-
-            # Tis a bit ugly, but it's much faster blitting an array
-            # directly to a subsurface of the display
-            subsurface=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
-            pygame.surfarray.blit_array(subsurface, f)
-
+            self.display.blit_array(f)
         self.display.show_message(message)
         self.display.apply()
 
@@ -551,7 +543,7 @@ class Photobooth:
             toc = clock() - tic
 
         self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
-        print("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        print("FPS: %d/%f = %f" % (frames, toc, round(float(frames)/toc),2))
         sleep(3)
 
     def show_preview_fps_2(self, seconds):
@@ -635,23 +627,16 @@ class Photobooth:
             # Grab a preview, decimated to fit within the screen size
             f = self.camera.get_preview_array(self.display.get_size())
 
-            # Center the preview on the screen
-            ( w,  h) = ( len(f), len(f[0]) )                              
-            (dw, dh) = self.display.get_size()                            
-            x=(dw-w)/2
-            y=(dh-h)/2
-
-            # Fastest preview is by blitting directly to a subsurface of the display
-            subsurface=pygame.Surface.subsurface(self.display.screen, ( (x,y), (w, h) ))
-            pygame.surfarray.blit_array(subsurface, f)
+            # Blit it to the center of the screen
+            self.display.blit_array(f)
 
             self.display.show_message(str(seconds - int(toc)))
             self.display.apply()
 
             toc = clock() - tic
 
-        self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
-        print("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
+        print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc),2)
         sleep(3)
 
     def show_pose(self, seconds, message=""):
