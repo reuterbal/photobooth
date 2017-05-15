@@ -2,6 +2,7 @@
 # Created by br _at_ re-web _dot_ eu, 2015-2016
 
 import os
+import pygame
 from datetime import datetime
 from glob import glob
 from sys import exit
@@ -65,6 +66,11 @@ slideshow_display_time = 5
 
 # Default to sending every montage to the printer?
 auto_print = True
+
+# What filename for the shutter sound when taking pictures?
+# Set to None to have no sound.
+shutter_sound = "shutter.wav"
+#shutter_sound = None
 
 # Temp directory for storing pictures
 if os.access("/dev/shm", os.W_OK):
@@ -275,7 +281,14 @@ class Photobooth:
         self.gpio         = GPIO(self.handle_gpio, input_channels, output_channels)
 
         self.printer_module  = PrinterModule()
-
+        try:
+            pygame.mixer.init()
+            self.shutter = pygame.mixer.Sound(shutter_sound)
+            self.shutter.play()
+        except pygame.error:
+            self.shutter = None
+            pass
+        
     def teardown(self):
         self.display.msg("Shutting down...")
         self.gpio.set_output(self.lamp_channel, 0)
@@ -679,6 +692,8 @@ class Photobooth:
                 try:
                     filenames[x] = self.camera.take_picture(tmp_dir + "photobooth_%02d.jpg" % x)
                     remaining_attempts = 0
+                    if self.shutter:
+                        self.shutter.play()
                 except CameraException as e:
                     # On recoverable errors: display message and retry
                     if e.recoverable:
