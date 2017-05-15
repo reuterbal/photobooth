@@ -1,6 +1,44 @@
 # photobooth
 A Raspberry-Pi powered photobooth using gPhoto 2.
 
+## Spork notice
+This is intended to be a temporary fork from br's original photobooth.
+Hopefully, he/she will fold my additions back into the original
+project.  --b9
+
+## Major differences
+* Automatically prints to default printer if python-cups is installed.
+** The idea is that you'll set up the default queue to be a photo printer
+set to 4x6 (or whatever paper size you use).
+** Automatic printing can be disabled by default in the program by setting
+auto_print=False at the top of photobooth.py.
+** Automatic printing can be toggled at run time by hitting the 'p' key.
+** An individual print can be cancelled during a 10 second countdown. If the button is
+pressed (or actually any event happens) during that time, printing will be cancelled.
+* Much improved display handling. Now defaults to native resolution instead
+of being hardcoded to 1824x984. (You can still force a resolution by
+setting display_size in photobooth.py).
+* Uses /dev/shm (if available) to store preview files instead of
+writing to /tmp. SD Cards, like on the Raspberry Pi, have a limited
+number of writes and so it doesn't make sense to be writing 30 JPEGs
+per second while people are posing.
+* Helper script (jbp.sh) for Raspian (or Debian Jessie) to install a working
+version of gphoto2. The photobooth program requires gphoto2 >= 2.5.6,
+but it's not in the standard repositories. The original author
+suggested downloading and compiling it from source, which works but
+takes a very long time on a Pi. Much simpler and faster is to add the "backports"
+repository and install a newer gphoto from there.
+* Preliminary code for speeding up framerate and reducing latency
+during preview. (Not fully integrated yet). The original code was so
+slow (at least with the webcams I was using) that posing for pictures
+was difficult. You can try out my sample implementations by pressing
+the numbers 1, 2, or 3 and see how many FPS your set up can handle.
+
+
+
+## I've appended below, nearly unchanged, br's original README file.
+
+
 ## Description
 Python application to build your own photobooth using a [Raspberry Pi](https://www.raspberrypi.org/), [gPhoto2](http://gphoto.sourceforge.net/) and [pygame](https://www.pygame.org).
 
