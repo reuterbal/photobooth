@@ -542,8 +542,8 @@ class Photobooth:
 
             toc = clock() - tic
 
-        self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
-        print("FPS: %d/%f = %f" % (frames, toc, round(float(frames)/toc),2))
+        self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
+        print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
         sleep(3)
 
     def show_preview_fps_2(self, seconds):
@@ -573,21 +573,16 @@ class Photobooth:
 
             self.display.clear()
 
-            r, f = self.camera.cap.read()
-            f=cv2.cvtColor(f,cv2.COLOR_BGR2RGB)
-            f=numpy.rot90(f)
-
-            ( w,  h) = ( len(f), len(f[0]) )
-            (dw, dh) = self.display.get_size()
-
             # Capture a preview image from the camera as a pygame surface.
             s = self.camera.get_preview_pygame_surface()
+            ( w,  h) = s.get_size()
+            (dw, dh) = self.display.get_size()
 
             # Figure out maximum proportional scaling
             size=(dw, dh)
             image_size = (w, h)
             offset=(0,0)
-            image_scale = min([min(a,b)/b for a,b in zip(size, image_size)])
+            image_scale = min([min(a,b)/float(b) for a,b in zip(size, image_size)])
             # New image size
             new_size = [int(a*image_scale) for a in image_size]
             # Update offset
@@ -603,8 +598,8 @@ class Photobooth:
 
             toc = clock() - tic
 
-        self.display.msg("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
-        print("FPS: %d/%f = %f" % (frames, toc, float(frames)/toc))
+        self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
+        print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
         sleep(3)
 
     def show_preview_fps_3(self, seconds):
