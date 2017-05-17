@@ -34,11 +34,14 @@ except ImportError:
 display_size = (0, 0)
 #display_size = (1824, 984)
 
-# Maximum size of assembled image
-image_size = (2352, 1568)
-
 # Size of pictures in the assembled image
-thumb_size = (1176, 784)
+#thumb_size = (1176, 784)
+thumb_size = (640, 480)
+
+# Maximum size of assembled image
+#image_size = (2352, 1568)
+image_size = list(2*x for x in thumb_size)
+print image_size
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -242,6 +245,13 @@ class PrinterModule:
     def enqueue(self, filename):
         "Send a JPEG file to the printer using CUPS."
         if self.can_print():
+
+            # KLUDGE FOR MJNR PRINTER
+            import subprocess
+            pdfname="kludge.pdf"
+            subprocess.call( ["convert", filename, "-rotate", "-90", "-page", "4x6", pdfname] )
+            filename=pdfname
+
             print "Now printing file " + filename + " to printer " + self.printer + ", using options " + repr(self.options)
             try: 
                 self.c.printFile(self.printer, filename, filename, self.options)
