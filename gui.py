@@ -18,7 +18,7 @@ class GuiException(Exception):
 class GUI_PyGame:
     """A GUI class using PyGame"""
 
-    def __init__(self, name, size, hide_mouse=True):
+    def __init__(self, name, size, hide_mouse=True, display_rotate=False):
         # Call init routines
         pygame.init()
         if hasattr(EventModule, 'init'):
@@ -38,9 +38,18 @@ class GUI_PyGame:
         i = pygame.display.Info()
         self.size = (i.current_w, i.current_h)
 
+        # Should text be rotated 90 degrees counterclockwise?
+        self.display_rotate = display_rotate
+
         # Clear screen
         self.clear()
         self.apply()
+
+    def set_rotate(self, display_rotate):
+        self.display_rotate=display_rotate
+
+    def get_rotate(self):
+        return self.display_rotate
 
     def clear(self, color=(0,0,0)):
         self.screen.fill(color)
@@ -118,9 +127,17 @@ class GUI_PyGame:
     def show_message(self, msg, color=(0,0,0), bg=(230,230,230), transparency=True, outline=(245,245,245)):
         # Choose font
         font = pygame.font.Font(None, 144)
+        # If monitor is on its side, rotate text CCW 90 degrees
+        if not self.display_rotate:
+            maybe_rotated_size=self.size
+        else:
+            maybe_rotated_size=(self.size[1], self.size[0])
         # Wrap and render text
-        wrapped_text, text_height = self.wrap_text(msg, font, self.size)
+        wrapped_text, text_height = self.wrap_text(msg, font, maybe_rotated_size)
         rendered_text = self.render_text(wrapped_text, text_height, 1, 1, font, color, bg, transparency, outline)
+
+        if self.display_rotate:
+            rendered_text = pygame.transform.rotate(rendered_text, 90)
 
         self.surface_list.append((rendered_text, (0,0)))
 
@@ -206,18 +223,23 @@ class GUI_PyGame:
         return final_lines, accumulated_height
 
     def render_text(self, text, text_height, valign, halign, font, color, bg, transparency, outline):
+        if not self.display_rotate:
+            maybe_rotated_size=self.size
+        else:
+            maybe_rotated_size=(self.size[1], self.size[0])
         # Determine vertical position
         if valign == 0:     # top aligned
             voffset = 0
         elif valign == 1:   # centered
-            voffset = int((self.size[1] - text_height) / 2)
+            
+            voffset = int((maybe_rotated_size[1] - text_height) / 2)
         elif valign == 2:   # bottom aligned
-            voffset = self.size[1] - text_height
+            voffset = maybe_rotated_size[1] - text_height
         else:
             raise GuiException("Invalid valign argument: " + str(valign))
 
         # Create Surface object and fill it with the given background
-        surface = pygame.Surface(self.size) 
+        surface = pygame.Surface(maybe_rotated_size) 
         surface.fill(bg) 
 
         # Blit one line after another
@@ -228,7 +250,7 @@ class GUI_PyGame:
             if halign == 0:     # left aligned
                 hoffset = 0
             elif halign == 1:   # centered
-                hoffset = (self.size[0] - maintext.get_width()) / 2
+                hoffset = (maybe_rotated_size[0] - maintext.get_width()) / 2
             elif halign == 2:   # right aligned
                 hoffset = rect.width - maintext.get_width()
             else:

@@ -34,6 +34,11 @@ except ImportError:
 display_size = (0, 0)
 #display_size = (1824, 984)
 
+# Is the monitor on its side? (For portrait photos on landscape monitors).
+# (Note: Turn monitor clockwise and the camera counterclockwise)
+# If True, text will be rotate 90 degrees counterclockwise
+display_rotate = False
+
 # Size of pictures in the assembled image
 #thumb_size = (1176, 784)
 thumb_size = (640, 480)
@@ -264,17 +269,21 @@ class Photobooth:
     It contains all the logic for the photobooth.
     """
 
-    def __init__(self, display_size, picture_basename, picture_size, pose_time, display_time,
+    def __init__(self, display_size, display_rotate, picture_basename, picture_size, pose_time, display_time,
                  trigger_channel, shutdown_channel, lamp_channel, idle_slideshow, slideshow_display_time):
-        self.display      = GuiModule('Photobooth', display_size)
-        if (display_size == (0,0)):
-            display_size = self.display.get_size()    # Get actual resolution
-        self.pictures     = PictureList(picture_basename)
-        self.camera       = CameraModule(picture_size)
+        self.display       = GuiModule('Photobooth', display_size)
+        if (display_size == (0,0)): # Detect actual resolution
+            display_size = self.display.get_size()
+        self.display_rotate= display_rotate
+        if (display_rotate):
+            self.display.set_rotate(True)
 
-        self.pic_size     = picture_size
-        self.pose_time    = pose_time
-        self.display_time = display_time
+        self.pictures      = PictureList(picture_basename)
+        self.camera        = CameraModule(picture_size)
+
+        self.pic_size      = picture_size
+        self.pose_time     = pose_time
+        self.display_time  = display_time
 
         self.trigger_channel  = trigger_channel
         self.shutdown_channel = shutdown_channel
@@ -285,6 +294,8 @@ class Photobooth:
             self.slideshow_display_time = slideshow_display_time
             self.slideshow = Slideshow(display_size, display_time, 
                                        os.path.dirname(os.path.realpath(picture_basename)))
+            if (display_rotate):
+                self.slideshow.display.set_rotate(True)
 
         input_channels    = [ trigger_channel, shutdown_channel ]
         output_channels   = [ lamp_channel ]
@@ -392,6 +403,8 @@ class Photobooth:
         # Toggle autoprinting
         elif key == ord('p'):
             self.toggle_auto_print()
+        elif key == ord('r'):
+            self.toggle_display_rotate()
         elif key == ord('1'):   # Just for debugging
             self.show_preview_fps_1(5)
         elif key == ord('2'):   # Just for debugging
@@ -407,6 +420,13 @@ class Photobooth:
             self.display.msg("Autoprinting %s" % ("enabled" if auto_print else "disabled"))
         else:
             self.display.msg("Printing not configured\n(see log file)")
+
+    def toggle_display_rotate(self):
+        "Toggle rotating the display 90 degrees counter clockwise."
+        self.display_rotate=(not self.display_rotate)
+        self.display.set_rotate(self.display_rotate)
+        self.slideshow.display.set_rotate(self.display_rotate)
+        self.display.msg("Display rotated")
 
     def handle_mousebutton(self, key, pos):
         """Implements the actions for the different mousebutton events"""
@@ -783,7 +803,7 @@ class Photobooth:
 #################
 
 def main():
-    photobooth = Photobooth(display_size, picture_basename, image_size, pose_time, display_time, 
+    photobooth = Photobooth(display_size, display_rotate, picture_basename, image_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel, 
                             idle_slideshow, slideshow_display_time)
     photobooth.run()
