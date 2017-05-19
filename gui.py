@@ -125,7 +125,15 @@ class GUI_PyGame:
             surface = pygame.transform.flip(surface, True, False)
         self.surface_list.append((surface, offset))
 
+
     def show_message(self, msg, color=(0,0,0), bg=(230,230,230), transparency=True, outline=(245,245,245)):
+        # Check if we've done this before
+        s=self.get_message_cache(msg, color, bg, transparency, outline,
+                                 self.display_rotate)
+        if s:
+            self.surface_list.append((s, (0,0)))
+            return
+
         # Choose font
         font = pygame.font.Font(None, 144)
         # If monitor is on its side, rotate text CCW 90 degrees
@@ -140,7 +148,12 @@ class GUI_PyGame:
         if self.display_rotate:
             rendered_text = pygame.transform.rotate(rendered_text, 90)
 
+        # Queue it for rendering during next apply()
         self.surface_list.append((rendered_text, (0,0)))
+
+        # Save this rendering for later since this routine is so slow.
+        self.set_message_cache(msg, color, bg, transparency, outline,
+                               self.display_rotate, rendered_text)
 
     def msg(self, text):
         "Just a convenience wrapper to splat text to a blank screen"
@@ -148,6 +161,21 @@ class GUI_PyGame:
         self.show_message(text)
         self.apply()
         
+    static_message_cache = {}
+    def set_message_cache(self, msg, color, bg, transparency, outline, rotate, rendered_text):
+        """Speed up for show_message which is called repeatedly during
+            photobooth.py's show_counter() and doesn't need to be.
+        """
+        index=(msg, color, bg, transparency, outline, rotate)
+        self.static_message_cache[index] = rendered_text
+
+    def get_message_cache(self, msg, color, bg, transparency, outline, rotate):
+        index=(msg, color, bg, transparency, outline, rotate)
+        if index in self.static_message_cache:
+            return self.static_message_cache[index]
+        else:
+            return None
+
     def show_button(self, text, pos, size=(0,0), color=(230,230,230), bg=(0,0,0), transparency=True, outline=(230,230,230)):
         # Choose font
         font = pygame.font.Font(None, 72)
