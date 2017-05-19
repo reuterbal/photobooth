@@ -45,7 +45,7 @@ class CameraException(Exception):
 class Camera_cv:
     def __init__(self, picture_size=(10000,10000), camera_rotate=False):
         self.picture_size = picture_size   # Requested camera resolution
-        self.camera_rotate = camera_rotate # Is camera on its side?  
+        self.rotate = camera_rotate        # Is camera on its side?  
 
         global cv_enabled
         if cv_enabled:
@@ -145,6 +145,8 @@ class Camera_cv:
     def take_picture(self, filename="/tmp/picture.jpg"):
         if cv_enabled:
             r, frame = self.cap.read()
+            if self.rotate:
+                frame=numpy.rot90(frame)
             cv.imwrite(filename, frame)
             return filename
         else:
@@ -159,7 +161,7 @@ class Camera_gPhoto:
 
     def __init__(self, picture_size, camera_rotate=False):
         self.picture_size = picture_size # XXX Not used for gphoto?
-        self.camera_rotate = camera_rotate # XXX Not used for gphoto?
+        self.rotate = camera_rotate # XXX Not used for gphoto?
 
         # Print the capabilities of the connected camera
         try:
@@ -194,6 +196,7 @@ class Camera_gPhoto:
         return output
 
     def set_rotate(self, camera_rotate):
+        print "Camera rotation not implemented for gphoto yet."
         self.rotate = camera_rotate
 
     def get_rotate(self):
@@ -261,6 +264,11 @@ class Camera_gPhoto:
         return s
 
     def take_picture(self, filename="/tmp/picture.jpg"):
+
+        # Note: this is *supposed* to handle self.rotate in the same
+        # way the OpenCV code does. It doesn't yet. Maybe it doesn't
+        # need to as most "real" cameras have gravity sensors.
+
         if gphoto2cffi_enabled:
             self._save_picture(filename, self.cap.capture())
         elif piggyphoto_enabled:
