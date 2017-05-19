@@ -35,9 +35,12 @@ display_size = (0, 0)
 #display_size = (1824, 984)
 
 # Is the monitor on its side? (For portrait photos on landscape monitors).
-# (Note: Turn monitor clockwise and the camera counterclockwise)
 # If True, text will be rotate 90 degrees counterclockwise
 display_rotate = False
+
+# Is the camera on its side? (For portrait photos without gravity sensor)
+# If True, the "right" side of the photo will be assumed to be the actual top.
+camera_rotate = False
 
 # Size of pictures in the assembled image
 #thumb_size = (1176, 784)
@@ -280,6 +283,9 @@ class Photobooth:
 
         self.pictures      = PictureList(picture_basename)
         self.camera        = CameraModule(picture_size)
+        self.camera_rotate = camera_rotate
+        if camera_rotate:
+            self.camera.set_rotate(True)
 
         self.pic_size      = picture_size
         self.pose_time     = pose_time
@@ -404,7 +410,7 @@ class Photobooth:
         elif key == ord('p'):
             self.toggle_auto_print()
         elif key == ord('r'):
-            self.toggle_display_rotate()
+            self.toggle_rotate()
         elif key == ord('1'):   # Just for debugging
             self.show_preview_fps_1(5)
         elif key == ord('2'):   # Just for debugging
@@ -421,12 +427,22 @@ class Photobooth:
         else:
             self.display.msg("Printing not configured\n(see log file)")
 
+    def toggle_rotate(self):
+        "Toggle rotating the display and camera."
+        self.toggle_display_rotate()
+        self.toggle_camera_rotate()
+        self.display.msg("Display and camera rotated")
+
     def toggle_display_rotate(self):
         "Toggle rotating the display 90 degrees counter clockwise."
         self.display_rotate=(not self.display_rotate)
         self.display.set_rotate(self.display_rotate)
         self.slideshow.display.set_rotate(self.display_rotate)
-        self.display.msg("Display rotated")
+
+    def toggle_camera_rotate(self):
+        "Toggle rotating the camera 90 degrees counter clockwise."
+        self.camera_rotate=(not self.camera_rotate)
+        self.camera.set_rotate(self.camera_rotate)
 
     def handle_mousebutton(self, key, pos):
         """Implements the actions for the different mousebutton events"""

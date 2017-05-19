@@ -18,7 +18,8 @@ class GuiException(Exception):
 class GUI_PyGame:
     """A GUI class using PyGame"""
 
-    def __init__(self, name, size, hide_mouse=True, display_rotate=False):
+    def __init__(self, name, size, hide_mouse=True,
+                 display_rotate=False):
         # Call init routines
         pygame.init()
         if hasattr(EventModule, 'init'):

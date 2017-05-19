@@ -43,7 +43,7 @@ class CameraException(Exception):
 
 
 class Camera_cv:
-    def __init__(self, picture_size):
+    def __init__(self, picture_size, camera_rotate=False):
         global cv_enabled
         if cv_enabled:
             self.cap = cv.VideoCapture(-1)
@@ -54,12 +54,20 @@ class Camera_cv:
             self.cap.set(3, picture_size[0])
             self.cap.set(4, picture_size[1])
 
+            self.camera_rotate = camera_rotate
+
             # Warm up web cam for quick start later and to double check driver
             r, dummy = self.cap.read()
             if not r:
                 print "Warning: Failed to read from camera using OpenCV"
                 cv_enabled=False
                 return
+
+    def set_rotate(self, camera_rotate):
+        self.rotate = camera_rotate
+
+    def get_rotate(self):
+        return self.rotate
 
     def has_preview(self):
         return True 
@@ -89,7 +97,7 @@ class Camera_cv:
 
         # Convert from OpenCV format to Surfarray
         f=cv.cvtColor(f,cv.COLOR_BGR2RGB)
-        f=numpy.rot90(f)
+        f=numpy.rot90(f)        # OpenCV swaps rows and columns
         return f
 
     def get_preview_pygame_surface(self, max_size=None):
