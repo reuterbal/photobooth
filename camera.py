@@ -43,18 +43,23 @@ class CameraException(Exception):
 
 
 class Camera_cv:
-    def __init__(self, picture_size, camera_rotate=False):
+    def __init__(self, picture_size=(10000,10000), camera_rotate=False):
+        self.picture_size = picture_size   # Requested camera resolution
+        self.camera_rotate = camera_rotate # Is camera on its side?  
+
         global cv_enabled
         if cv_enabled:
-            self.cap = cv.VideoCapture(-1)
+            self.cap = cv.VideoCapture(-1) # -1 means use first available camera
             if not self.cap.isOpened:
                 print "Warning: Failed to open camera using OpenCV"
                 cv_enabled=False
                 return
-            self.cap.set(3, picture_size[0])
-            self.cap.set(4, picture_size[1])
 
-            self.camera_rotate = camera_rotate
+            # Pick the video resolution to capture at.
+            # If requested resolution is too high, OpenCV uses next best.
+            # (E.g., 10000x10000 will force highest camera resolution).
+            self.cap.set(cv.cv.CV_CAP_PROP_FRAME_WIDTH,  picture_size[0])
+            self.cap.set(cv.cv.CV_CAP_PROP_FRAME_HEIGHT, picture_size[1])
 
             # Warm up web cam for quick start later and to double check driver
             r, dummy = self.cap.read()
@@ -62,6 +67,23 @@ class Camera_cv:
                 print "Warning: Failed to read from camera using OpenCV"
                 cv_enabled=False
                 return
+
+            # Print the capabilities of the connected camera
+            w=self.cap.get(cv.cv.CV_CAP_PROP_FRAME_WIDTH)
+            h=self.cap.get(cv.cv.CV_CAP_PROP_FRAME_HEIGHT)
+            if w and h:
+                print("Camera detected as %d x %d" % (w, h))
+
+            # Measure actual FPS of camera
+            import time
+            frames=0
+            start = time.time()
+            while (time.time() - 1 < start):
+                frames = frames + 1
+                self.cap.read()
+            end = time.time()
+            fps = frames/(end-start)
+            print("Camera is capturing at %.2f fps" % (fps))
 
     def set_rotate(self, camera_rotate):
         self.rotate = camera_rotate
@@ -135,8 +157,10 @@ class Camera_cv:
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
 
-    def __init__(self, picture_size):
-        self.picture_size = picture_size
+    def __init__(self, picture_size, camera_rotate=False):
+        self.picture_size = picture_size # XXX Not used for gphoto?
+        self.camera_rotate = camera_rotate # XXX Not used for gphoto?
+
         # Print the capabilities of the connected camera
         try:
             if gphoto2cffi_enabled:
@@ -168,6 +192,12 @@ class Camera_gPhoto:
             else:
                 raise CameraException("Unknown error!\n" + '\n'.join(e.output.split('\n')[1:3]), False)
         return output
+
+    def set_rotate(self, camera_rotate):
+        self.rotate = camera_rotate
+
+    def get_rotate(self):
+        return self.rotate
 
     def has_preview(self):
         return gphoto2cffi_enabled or piggyphoto_enabled
