@@ -46,6 +46,9 @@ class GUI_PyGame:
         self.clear()
         self.apply()
 
+    def toggle_fullscreen(self):
+        pygame.display.toggle_fullscreen()
+
     def set_rotate(self, display_rotate):
         self.display_rotate=display_rotate
 
