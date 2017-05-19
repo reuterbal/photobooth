@@ -410,6 +410,8 @@ class Photobooth:
             self.toggle_auto_print()
         elif key == ord('r'):
             self.toggle_rotate()
+        elif key == ord('f'):
+            self.display.toggle_fullscreen()
         elif key == ord('1'):   # Just for debugging
             self.show_preview_fps_1(5)
         elif key == ord('2'):   # Just for debugging
