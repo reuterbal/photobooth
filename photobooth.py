@@ -47,9 +47,8 @@ camera_rotate = False
 thumb_size = (640, 480)
 
 # Maximum size of assembled image
-#image_size = (2352, 1568)
-image_size = list(2*x for x in thumb_size)
-print image_size
+#max_assembled_size = (2352, 1568)
+max_assembled_size = list(2*x for x in thumb_size)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -819,7 +818,7 @@ class Photobooth:
 #################
 
 def main():
-    photobooth = Photobooth(display_size, display_rotate, picture_basename, image_size, pose_time, display_time, 
+    photobooth = Photobooth(display_size, display_rotate, picture_basename, max_assembled_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel, 
                             idle_slideshow, slideshow_display_time)
     photobooth.run()
