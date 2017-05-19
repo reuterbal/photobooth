@@ -609,11 +609,11 @@ class Photobooth:
     def show_preview_fps_2(self, seconds):
         """XXX Debugging code for benchmarking XXX
 
-        This is the slower method, using make_surface
-        (It's faster to use subsurfaces, see below).
-
         As a test, I'm trying a direct conversion from OpenCV to a
-        PyGame Surface in memory and it's much faster. >20fps
+        PyGame Surface in memory and it's much faster. >15fps
+
+        (This is still the slower method, using make_surface.
+        It's even faster to use subsurfaces, see below).
 
         Note that the conversion (cvtColor, rot90) takes up time.
         Without the conversion, the loop is limited by the speed from
@@ -666,7 +666,7 @@ class Photobooth:
         """XXX Debugging code for benchmarking XXX
 
         This is the fastest method, which decimates the array and
-        blits it directly to a subsurface of the display.
+        blits it directly to a subsurface of the display. >20fps
 
         """
         import cv2, pygame, numpy
