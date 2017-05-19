@@ -7,6 +7,10 @@ Hopefully, he/she will fold my additions back into the original
 project.  --b9
 
 ## Major differences
+* Allow portrait photos (just like a real photobooth!) by putting
+camera and monitor on their side. You can either edit the
+photobooth.py file and change display_rotate and camera_rotate, or
+just hit the 'r' key at run time toggle rotation.
 * Automatically prints to default printer if python-cups is installed.
   * The idea is that you'll set up the default queue to be a photo printer set to 4x6 (or whatever paper size you use).
   * Automatic printing can be disabled by default in the program by setting auto_print=False at the top of photobooth.py.
@@ -25,11 +29,16 @@ but it's not in the standard repositories. The original author
 suggested downloading and compiling it from source, which works but
 takes a very long time on a Pi. Much simpler and faster is to add the "backports"
 repository and install a newer gphoto from there.
-* Preliminary code for speeding up framerate and reducing latency
-during preview. (Not fully integrated yet). The original code was so
+* Framerate greatly improved during preview. The original code was so
 slow (at least with the webcams I was using) that posing for pictures
-was difficult. You can try out my sample implementations by pressing
-the numbers 1, 2, or 3 and see how many FPS your set up can handle.
+was difficult. (Biggest improvements from blitting an array instead of
+a Pygame Surface, blitting to a subsurface of the display, and from
+caching the countdown rendered text.)
+* If you're curious about your frame rate, you can press '1' to test
+the original blitting (but with the improved text cache), or '2' which
+adds the improved array blitting, or '3' which adds subsurface
+blitting. After 5 seconds, the screen will show your FPS.
+
 
 
 
