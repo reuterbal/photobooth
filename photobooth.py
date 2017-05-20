@@ -253,12 +253,6 @@ class PrinterModule:
         "Send a JPEG file to the printer using CUPS."
         if self.can_print():
 
-            # KLUDGE FOR MJNR PRINTER
-            import subprocess
-            pdfname="kludge.pdf"
-            subprocess.call( ["convert", filename, "-rotate", "-90", "-page", "4x6", pdfname] )
-            filename=pdfname
-
             print "Now printing file " + filename + " to printer " + self.printer + ", using options " + repr(self.options)
             try: 
                 self.c.printFile(self.printer, filename, filename, self.options)
@@ -650,7 +644,7 @@ class Photobooth:
             # Apply scaling
             s = pygame.transform.scale(s, new_size).convert()
 
-            # Display it using kludge to GUI_Pygame
+            # Display it using undocumented interface to GUI_Pygame
             self.display.surface_list.append((s, offset))
 
             self.display.show_message(str(seconds - int(toc)))
