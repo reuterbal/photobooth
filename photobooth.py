@@ -492,16 +492,21 @@ class Photobooth:
                  a        w       2*b       w        a
         """
 
+        if self.camera.get_rotate():
+            pic_size=(self.pic_size[1], self.pic_size[0])
+        else:
+            pic_size=self.pic_size
+
         # Thumbnail size of pictures
         outer_border = 50
         inner_border = 20
-        thumb_box = ( int( self.pic_size[0] / 2 ) ,
-                      int( self.pic_size[1] / 2 ) )
+        thumb_box = ( int( pic_size[0] / 2 ) ,
+                      int( pic_size[1] / 2 ) )
         thumb_size = ( thumb_box[0] - outer_border - inner_border ,
                        thumb_box[1] - outer_border - inner_border )
 
         # Create output image with white background
-        output_image = Image.new('RGB', self.pic_size, (255, 255, 255))
+        output_image = Image.new('RGB', pic_size, (255, 255, 255))
 
         # Image 0
         img = Image.open(input_filenames[0])
