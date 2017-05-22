@@ -147,7 +147,11 @@ able to make it fast again.
 
         # Convert from OpenCV format to Surfarray
         f=cv.cvtColor(f,cv.COLOR_BGR2RGB)
-        f=numpy.rot90(f)        # OpenCV swaps rows and columns
+
+        if not self.get_rotate():
+            f=numpy.rot90(f)        # OpenCV swaps rows and columns
+        else:
+            f=numpy.rot90(f, 2)   # Swap R/C plus camera rotation
         return f
 
     def get_preview_pygame_surface(self, max_size=None):
