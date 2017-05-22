@@ -4,9 +4,9 @@ A Raspberry-Pi powered photobooth using gPhoto 2.
 ## Spork notice
 This is intended to be a temporary fork from br's original photobooth.
 Hopefully, he/she will fold my additions back into the original
-project.  --b9
+project. You'll find br's original README appended below. --b9
 
-## Major differences
+### Major differences
 * Allow portrait photos (just like a real photobooth!) by putting
 camera and monitor on their side. You can either edit the
 photobooth.py file and change display_rotate and camera_rotate, or
@@ -40,7 +40,137 @@ adds the improved array blitting, or '3' which adds subsurface
 blitting. After 5 seconds, the screen will show your FPS.
 
 
+### Implementation notes
 
+In theory, reality and theory are the same. In reality, they are not.
+Here are some notes on things I did to make this photobooth work
+nicely on the particular hardware I have. (Raspberry Pi 3B, HP w2207h
+rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
+
+* First problem: Setting up the photo printer required an ugly kludge.
+  The first printer I tested (Canon Pixma MP) actually worked great
+  once I set a few default options to the [CUPS
+  queue](http://localhost:631/):
+
+  * Media size: 4x6
+  * Color Precision: Best
+  * Media Type: Glossy Photo Paper
+  * Shrink page if necessary: Shrink (print the whole page)
+  * Borderless: Yes
+  * Error Policy: abort-job
+  
+  I could just send any JPEG over and the Gutenprint driver would
+  automatically rotate, scale, and center it for me. Nice!
+
+  However, the next printer I tried, an HP Officejet 7300, did not
+  have a nice Gutenprint driver. Instead, I had to use hpcups
+  (`apt-get install printer-driver-hpcups)`, which apparently does not
+  rotate, shrink, or center images.
+
+* Printing solution: I made a hack that simply calls ImageMagick's
+  `convert` before printing to rotate and force the media size to be
+  4x6:
+  
+  ```
+  convert filename.jpg -rotate -90 -page 4x6 filename.pdf
+  ```
+
+  This works because the print driver apparently obeys the page size
+  specified in PNG and PDF files and scales appropriately.
+  
+  * DIGRESSION: the proper solution would perhaps have been to change
+  the photobooth.py software to handle all rotate, scale, and
+  centering on its own. However, that would require photobooth.py
+  knowing the media size, which turns out to be rather ugly. It is
+  possible to query CUPS for the current media size, but it returns
+  strings which are driver dependent. For example, for Gutenprint I
+  would specify "4x6", but for hpcups, I need to specify "Photo4x6.FB"
+  (I believe "FB" stands for "full bleed" which means "don't add
+  borders").
+
+* Second problem: no camera. I had intended to use my nifty Canon
+  PowerShot for capturing the photos. I had not known that Canon
+  stopped allowing any API remote control of the PowerShot line and so
+  it would not work. (Shoulda kept my old PowerShot!)
+
+* [Here](http://gphoto.org/doc/remote) is a (partial) list of gphoto2
+  compatible cameras which *can* do "remote capture" (snap a photo
+  under computer control). 
+
+* Solution: I ransacked my junk draw and came up with an old USB
+  webcam (Logitech QuickCam, VGA). It worked once I switched
+  photobooth.py to use OpenCV instead of Gphoto. (Thank you original
+  author, BR, who thoughtfully added in that option!) However, it was
+  limited to VGA resolution (640x480) and the kernel driver (gspca)
+  seems a bit glitchy. (Occasional graphical artifacts, sometimes
+  camera needs to be unplugged and replugged in. It may not be a
+  driver problem: perhaps my power supply can't supply enough
+  current?)
+
+* Next problem: postage stamp sized previews during the "POSE" time.
+  As noted above, for speed I had changed the photobooth to blit a raw
+  array (not a Surface) to the pygame display. One cannot easily scale
+  up raw arrays (Pygame transformations only work on Surfaces), so my
+  code works great if the camera is a higher resolution than the
+  display (which is what you'd normally expect). However, my lousy
+  resolution QuickCam gave me a tiny island of a preview, adrift in a
+  sea of black, wasted pixels.
+
+  On a normal computer, it is possible to force the screen resolution
+  to be lower by setting `display_size = (640, 480)` in photobooth.py.
+  However, that does not work for my situation as the Raspberry Pi 3B
+  is not able to dynamically switch the HDMI resolution.
+
+* Solution: edit /boot/config.txt and force the HDMI mode to a lower
+  resolution. I set mine to 640x480 like so:
+    ```
+    hdmi_group=2
+    hdmi_mode=4
+    ```
+  I found which mode number was 640x480 by typing `tvservice -m DMT` .
+
+* To play a nice shutter sound when taking pictures, I enabled HDMI
+    audio by editing /boot/config.txt and uncommenting `hdmi_drive=2`.
+
+* DIGRESSION: the Raspberry Pi can configure an HDMI monitor in one of
+  two ways:
+
+   * Group 1: CEA (Consumer Electronics Association), which is
+     intended for televisions. CEA has the benefit of automatically
+     using speakers builtin to the display. It has the downside of
+     using "overscan" (a black border around the image) by default and
+     not being able to show a "true" black. (Darkest color is 16, not 0).
+
+   * Group 2: DMT (Display Monitor Timing), which is intended for
+     computer monitors. CEA modes are always progressive, never
+     interlaced. DMT doesn't have CEA's overscan annoyances and will
+     actually use the darkest black available on your monitor. The
+     downside is that DMT modes default to using the DVI "drive" which
+     cannot send audio to speakers over HDMI.
+
+     You can force a Raspberry Pi to find your monitor's speakers
+     either permanently or temporarily:
+
+     *** Permanently: uncomment or add `hdmi_drive=2` in
+         /boot/config.txt and reboot.
+
+     *** Temporarily: Use the `tvservice -e ... HDMI` command and then
+         switch virtual terminals to refresh the screen.
+         Unfortunately, tvservice doesn't let you change just the
+         DRIVE, you have to change the GROUP and MODE simultaneously,
+         so you'll need to run `tvservice -s` first to find out what
+         GROUP and MODE you are using. (Note that `tvservice -s` shows
+         the DRIVE at the beginning, but `tvservice -e` requires the
+         DRIVE to be specified at the end.)
+
+	 ```
+	 $ tvservice -s
+	 state 0x12000a [DVI DMT (58) RGB full 16:10], 1680x1050 @ 60.00Hz, progressive
+
+	 $ tvservice -e "DMT 58 HDMI"
+	 $ # Now press Ctrl-Alt-F1 then Ctrl-Alt-F7
+	 ```
+     
 
 ## I've appended below, nearly unchanged, br's original README file.
 
