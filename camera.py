@@ -115,7 +115,7 @@ class Camera_cv:
         # Grab a camera frame
         r, f = self.cap.read()
 
-        if not r or not f:
+        if not r:
             # We will never get here since OpenCV 2.4.9.1 is buggy
             # and never returns error codes once a webcam has been opened.
             # This is very annoying.
