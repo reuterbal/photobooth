@@ -85,6 +85,20 @@ class Camera_cv:
             fps = frames/(end-start)
             print("Camera is capturing at %.2f fps" % (fps))
 
+    def reinit(self):
+        '''This is a kludge to work around a problem with OpenCV where reading
+from a webcam gets slower and slower (from 15fps to 2fps after running
+for about a minute). By closing and reopening the video device, we're
+able to make it fast again.
+        '''
+        self.cap.release()
+        self.cap = cv.VideoCapture(-1) # XXX Kludge test
+        r,dummy = self.cap.read()
+        if r:
+            self.cv_enabled=True
+        else:
+            self.cv_enabled=False
+
     def set_rotate(self, camera_rotate):
         self.rotate = camera_rotate
 
@@ -194,6 +208,10 @@ class Camera_gPhoto:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
         except gpExcept as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
+
+    def reinit(self):
+        "Not needed as gphoto doesn't have the opencv slowdown bug."
+        return
 
     def call_gphoto(self, action, filename):
         # Try to run the command
