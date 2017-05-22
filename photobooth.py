@@ -829,6 +829,7 @@ def main():
     photobooth = Photobooth(display_size, display_rotate, picture_basename, max_assembled_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel, 
                             idle_slideshow, slideshow_display_time)
+    photobooth.clear_event_queue() # Flush button presses
     photobooth.run()
     photobooth.teardown()
     return 0
