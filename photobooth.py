@@ -6,7 +6,7 @@ import pygame
 from datetime import datetime
 from glob import glob
 from sys import exit
-from time import sleep, clock
+from time import sleep, time
 
 from PIL import Image
 
@@ -340,8 +340,8 @@ class Photobooth:
         while True:
             self.camera.set_idle()
             self.slideshow.display_next("Hit the button!")
-            tic = clock()
-            while clock() - tic < self.slideshow_display_time:
+            tic = time()
+            while time() - tic < self.slideshow_display_time:
                 self.check_and_handle_events()
 
     def run(self):
@@ -560,12 +560,12 @@ class Photobooth:
 
     def show_counter(self, seconds):
         """Loop over showing the preview (if possible), with a count down"""
-        tic = clock()
-        toc = clock() - tic
+        tic = time()
+        toc = time() - tic
         while toc < seconds:
             self.show_preview(str(seconds - int(toc)))
             # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
-            toc = min(toc + 1, clock() - tic)
+            toc = min(toc + 1, time() - tic)
 
     def show_preview_fps_1(self, seconds):
         """XXX Debugging code for benchmarking XXX
@@ -587,7 +587,7 @@ class Photobooth:
 
         """
         import cv2, pygame, numpy
-        tic = clock()
+        tic = time()
         toc = 0
         frames=0
 
@@ -601,7 +601,7 @@ class Photobooth:
             self.display.show_message(str(seconds - int(toc)))
             self.display.apply()
 
-            toc = clock() - tic
+            toc = time() - tic
 
         self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
         print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
@@ -625,7 +625,7 @@ class Photobooth:
 
         """
         import cv2, pygame, numpy
-        tic = clock()
+        tic = time()
         toc = 0
         frames=0
         
@@ -657,7 +657,7 @@ class Photobooth:
             self.display.show_message(str(seconds - int(toc)))
             self.display.apply()
 
-            toc = clock() - tic
+            toc = time() - tic
 
         self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
         print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
@@ -671,7 +671,7 @@ class Photobooth:
 
         """
         import cv2, pygame, numpy
-        tic = clock()
+        tic = time()
         toc = 0
         frames=0
 
@@ -689,7 +689,7 @@ class Photobooth:
             self.display.show_message(str(seconds - int(toc)))
             self.display.apply()
 
-            toc = clock() - tic
+            toc = time() - tic
 
         self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
         print "FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc)
@@ -701,12 +701,12 @@ class Photobooth:
         Note that this is *necessary* for OpenCV webcams as V4L will ramp the
         brightness level only after a certain number of frames have been taken.
         """
-        tic = clock()
-        toc = clock() - tic
+        tic = time()
+        toc = time() - tic
         while toc < seconds:
             self.show_preview(message)
             # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
-            toc = min(toc + 1, clock() - tic)
+            toc = min(toc + 1, time() - tic)
 
     def take_picture(self):
         """Implements the picture taking routine"""
@@ -735,7 +735,7 @@ class Photobooth:
                 self.display.show_message("S M I L E !!!\n\n" + str(x+1) + " of 4")
                 self.display.apply()
 
-                tic = clock()
+                tic = time()
 
                 try:
                     filenames[x] = self.camera.take_picture(tmp_dir + "photobooth_%02d.jpg" % x)
@@ -754,7 +754,7 @@ class Photobooth:
                        raise e
 
                 # Measure used time and sleep a second if too fast 
-                toc = clock() - tic
+                toc = time() - tic
                 if toc < 1.0:
                     sleep(1.0 - toc)
 
@@ -768,8 +768,8 @@ class Photobooth:
             # Show picture for 10 seconds and then send it to the printer.
             # If auto_print is True,  hitting the button cancels the print.
             # If auto_print is False, hitting the button sends the print
-            tic = clock()
-            t = int(self.display_time - (clock() - tic))
+            tic = time()
+            t = int(self.display_time - (time() - tic))
             old_t = self.display_time+1
             button_pressed=False
 
@@ -799,7 +799,7 @@ class Photobooth:
                     button_pressed=True
                     break
 
-                t = int(self.display_time - (clock() - tic))
+                t = int(self.display_time - (time() - tic))
 
             if auto_print ^ button_pressed:
                 self.printer_module.enqueue(outfile)
