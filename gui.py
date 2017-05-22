@@ -129,7 +129,8 @@ class GUI_PyGame:
         surface = pygame.Surface(new_size)
         surface.blit(image, (0,0))
         if flip:
-            surface = pygame.transform.flip(surface, True, False)
+            r = self.display_rotate
+            surface = pygame.transform.flip(surface, not r, r)
         self.surface_list.append((surface, offset))
 
 
