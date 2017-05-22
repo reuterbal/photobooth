@@ -363,7 +363,11 @@ class Photobooth:
             except (KeyboardInterrupt, SystemExit):
                 raise
             except Exception as e:
-                print('SERIOUS ERROR: ' + repr(e))
+                import sys
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                lineno = exc_tb.tb_lineno
+                print('SERIOUS ERROR at %s:%d: %s' % (fname, lineno, repr(e)))
                 self.handle_exception("SERIOUS ERROR!\n(see log file)")
 
     def check_and_handle_events(self):
