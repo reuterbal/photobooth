@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # Created by br _at_ re-web _dot_ eu, 2015-2016
 
+import cProfile
+
 import os
 import pygame
 from datetime import datetime
@@ -409,11 +411,17 @@ class Photobooth:
         elif key == ord('f'):
             self.display.toggle_fullscreen()
         elif key == ord('1'):   # Just for debugging
+            begin_profile()
             self.show_preview_fps_1(5)
+            end_profile()
         elif key == ord('2'):   # Just for debugging
+            begin_profile()
             self.show_preview_fps_2(5)
+            end_profile()
         elif key == ord('3'):   # Just for debugging
+            begin_profile()
             self.show_preview_fps_3(5)
+            end_profile()
 
     def toggle_auto_print(self):
         "Toggle auto print and show an error message if printing isn't possible."
@@ -577,7 +585,6 @@ class Photobooth:
         toc = 0
         frames=0
 
-        tmp_dir="/tmp/"
         while toc < seconds:
             frames=frames+1
 
@@ -591,7 +598,7 @@ class Photobooth:
             toc = time() - tic
 
         self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
-        print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
+        print("Method 1 FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
         sleep(3)
 
     def show_preview_fps_2(self, seconds):
@@ -637,7 +644,7 @@ class Photobooth:
             toc = time() - tic
 
         self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
-        print("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
+        print("Method 2 FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
         sleep(3)
 
     def show_preview_fps_3(self, seconds):
@@ -669,7 +676,7 @@ class Photobooth:
             toc = time() - tic
 
         self.display.msg("FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc))
-        print "FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc)
+        print "Method 3 FPS: %d/%.2f = %.2f" % (frames, toc, float(frames)/toc)
         sleep(3)
 
     def show_pose(self, seconds, message=""):
@@ -796,6 +803,23 @@ class Photobooth:
 #################
 ### Functions ###
 #################
+
+pr=None
+def begin_profile():
+    global pr
+    pr=cProfile.Profile()
+    pr.enable()
+
+def end_profile():
+    global pr
+    pr.disable()
+    import StringIO
+    s = StringIO.StringIO()
+    sortby = 'time'
+    import pstats
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print s.getvalue()    
 
 def main():
     photobooth = Photobooth(display_size, display_rotate, picture_basename, max_assembled_size, pose_time, display_time, 
