@@ -105,8 +105,22 @@ class Camera_cv:
         will be quickly decimated using numpy to be at most that large.
         """
 
+        global cv_enabled
+        if not cv_enabled:
+            cv_enabled=True
+            self.__init__()     # Try again to open the camera (e.g, just plugged in)
+            if not cv_enabled:  # Still failed?
+                raise CameraException("No camera found using OpenCV!")
+            
         # Grab a camera frame
         r, f = self.cap.read()
+
+        if not r or not f:
+            # We will never get here since OpenCV 2.4.9.1 is buggy
+            # and never returns error codes once a webcam has been opened.
+            # This is very annoying.
+            cv_enabled=False
+            raise CameraException("Error capturing frame using OpenCV!")
 
         # Optionally reduce frame size by decimation (nearest neighbor)
         if max_size:
@@ -143,8 +157,12 @@ class Camera_cv:
 
 
     def take_picture(self, filename="/tmp/picture.jpg"):
+        global cv_enabled
         if cv_enabled:
             r, frame = self.cap.read()
+            if not r:
+                cv_enabled=False
+                raise CameraException("Error capturing frame using OpenCV!")
             if self.rotate:
                 frame=numpy.rot90(frame)
             cv.imwrite(filename, frame)
