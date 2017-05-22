@@ -12,7 +12,7 @@ from time import sleep, time
 
 from PIL import Image
 
-from gui import GUI_PyGame as GuiModule
+from gui import GuiException, GUI_PyGame as GuiModule
 from camera import CameraException, Camera_cv as CameraModule
 # from camera import CameraException, Camera_gPhoto as CameraModule
 from slideshow import Slideshow
@@ -403,25 +403,20 @@ class Photobooth:
         # Take pictures
         elif key == ord('c'):
             self.take_picture()
-        # Toggle autoprinting
+        elif key == ord('f'):
+            self.display.toggle_fullscreen()
+        elif key == ord('i'):   # Re-initialize the camera for debugging
+            self.camera.reinit()
         elif key == ord('p'):
             self.toggle_auto_print()
         elif key == ord('r'):
             self.toggle_rotate()
-        elif key == ord('f'):
-            self.display.toggle_fullscreen()
         elif key == ord('1'):   # Just for debugging
-            begin_profile()
             self.show_preview_fps_1(5)
-            end_profile()
         elif key == ord('2'):   # Just for debugging
-            begin_profile()
             self.show_preview_fps_2(5)
-            end_profile()
         elif key == ord('3'):   # Just for debugging
-            begin_profile()
             self.show_preview_fps_3(5)
-            end_profile()
 
     def toggle_auto_print(self):
         "Toggle auto print and show an error message if printing isn't possible."
@@ -465,7 +460,10 @@ class Photobooth:
     def handle_exception(self, msg):
         """Displays an error message and returns"""
         print("Error: " + msg)
-        self.display.msg("ERROR:\n\n" + msg)
+        try:
+            self.display.msg("ERROR:\n\n" + msg)
+        except GuiException:
+            self.display.msg("ERROR")
         sleep(3)
 
 
@@ -580,6 +578,10 @@ class Photobooth:
 
         This is the original show_countdown preview code. 
         """
+
+        self.display.msg("Reinitializing camera") 
+        self.camera.reinit() # kludge to work around OpenCV 2.4 slowdown bug
+
         import cv2, pygame, numpy
         tic = time()
         toc = 0
@@ -608,6 +610,10 @@ class Photobooth:
         PyGame Surface in memory and it's much faster.
 
         """
+
+        self.display.msg("Reinitializing camera") 
+        self.camera.reinit() # kludge to work around OpenCV 2.4 slowdown bug
+
         import cv2, pygame, numpy
         tic = time()
         toc = 0
@@ -654,6 +660,9 @@ class Photobooth:
         blits it directly to a subsurface of the display. 
 
         """
+        self.display.msg("Reinitializing camera") 
+        self.camera.reinit() # kludge to work around OpenCV 2.4 slowdown bug
+
         import cv2, pygame, numpy
         tic = time()
         toc = 0
@@ -685,6 +694,10 @@ class Photobooth:
         Note that this is *necessary* for OpenCV webcams as V4L will ramp the
         brightness level only after a certain number of frames have been taken.
         """
+
+        self.display.msg(message) # Something to think about during reinit
+        self.camera.reinit() # kludge to work around OpenCV 2.4 slowdown bug
+
         tic = time()
         toc = time() - tic
         while toc < seconds:
@@ -806,11 +819,13 @@ class Photobooth:
 
 pr=None
 def begin_profile():
+    "Run this before entering a slow part of the program" 
     global pr
     pr=cProfile.Profile()
     pr.enable()
 
 def end_profile():
+    "Run this after exiting a slow part of the program" 
     global pr
     pr.disable()
     import StringIO
