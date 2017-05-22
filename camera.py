@@ -86,14 +86,13 @@ class Camera_cv:
             print("Camera is capturing at %.2f fps" % (fps))
 
     def reinit(self):
-        '''This is a kludge to work around a problem with OpenCV where reading
-from a webcam gets slower and slower (from 15fps to 2fps after running
-for about a minute). By closing and reopening the video device, we're
-able to make it fast again.
+        '''Close and reopen the video device. 
+        This is mainly for debugging video capture problems.
         '''
+        
         self.cap.release()
-        self.cap = cv.VideoCapture(-1) # XXX Kludge test
-        r,dummy = self.cap.read()
+        self.cap = cv.VideoCapture(-1)
+        r = self.cap.grab()
         if r:
             self.cv_enabled=True
         else:
@@ -147,11 +146,8 @@ able to make it fast again.
 
         # Convert from OpenCV format to Surfarray
         f=cv.cvtColor(f,cv.COLOR_BGR2RGB)
+        f=numpy.rot90(f)        # OpenCV swaps rows and columns
 
-        if not self.get_rotate():
-            f=numpy.rot90(f)        # OpenCV swaps rows and columns
-        else:
-            f=numpy.rot90(f, 2)   # Swap R/C plus camera rotation
         return f
 
     def get_preview_pygame_surface(self, max_size=None):
@@ -214,7 +210,7 @@ class Camera_gPhoto:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
 
     def reinit(self):
-        "Not needed as gphoto doesn't have the opencv slowdown bug."
+        "Not needed for gphoto."
         return
 
     def call_gphoto(self, action, filename):

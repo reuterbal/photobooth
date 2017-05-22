@@ -1,12 +1,19 @@
 #!/usr/bin/python
 
-# What the heck. My Logitech QuickCam gets slower on every read() when
-# I use OpenCV 2.4.9 but works fine with other V4L2 apps. If I release
-# and reopen the camera, it becomes fast again.
+# This program just prints out camera FPS every second.
 
-# This program just prints out FPS every second. This is what the
-# output looks like on my Raspberry Pi 3B and Logitech QuickCam:
-#
+# My Logitech QuickCam gets slower on every read() when I use OpenCV
+# 2.4.9 but works fine with other V4L2 apps. If I release and reopen
+# the camera, it becomes fast again.
+
+# ADDENDUM. After rebooting with a different USB power cable, suddenly
+# my camera stays at a constant 14 FPS. This is bizarre, but then
+# again, low current problems can be weird.
+
+
+# This is what the output looks like on my Raspberry Pi 3B and
+# Logitech QuickCam:
+
 #####################################################################
 # ./opencvtest.py                                                   #
 # Camera detected as 640 x 480                                      #
