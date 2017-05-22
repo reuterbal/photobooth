@@ -114,7 +114,7 @@ class GUI_PyGame:
             raise GuiException("ERROR: Can't open image '" + filename + "': " + e.message)
         # If the display is rotated CW, rotate the image CCW to compensate.
         if self.get_rotate():
-            pygame.transform.rotate(image, 90)
+            image = pygame.transform.rotate(image, 90)
 
         # Extract image size and determine scaling
         image_size = image.get_rect().size
