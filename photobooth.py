@@ -571,26 +571,13 @@ class Photobooth:
         """XXX Debugging code for benchmarking XXX
 
         This is the original show_countdown preview code. 
-
-        Using camera.take_preview(), display.show_picture() is very
-        slow. How slow? 5 frames per second! This is true even when
-        using shared memory instead of /tmp. 
-
-        While show_message() and clear() also drop fps significantly,
-        they are not as much of a bottleneck.
-
-        On an iMac:
-        * take_preview() -5 fps
-        * show_picture() -9 fps
-        * show_message() -2 fps
-        * clear()	 -0.5 fps
-
         """
         import cv2, pygame, numpy
         tic = time()
         toc = 0
         frames=0
 
+        tmp_dir="/tmp/"
         while toc < seconds:
             frames=frames+1
 
@@ -611,17 +598,7 @@ class Photobooth:
         """XXX Debugging code for benchmarking XXX
 
         As a test, I'm trying a direct conversion from OpenCV to a
-        PyGame Surface in memory and it's much faster. >15fps
-
-        (This is still the slower method, using make_surface.
-        It's even faster to use subsurfaces, see below).
-
-        Note that the conversion (cvtColor, rot90) takes up time.
-        Without the conversion, the loop is limited by the speed from
-        which we can read from the camera (about 30fps).
-
-        Blitting a static image without reading from a camera is
-        giving me about 180fps on a Raspberry Pi3b.
+        PyGame Surface in memory and it's much faster.
 
         """
         import cv2, pygame, numpy
@@ -667,7 +644,7 @@ class Photobooth:
         """XXX Debugging code for benchmarking XXX
 
         This is the fastest method, which decimates the array and
-        blits it directly to a subsurface of the display. >20fps
+        blits it directly to a subsurface of the display. 
 
         """
         import cv2, pygame, numpy
