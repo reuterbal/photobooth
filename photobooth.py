@@ -44,10 +44,10 @@ display_rotate = False
 # If True, the "right" side of the photo will be assumed to be the actual top.
 camera_rotate = False
 
-# Maximum size of assembled image
-# Should be same ratio as printer paper if these are being printed.
-#max_assembled_size = (2352, 1568)
-max_assembled_size = (1440, 960)
+# Final size of assembled image
+# (If printing, this should be same aspect ratio as printer paper.)
+#assembled_size = (2352, 1568)
+assembled_size = (6*240, 4*240)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -833,7 +833,7 @@ def end_profile():
     print s.getvalue()    
 
 def main():
-    photobooth = Photobooth(display_size, display_rotate, picture_basename, max_assembled_size, pose_time, display_time, 
+    photobooth = Photobooth(display_size, display_rotate, picture_basename, assembled_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel, 
                             idle_slideshow, slideshow_display_time)
     photobooth.clear_event_queue() # Flush button presses
