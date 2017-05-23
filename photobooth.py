@@ -274,7 +274,7 @@ class Photobooth:
             self.display.set_rotate(True)
 
         self.pictures      = PictureList(picture_basename)
-        self.camera        = CameraModule(picture_size)
+        self.camera        = CameraModule((picture_size[0]/2, picture_size[1]/2)
         self.camera_rotate = camera_rotate
         if camera_rotate:
             self.camera.set_rotate(True)
@@ -855,7 +855,8 @@ def end_profile():
     print s.getvalue()    
 
 def main():
-    photobooth = Photobooth(display_size, display_rotate, picture_basename, assembled_size, pose_time, display_time, 
+    photobooth = Photobooth(display_size, display_rotate, picture_basename,
+                            assembled_size, pose_time, display_time, 
                             gpio_trigger_channel, gpio_shutdown_channel, gpio_lamp_channel, 
                             idle_slideshow, slideshow_display_time)
     photobooth.clear_event_queue() # Flush button presses
