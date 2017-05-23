@@ -37,7 +37,7 @@ display_size = (0, 0)
 #display_size = (1824, 984)
 
 # Is the monitor on its side? (For portrait photos on landscape monitors).
-# If True, text will be rotate 90 degrees counterclockwise
+# If True, text will be rotated 90 degrees counterclockwise
 display_rotate = False
 
 # Is the camera on its side? (For portrait photos without gravity sensor)
