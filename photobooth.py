@@ -45,8 +45,9 @@ display_rotate = False
 camera_rotate = False
 
 # Maximum size of assembled image
+# Should be same ratio as printer paper if these are being printed.
 #max_assembled_size = (2352, 1568)
-max_assembled_size = (1280, 960)
+max_assembled_size = (1440, 960)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
