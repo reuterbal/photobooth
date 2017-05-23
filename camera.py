@@ -43,8 +43,11 @@ class CameraException(Exception):
 
 
 class Camera_cv:
-    def __init__(self, picture_size=(10000,10000), camera_rotate=False):
-        self.picture_size = picture_size   # Requested camera resolution
+    def __init__(self, resolution=(10000,10000), camera_rotate=False):
+        if resolution[0]>0 and resolution[1]>0:
+            self.resolution = resolution   # Requested camera resolution
+        else:
+            self.resolution = (10000,10000) # Just use highest resolution possible
         self.rotate = camera_rotate        # Is camera on its side?  
 
         global cv_enabled
@@ -58,8 +61,8 @@ class Camera_cv:
             # Pick the video resolution to capture at.
             # If requested resolution is too high, OpenCV uses next best.
             # (E.g., 10000x10000 will force highest camera resolution).
-            self.cap.set(cv.cv.CV_CAP_PROP_FRAME_WIDTH,  picture_size[0])
-            self.cap.set(cv.cv.CV_CAP_PROP_FRAME_HEIGHT, picture_size[1])
+            self.cap.set(cv.cv.CV_CAP_PROP_FRAME_WIDTH,  resolution[0])
+            self.cap.set(cv.cv.CV_CAP_PROP_FRAME_HEIGHT, resolution[1])
 
             # Warm up web cam for quick start later and to double check driver
             r, dummy = self.cap.read()
@@ -191,9 +194,9 @@ class Camera_cv:
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
 
-    def __init__(self, picture_size, camera_rotate=False):
-        self.picture_size = picture_size # XXX Not used for gphoto?
-        self.rotate = camera_rotate # XXX Not used for gphoto?
+    def __init__(self, resolution=(10000,10000), camera_rotate=False):
+        self.resolution = resolution # XXX Not used for gphoto?
+        self.rotate = camera_rotate  # XXX Not needed for gphoto?
 
         # Print the capabilities of the connected camera
         try:
