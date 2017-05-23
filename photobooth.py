@@ -464,7 +464,7 @@ class Photobooth:
 
 
     def assemble_pictures(self, input_filenames):
-        """Assembles four pictures into a 2x2 grid
+        """Assembles four pictures into a 2x2 grid of thumbnails
 
         It assumes, all original pictures have the same aspect ratio as
         the resulting image.
@@ -496,6 +496,8 @@ class Photobooth:
                  a        w       2*b       w        a
         """
 
+        # If the camera is in portrait orientation but has no gravity sensor,
+        # we will need to rotate our assembled size as well. 
         if self.camera.get_rotate():
             pic_size=(self.pic_size[1], self.pic_size[0])
         else:
