@@ -44,13 +44,9 @@ display_rotate = False
 # If True, the "right" side of the photo will be assumed to be the actual top.
 camera_rotate = False
 
-# Size of pictures in the assembled image
-#thumb_size = (1176, 784)
-thumb_size = (640, 480)
-
 # Maximum size of assembled image
 #max_assembled_size = (2352, 1568)
-max_assembled_size = list(2*x for x in thumb_size)
+max_assembled_size = (1280, 960)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
