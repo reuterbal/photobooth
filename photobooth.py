@@ -768,13 +768,17 @@ class Photobooth:
                     self.display.apply()
                     old_t=t
                 
+                # Flash the lamp so they'll know they can hit the button
+                self.gpio.set_output(self.lamp_channel, int(time()*2)%2)
+
                 # Watch for button, gpio, mouse press to cancel/enable printing
                 r, e = self.display.check_for_event()
-                if r:
+                if r:                    # Caught a button press. 
                     self.display.clear()
                     self.display.show_picture(outfile, size, (0,0))
                     self.display.show_message("Printing%s" % (" cancelled" if auto_print else ""))
                     self.display.apply()
+                    self.gpio.set_output(self.lamp_channel, 0)
                     sleep(1)
                 
                     # Discard extra events (e.g., they hit the button a bunch)
@@ -785,8 +789,12 @@ class Photobooth:
 
                 t = int(self.display_time - (time() - tic))
 
+            # Either button pressed or countdown timed out
+            self.gpio.set_output(self.lamp_channel, 0)
             if auto_print ^ button_pressed:
+                self.display.msg("Printing")
                 self.printer_module.enqueue(outfile)
+
         else:
             # No printer available, so just show montage for 10 seconds
             self.display.clear()
