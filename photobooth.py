@@ -44,10 +44,11 @@ display_rotate = False
 # If True, the "right" side of the photo will be assumed to be the actual top.
 camera_rotate = False
 
-# Final size of assembled image
-# (If printing, this should be same aspect ratio as printer paper.)
+# Final size of assembled image (montage of four thumbnails)
+# (If printing, this should be same aspect ratio as the printer page size.)
 #assembled_size = (2352, 1568)
-assembled_size = (6*240, 4*240)
+#assembled_size = (6*240, 4*240)
+assembled_size=(640,480)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -465,12 +466,18 @@ class Photobooth:
 
 
     def assemble_pictures(self, input_filenames):
-        """Assembles four pictures into a 2x2 grid of thumbnails
+        """Assembles four pictures into a 2x2 grid of thumbnails.
 
-        It assumes, all original pictures have the same aspect ratio as
-        the resulting image.
+        The total size (WxH) is assigned in the global variable
+        assembled_size at the top of this file. (E.g., 2352x1568)
 
-        For the thumbnail sizes we have:
+        The outer border (a) is 2% of W
+        The inner border (b) is 1% of W
+
+        Note that if the camera is on its side, H and W will be
+        swapped to create a portrait, rather than landscape, montage.
+
+        Thumbnail sizes are calculated like so:
         h = (H - 2 * a - 2 * b) / 2
         w = (W - 2 * a - 2 * b) / 2
 
@@ -495,25 +502,26 @@ class Photobooth:
 
                |---|-------------|---|-------------|---|
                  a        w       2*b       w        a
+
         """
 
         # If the camera is in portrait orientation but has no gravity sensor,
         # we will need to rotate our assembled size as well. 
         if self.camera.get_rotate():
-            pic_size=(self.pic_size[1], self.pic_size[0])
+            (H, W) = self.pic_size
         else:
-            pic_size=self.pic_size
+            (W, H) = self.pic_size
 
         # Thumbnail size of pictures
-        outer_border = 50
-        inner_border = 20
-        thumb_box = ( int( pic_size[0] / 2 ) ,
-                      int( pic_size[1] / 2 ) )
+        outer_border = int( 2 * max(W,H) / 100 ) # 2% of long edge
+        inner_border = int( 1 * max(W,H) / 100 ) # 1% of long edge
+        thumb_box = ( int( W / 2 ) ,
+                      int( H / 2 ) )
         thumb_size = ( thumb_box[0] - outer_border - inner_border ,
                        thumb_box[1] - outer_border - inner_border )
 
         # Create output image with white background
-        output_image = Image.new('RGB', pic_size, (255, 255, 255))
+        output_image = Image.new('RGB', (W, H), (255, 255, 255))
 
         # Image 0
         img = Image.open(input_filenames[0])
