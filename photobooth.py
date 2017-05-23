@@ -563,7 +563,7 @@ class Photobooth:
         pose before the shot. For speed, previews are decimated to fit
         within the screen instead of being scaled. For even more
         speed, the previews are blitted directly to a subsurface of
-        the display. (Converting to a pygame Surface would have been slow). 
+        the display. (Converting to a pygame Surface is slower). 
 
         """ 
         self.display.clear()
@@ -585,7 +585,7 @@ class Photobooth:
     def show_preview_fps_1(self, seconds):
         """XXX Debugging code for benchmarking XXX
 
-        This is the original show_countdown preview code. 
+        This is the original show_countdown preview code. (~5fps)
         """
 
         import cv2, pygame, numpy
@@ -613,7 +613,9 @@ class Photobooth:
         """XXX Debugging code for benchmarking XXX
 
         As a test, I'm trying a direct conversion from OpenCV to a
-        PyGame Surface in memory and it's much faster.
+        PyGame Surface in memory and it's much faster than the
+        original code, but still slower than subsurface blitting.
+        (~10fps)
 
         """
 
@@ -660,7 +662,7 @@ class Photobooth:
         """XXX Debugging code for benchmarking XXX
 
         This is the fastest method, which decimates the array and
-        blits it directly to a subsurface of the display. 
+        blits it directly to a subsurface of the display. (~14fps)
 
         """
 
