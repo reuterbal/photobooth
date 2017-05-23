@@ -11,6 +11,7 @@ if v4l2-ctl --silent 2>/dev/null; then
     v4l2-ctl -c compression_quality=100 2>/dev/null
 fi    
 
-sudo python photobooth.py >>photobooth.log 2>>photobooth.err
+# This may need 'sudo' to access camera devices, but probably doesn't.
+python photobooth.py >>photobooth.log 2>>photobooth.err
 
 
