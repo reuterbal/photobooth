@@ -44,11 +44,10 @@ display_rotate = False
 # If True, the "right" side of the photo will be assumed to be the actual top.
 camera_rotate = False
 
-# Final size of assembled image (montage of four thumbnails)
-# (If printing, this should be same aspect ratio as the printer page size.)
-#assembled_size = (2352, 1568)
-#assembled_size = (6*240, 4*240)
-assembled_size=(640,480)
+# Final size of assembled image (the montage of four thumbnails).
+# If printing, this should be same aspect ratio as the printer page.
+# (E.g., 6x4 photo paper @392dpi == 2352x1568)
+assembled_size = (6*392, 4*392)
 
 # Image basename
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
@@ -464,7 +463,6 @@ class Photobooth:
             self.display.msg("ERROR")
         sleep(3)
 
-
     def assemble_pictures(self, input_filenames):
         """Assembles four pictures into a 2x2 grid of thumbnails.
 
@@ -503,6 +501,10 @@ class Photobooth:
                |---|-------------|---|-------------|---|
                  a        w       2*b       w        a
 
+        [Note that extra padding will be added on the sides if the
+        aspect ratio of the camera images do not match the aspect
+        ratio of the final assembled image.]
+
         """
 
         # If the camera is in portrait orientation but has no gravity sensor,
@@ -525,28 +527,28 @@ class Photobooth:
 
         # Image 0
         img = Image.open(input_filenames[0])
-        img.thumbnail(thumb_size)
+        img = img.resize(maxpect(img.size, thumb_size), Image.ANTIALIAS)
         offset = ( thumb_box[0] - inner_border - img.size[0] ,
                    thumb_box[1] - inner_border - img.size[1] )
         output_image.paste(img, offset)
 
         # Image 1
         img = Image.open(input_filenames[1])
-        img.thumbnail(thumb_size)
+        img = img.resize(maxpect(img.size, thumb_size), Image.ANTIALIAS)
         offset = ( thumb_box[0] + inner_border,
                    thumb_box[1] - inner_border - img.size[1] )
         output_image.paste(img, offset)
 
         # Image 2
         img = Image.open(input_filenames[2])
-        img.thumbnail(thumb_size)
+        img = img.resize(maxpect(img.size, thumb_size), Image.ANTIALIAS)
         offset = ( thumb_box[0] - inner_border - img.size[0] ,
                    thumb_box[1] + inner_border )
         output_image.paste(img, offset)
 
         # Image 3
         img = Image.open(input_filenames[3])
-        img.thumbnail(thumb_size)
+        img = img.resize(maxpect(img.size, thumb_size), Image.ANTIALIAS)
         offset = ( thumb_box[0] + inner_border ,
                    thumb_box[1] + inner_border )
         output_image.paste(img, offset)
@@ -820,6 +822,16 @@ class Photobooth:
 #################
 ### Functions ###
 #################
+
+def maxpect(a, b):
+    '''Given two width by height sizes a and b, return the maximum WxH
+    that is the same aspect ratio as a and fits within b.
+    '''
+    w_ratio = float(b[0]) / a[0]
+    h_ratio = float(b[1]) / a[1]
+    ratio = min(w_ratio, h_ratio)
+
+    return (int(ratio * a[0]), int (ratio * a[1]))
 
 pr=None
 def begin_profile():
