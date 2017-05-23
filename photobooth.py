@@ -636,9 +636,9 @@ class Photobooth:
             size=(dw, dh)
             image_size = (w, h)
             offset=(0,0)
-            image_scale = min([min(a,b)/float(b) for a,b in zip(size, image_size)])
+
             # New image size
-            new_size = [int(a*image_scale) for a in image_size]
+            new_size = maxpect(image_size, size)
             # Update offset
             offset = tuple(a+int((b-c)/2) for a,b,c in zip(offset, size, new_size))
             # Apply scaling
