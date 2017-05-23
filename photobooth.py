@@ -274,7 +274,7 @@ class Photobooth:
             self.display.set_rotate(True)
 
         self.pictures      = PictureList(picture_basename)
-        self.camera        = CameraModule((picture_size[0]/2, picture_size[1]/2)
+        self.camera        = CameraModule((picture_size[0]/2, picture_size[1]/2))
         self.camera_rotate = camera_rotate
         if camera_rotate:
             self.camera.set_rotate(True)
