@@ -53,13 +53,13 @@ assembled_size = (6*392, 4*392)
 picture_basename = datetime.now().strftime("%Y-%m-%d/pic")
 
 # GPIO channel of switch to shutdown the Photobooth
-gpio_shutdown_channel = 24 # pin 18 in all Raspi-Versions
+gpio_shutdown_channel = 24 # pin 18 in all Raspi-Versions, (try pin 20 as GND).
 
 # GPIO channel of switch to take pictures
-gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions
+gpio_trigger_channel = 23 # pin 16 in all Raspi-Versions, (try pin 14 as GND).
 
-# GPIO output channel for (blinking) lamp
-gpio_lamp_channel = 4 # pin 7 in all Raspi-Versions
+# GPIO output channel for (blinking) lamp (use approx 220 Ohm resistor to LED)
+gpio_lamp_channel = 4 # pin 7 in all Raspi-Versions, (pin 9 is a handy GND)
 
 # Waiting time in seconds for posing
 pose_time = 3

@@ -58,7 +58,7 @@ rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
   * Shrink page if necessary: Shrink (print the whole page)
   * Borderless: Yes
   * Error Policy: abort-job
-  
+
   I could just send any JPEG over and the Gutenprint driver would
   automatically rotate, scale, and center it for me. Nice!
 
@@ -70,14 +70,14 @@ rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
 * Printing solution: I made a hack that simply calls ImageMagick's
   `convert` before printing to rotate and force the media size to be
   4x6:
-  
+
   ```
   convert filename.jpg -rotate -90 -page 4x6 filename.pdf
   ```
 
   This works because the print driver apparently obeys the page size
   specified in PNG and PDF files and scales appropriately.
-  
+
   * DIGRESSION: the proper solution would perhaps have been to change
   the photobooth.py software to handle all rotate, scale, and
   centering on its own. However, that would require photobooth.py
@@ -95,7 +95,7 @@ rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
 
 * [Here](http://gphoto.org/doc/remote) is a (partial) list of gphoto2
   compatible cameras which *can* do "remote capture" (snap a photo
-  under computer control). 
+  under computer control).
 
 * Solution: I ransacked my junk draw and came up with an old USB
   webcam (Logitech QuickCam, VGA). It worked once I switched
@@ -170,7 +170,39 @@ rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
 	 $ tvservice -e "DMT 58 HDMI"
 	 $ # Now press Ctrl-Alt-F1 then Ctrl-Alt-F7
 	 ```
-     
+### GPIO pins
+
+The photobooth uses two GPIO pins for switches and one for an LED
+lamp.
+* GPIO 24 (pin 18): button to shutdown photobooth
+* GPIO 23 (pin 16): button to take pictures
+* GPIO  4 (pin  7): +3.3V for blinking LED (use a resistor)
+
+They can hooked up to any convenient GND, but some handy ones are
+shown in the diagram below.
+
+    /---------------------------\
+    | 01          02            |
+    | 03          04            |
+    | 05          06            |
+    | 07 LED+     08            |
+    | 09 Gnd      10            |
+    | 11          12            |
+    | 13          14 Gnd        |
+    | 15          16 SNAP PHOTO |
+    | 17          18 SHUTDOWN   |
+    | 19          20 Gnd        |
+    | 21          22            |
+    | 23          24            |
+    | 25          26            |
+    | 27          28            |
+    | 29          30            |
+    | 31          32            |
+    | 33          34            |
+    | 35          36            |
+    | 37          38            |
+    | 39          40            |
+    \---------------------------/
 
 ## I've appended below, nearly unchanged, br's original README file.
 
@@ -209,7 +241,7 @@ RPi.GPIO is necessary to use external buttons as a trigger but it works just fin
 Simply download `photobooth.py` or clone the repository and run it.
 It opens the GUI, prints the features of the connected camera, e.g.,
 ```
-$ ./photobooth.py 
+$ ./photobooth.py
 Abilities for camera             : Canon EOS 500D
 Serial port support              : no
 USB support                      : yes
@@ -230,7 +262,7 @@ Available actions:
 * Press `c`: Take four pictures, arrange them in a grid and display them for some seconds.
 * Hit a switch that closes GPIO23 (Pin 16) and GND: Take four pictures, arrange them in a grid and display them for some seconds.
 * Click anywhere on the screen: Take four pictures, arrange them in a grid and display them for some seconds.
- 
+
 All pictures taken are stored in a subfolder of the current working directory, named `YYYY-mm-dd` after the current date. Existing files are not overwritten.
 
 ## Installation
@@ -252,7 +284,7 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
 4. Run `sudo apt-get update` and `sudo apt-get upgrade` to upgrade all installed software.
 
 5. Install any additionally required software:
-  * Pillow: 
+  * Pillow:
 
     ```
     sudo apt-get install python-dev python-pip libjpeg8-dev
