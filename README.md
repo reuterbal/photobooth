@@ -170,6 +170,12 @@ rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
 	 $ tvservice -e "DMT 58 HDMI"
 	 $ # Now press Ctrl-Alt-F1 then Ctrl-Alt-F7
 	 ```
+* Sound latency
+
+  If you have trouble with the shutter and beep sounds seeming to come
+  half a second too late, try running 'pulseaudio --kill' at the
+  command line and try running photobooth again. That fixes it for me.
+
 ### GPIO pins
 
 The photobooth uses two GPIO pins for switches and one for an LED
@@ -203,6 +209,16 @@ shown in the diagram below.
     | 37          38            |
     | 39          40            |
     \---------------------------/
+
+### Sounds provenance
+
+The sound files "shutter.wav", "bip1.wav", and "bip2.wav" are from
+Freesound.org. Bip1 and 2 were created by Xinaesthete and are under a
+Creative Commons Attribution License. You can download the original
+files from:
+
+      https://www.freesound.org/people/xinaesthete/sounds/26953/
+      https://www.freesound.org/people/xinaesthete/sounds/26954/
 
 ## I've appended below, nearly unchanged, br's original README file.
 

@@ -79,7 +79,9 @@ auto_print = True
 # What filename for the shutter sound when taking pictures?
 # Set to None to have no sound.
 shutter_sound = "shutter.wav"
-#shutter_sound = None
+bip1_sound    = "bip1.wav"
+bip2_sound    = "bip2.wav"
+
 
 # Temp directory for storing pictures
 if os.access("/dev/shm", os.W_OK):
@@ -301,9 +303,11 @@ class Photobooth:
 
         self.printer_module  = PrinterModule()
         try:
-            pygame.mixer.init()
+            pygame.mixer.init(buffer=1024)
             self.shutter = pygame.mixer.Sound(shutter_sound)
-            self.shutter.play()
+            self.bip1 = pygame.mixer.Sound(bip1_sound)
+            self.bip2 = pygame.mixer.Sound(bip2_sound)
+            self.bip2.play()
         except pygame.error:
             self.shutter = None
             pass
@@ -577,8 +581,14 @@ class Photobooth:
         """Loop over showing the preview (if possible), with a count down"""
         tic = time()
         toc = time() - tic
+        old_t=None
         while toc < seconds:
-            self.show_preview(str(seconds - int(toc)))
+            t=seconds - int(toc)
+            if t != old_t and self.bip1:
+                self.bip1.play()
+            old_t=t
+                
+            self.show_preview(str(t))
             # Limit progress to 1 "second" per preview (e.g., too slow on Raspi 1)
             toc = min(toc + 1, time() - tic)
 
