@@ -71,6 +71,8 @@ class Camera_cv:
                 cv_enabled=False
                 return
 
+            print "Connecting to camera using opencv"
+
             # Print the capabilities of the connected camera
             w=self.cap.get(cv.cv.CV_CAP_PROP_FRAME_WIDTH)
             h=self.cap.get(cv.cv.CV_CAP_PROP_FRAME_HEIGHT)
@@ -201,11 +203,14 @@ class Camera_gPhoto:
         # Print the capabilities of the connected camera
         try:
             if gphoto2cffi_enabled:
+                print "Connecting to camera using gphoto2cffi"
                 self.cap = gp.Camera()
             elif piggyphoto_enabled:
+                print "Connecting to camera using piggyphoto"
                 self.cap = gp.camera()
                 print(self.cap.abilities)
             else:
+                print "Connecting to camera using command line gphoto2"
                 print(self.call_gphoto("-a", "/dev/null"))
         except CameraException as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
