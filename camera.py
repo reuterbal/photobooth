@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # Created by br@re-web.eu, 2015
 
+# TODO: This really ought to be a single class with subclasses for
+# each backend (opencv, gphoto-cffi, piggyphoto, gphoto cmdline).
+
 import subprocess
 import pygame
 import numpy
@@ -256,8 +259,6 @@ class Camera_gPhoto:
             self.cap.capture_preview(filename)	
         else:
             self.call_gphoto("--capture-preview", filename)
-#            if not 
-#                raise CameraException("No preview supported!")
 
     def get_preview_array(self, max_size=None):
         """Get a quick preview from the camera and return it as a 2D array
@@ -276,6 +277,7 @@ class Camera_gPhoto:
             piggy_preview = "/dev/shm/photobooth_piggy_preview.jpg"
             self.cap.capture_preview(piggy_preview)
             f=Image.open(piggy_preview)
+            f=numpy.array(f)
         else:
             cmdline_preview = "/dev/shm/photobooth_cmdline_preview.jpg"
             thumb_preview = "/dev/shm/thumb_photobooth_cmdline_preview.jpg"
@@ -346,5 +348,6 @@ class Camera_gPhoto:
         if gphoto2cffi_enabled:
             self.cap._get_config()['actions']['viewfinder'].set(False)
         elif piggyphoto_enabled:
+            pass
             # This doesn't work...
-            self.cap.config.main.actions.viewfinder.value = 0
+            #self.cap.config.main.actions.viewfinder.value = 0
