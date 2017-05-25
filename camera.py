@@ -247,7 +247,7 @@ class Camera_gPhoto:
         return self.rotate
 
     def has_preview(self):
-        return gphoto2cffi_enabled or piggyphoto_enabled
+        return True
 
     def take_preview(self, filename="/tmp/preview.jpg"):
         if gphoto2cffi_enabled:
@@ -255,7 +255,9 @@ class Camera_gPhoto:
         elif piggyphoto_enabled:
             self.cap.capture_preview(filename)	
         else:
-            raise CameraException("No preview supported!")
+            self.call_gphoto("--capture-preview", filename)
+#            if not 
+#                raise CameraException("No preview supported!")
 
     def get_preview_array(self, max_size=None):
         """Get a quick preview from the camera and return it as a 2D array
@@ -275,7 +277,21 @@ class Camera_gPhoto:
             self.cap.capture_preview(piggy_preview)
             f=Image.open(piggy_preview)
         else:
-            raise CameraException("No preview supported!")
+            cmdline_preview = "/dev/shm/photobooth_cmdline_preview.jpg"
+            thumb_preview = "/dev/shm/thumb_photobooth_cmdline_preview.jpg"
+            self.take_preview(cmdline_preview)
+            try:
+                f=Image.open(thumb_preview)
+                f=numpy.array(f)
+            except IOError:
+                # Gphoto always prepends "thumb_" even if --filename
+                # is specified. This seems likely to go away as it
+                # makes little sense. Let's be future-proof.
+                try:
+                    f=Image.open(cmdline_preview)
+                    f=numpy.array(f)
+                except Exception: 
+                    raise CameraException("No preview supported!")
 
         # Optionally reduce frame size by decimation (nearest neighbor)
         if max_size:
