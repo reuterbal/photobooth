@@ -13,8 +13,8 @@ from time import sleep, time
 from PIL import Image
 
 from gui import GuiException, GUI_PyGame as GuiModule
-#from camera import CameraException, Camera_cv as CameraModule
-from camera import CameraException, Camera_gPhoto as CameraModule
+from camera import CameraException, Camera_cv as CameraModule
+#from camera import CameraException, Camera_gPhoto as CameraModule
 from slideshow import Slideshow
 from events import Rpi_GPIO as GPIO
 
@@ -43,9 +43,6 @@ display_rotate = True
 # Is the camera on its side? (For portrait orientation. Note: EXIF is ignored!)
 # If True, the "right" side of the photo will be assumed to be the actual top.
 camera_rotate = True
-
-# Does the camera return rotated previews? (Set to None for same as camera_rotate)
-preview_rotate = None
 
 # Final size of assembled image (the montage of four thumbnails).
 # If printing, this should be same aspect ratio as the printer page.
@@ -279,7 +276,7 @@ class Photobooth:
             self.display.set_rotate(True)
 
         self.pictures      = PictureList(picture_basename)
-        self.camera        = CameraModule((picture_size[0]/2, picture_size[1]/2), camera_rotate=camera_rotate, preview_rotate=preview_rotate)
+        self.camera        = CameraModule((picture_size[0]/2, picture_size[1]/2), camera_rotate=camera_rotate)
         self.camera_rotate = camera_rotate
 
         self.pic_size      = picture_size
@@ -722,7 +719,7 @@ class Photobooth:
         self.gpio.set_output(self.lamp_channel, 0)
 
         # Show pose message
-        self.show_pose(2, "POSE!\n\nTaking four pictures...");
+        self.show_pose(2, "POSE!\n\nTaking 4 pictures ...");
 
         # Extract display and image sizes
         size = self.display.get_size()
@@ -767,7 +764,7 @@ class Photobooth:
                     sleep(1.0 - toc)
 
         # Show 'Wait'
-        self.display.msg("Please wait!\n\nProcessing...")
+        self.display.msg("Please wait!\n\nWorking\n...")
 
         # Assemble them
         outfile = self.assemble_pictures(filenames)

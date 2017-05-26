@@ -139,7 +139,7 @@ class Camera_cv:
             cv_enabled=True
             self.__init__()     # Try again to open the camera (e.g, just plugged in)
             if not cv_enabled:  # Still failed?
-                raise CameraException("No camera found using OpenCV!")
+                raise CameraException("OpenCV: No camera found!")
             
         # Grab a camera frame
         r, f = self.cap.read()
@@ -199,11 +199,9 @@ class Camera_cv:
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
 
-    def __init__(self, resolution=(10000,10000),
-                 camera_rotate=False, preview_rotate=None):
+    def __init__(self, resolution=(10000,10000), camera_rotate=False):
         self.resolution = resolution # XXX Not used for gphoto?
         self.rotate = camera_rotate  # XXX Not yet implemented for gphoto.
-        self.preview_rotate = preview_rotate if preview_rotate is not None else camera_rotate
 
         # Print the capabilities of the connected camera
         try:
@@ -259,17 +257,6 @@ class Camera_gPhoto:
     def get_rotate(self):
         return self.rotate
 
-    def set_preview_rotate(self, preview_rotate):
-        '''Is the preview rotated? Some cameras do not include the rotation
-        tag in the preview JPEG. That means, if the camera is on its
-        side and has a gravity sensor, the normal capture will not be
-        rotated, but the preview will be.
-        '''
-        self.preview_rotate = preview_rotate
-
-    def get_preview_rotate(self):
-        return self.preview_rotate
-
     def has_preview(self):
         return True
 
@@ -297,7 +284,7 @@ class Camera_gPhoto:
             piggy_preview = tmp_dir + "photobooth_piggy_preview.jpg"
             self.take_preview(piggy_preview)
             f=Image.open(piggy_preview)
-            if self.preview_rotate:
+            if self.rotate:     # Is camera on its side?
                 f=f.transpose(Image.ROTATE_90)
             f=numpy.array(f)
         else:

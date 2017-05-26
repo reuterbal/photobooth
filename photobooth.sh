@@ -14,7 +14,7 @@ fi
 
 # Do some error checking to make sure gphoto will work.
 # First: are they even using gphoto (not opencv)?
-gphototest=$(gphoto2 --auto-detect | tail -n+3)
+gphototest=$(gphoto2 --auto-detect 2>/dev/null | tail -n+3)
 if [ "$gphototest" ]  >/dev/null; then
     # Yup, there's a gphoto camera available. Is it unusable?
     if ! gphoto2 --reset >/dev/null; then
@@ -73,6 +73,15 @@ EOF
     fi
 fi
 
+# Set default options for camera (e.g., flash, shutter, etc)
+if gphoto2 --reset >/dev/null 2>&1; then
+    gphoto2 --set-config capturetarget=card 
+    gphoto2 --set-config capture=1
+    gphoto2 --set-config imagesize=2
+    gphoto2 --set-config flashmode=3
+    gphoto2 --set-config aperture=0
+    gphoto2 --set-config shutterspeed=0
+fi
 
 # This may need 'sudo' to access camera devices, but probably doesn't.
 # [Note that the Gphoto2 FAQ explicitly says to NEVER run gphoto2 as
