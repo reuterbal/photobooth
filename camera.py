@@ -178,14 +178,14 @@ class Camera_cv:
         return s
 
 
-    def take_picture(self, filename="/tmp/picture.jpg"):
+    def take_picture(self, filename=tmpdir+"picture.jpg"):
         global cv_enabled
         if cv_enabled:
             r, frame = self.cap.read()
             if not r:
                 cv_enabled=False
                 raise CameraException("Error capturing frame using OpenCV!")
-            if self.rotate:
+            if self.rotate:     # Is camera on its side?
                 frame=numpy.rot90(frame)
             cv.imwrite(filename, frame)
             return filename
@@ -253,7 +253,7 @@ class Camera_gPhoto:
         return output
 
     def set_rotate(self, camera_rotate):
-        print "Camera rotation not implemented for gphoto yet."
+        '''Force rotation of camera. Currently EXIF Orientation is always ignored.'''
         self.rotate = camera_rotate
 
     def get_rotate(self):
@@ -273,7 +273,7 @@ class Camera_gPhoto:
     def has_preview(self):
         return True
 
-    def take_preview(self, filename="/tmp/preview.jpg"):
+    def take_preview(self, filename=tmpdir+"preview.jpg"):
         if gphoto2cffi_enabled:
             self._save_picture(filename, self.cap.get_preview())
         elif piggyphoto_enabled:
@@ -294,7 +294,6 @@ class Camera_gPhoto:
 
         elif piggyphoto_enabled:
             # Piggyphoto requires saving previews on filesystem! Yuck.
-            # XXX BUG. Shouldn't presume /dev/shm/ exists everywhere.
             piggy_preview = tmp_dir + "photobooth_piggy_preview.jpg"
             self.take_preview(piggy_preview)
             f=Image.open(piggy_preview)
@@ -342,17 +341,16 @@ class Camera_gPhoto:
         return s
 
     def take_picture(self, filename=tmp_dir + "picture.jpg"):
-
-        # Note: this is *supposed* to handle self.rotate in the same
-        # way the OpenCV code does. It doesn't yet. Maybe it doesn't
-        # need to as most "real" cameras have gravity sensors.
-
         if gphoto2cffi_enabled:
             self._save_picture(filename, self.cap.capture())
         elif piggyphoto_enabled:
             self.cap.capture_image(filename)
         else:
             self.call_gphoto("--capture-image-and-download", filename)
+        if self.rotate:         # Is camera on its side?
+            f=Image.open(filename)
+            f=f.transpose(Image.ROTATE_90)
+            f.save(filename)
         return filename
 
     def _save_picture(self, filename, data):
