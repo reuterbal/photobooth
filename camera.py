@@ -178,7 +178,7 @@ class Camera_cv:
         return s
 
 
-    def take_picture(self, filename=tmpdir+"picture.jpg"):
+    def take_picture(self, filename=tmp_dir+"picture.jpg"):
         global cv_enabled
         if cv_enabled:
             r, frame = self.cap.read()
@@ -273,7 +273,7 @@ class Camera_gPhoto:
     def has_preview(self):
         return True
 
-    def take_preview(self, filename=tmpdir+"preview.jpg"):
+    def take_preview(self, filename=tmp_dir+"preview.jpg"):
         if gphoto2cffi_enabled:
             self._save_picture(filename, self.cap.get_preview())
         elif piggyphoto_enabled:
