@@ -165,15 +165,7 @@ class Camera_cv:
         """
         f = self.get_preview_array(max_size)
         ( w,  h) = ( len(f), len(f[0]) )
-
-        # For some reason make_surface() is slower on an iMac than
-        # creating a new surface and blitting the image to it. Weird!
-        # I think this is the opposite for the Raspberry Pi 3b.
-        if False:
-            s=pygame.surfarray.make_surface(f)
-        else:
-            s = pygame.Surface((w,h))
-            pygame.surfarray.blit_array(s, f)
+        s=pygame.surfarray.make_surface(f)
 
         return s
 
@@ -313,15 +305,7 @@ class Camera_gPhoto:
         """
         f = self.get_preview_array(max_size)
         ( w,  h) = ( len(f), len(f[0]) )
-
-        # For some reason make_surface() is slower on an iMac than
-        # creating a new surface and blitting the image to it. Weird!
-        # I think this is the opposite for the Raspberry Pi 3b.
-        if False:
-            s=pygame.surfarray.make_surface(f)
-        else:
-            s = pygame.Surface((w,h))
-            pygame.surfarray.blit_array(s, f)
+        s=pygame.surfarray.make_surface(f)
 
         return s
 
