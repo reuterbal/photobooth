@@ -4,10 +4,18 @@
 # TODO: This really ought to be a single class with subclasses for
 # each backend (opencv, gphoto-cffi, piggyphoto, gphoto cmdline).
 
+import os
 import subprocess
 import pygame
 import numpy
 from PIL import Image
+
+
+# Temp directory for storing pictures
+if os.access("/dev/shm", os.W_OK):
+    tmp_dir = "/dev/shm/"       # Don't abuse Raspberry Pi SD card, if possible
+else:
+    tmp_dir = "/tmp/"
 
 
 cv_enabled = False
@@ -115,7 +123,7 @@ class Camera_cv:
     def has_preview(self):
         return True 
 
-    def take_preview(self, filename="/tmp/preview.jpg"):
+    def take_preview(self, filename=tmp_dir + "preview.jpg"):
         self.take_picture(filename)
 
     def get_preview_array(self, max_size=None):
@@ -191,9 +199,11 @@ class Camera_cv:
 class Camera_gPhoto:
     """Camera class providing functionality to take pictures using gPhoto 2"""
 
-    def __init__(self, resolution=(10000,10000), camera_rotate=False):
+    def __init__(self, resolution=(10000,10000),
+                 camera_rotate=False, preview_rotate=None):
         self.resolution = resolution # XXX Not used for gphoto?
-        self.rotate = camera_rotate  # XXX Not needed for gphoto?
+        self.rotate = camera_rotate  # XXX Not yet implemented for gphoto.
+        self.preview_rotate = preview_rotate if preview_rotate is not None else camera_rotate
 
         # Print the capabilities of the connected camera
         try:
@@ -249,6 +259,17 @@ class Camera_gPhoto:
     def get_rotate(self):
         return self.rotate
 
+    def set_preview_rotate(self, preview_rotate):
+        '''Is the preview rotated? Some cameras do not include the rotation
+        tag in the preview JPEG. That means, if the camera is on its
+        side and has a gravity sensor, the normal capture will not be
+        rotated, but the preview will be.
+        '''
+        self.preview_rotate = preview_rotate
+
+    def get_preview_rotate(self):
+        return self.preview_rotate
+
     def has_preview(self):
         return True
 
@@ -274,13 +295,16 @@ class Camera_gPhoto:
         elif piggyphoto_enabled:
             # Piggyphoto requires saving previews on filesystem! Yuck.
             # XXX BUG. Shouldn't presume /dev/shm/ exists everywhere.
-            piggy_preview = "/dev/shm/photobooth_piggy_preview.jpg"
+            piggy_preview = tmp_dir + "photobooth_piggy_preview.jpg"
             self.take_preview(piggy_preview)
             f=Image.open(piggy_preview)
+            if self.preview_rotate:
+                f=f.transpose(Image.ROTATE_90)
             f=numpy.array(f)
         else:
-            cmdline_preview = "/dev/shm/photobooth_cmdline_preview.jpg"
-            thumb_preview = "/dev/shm/thumb_photobooth_cmdline_preview.jpg"
+            filename = "photobooth_cmdline_preview.jpg"
+            cmdline_preview = tmp_dir + filename
+            thumb_preview = tmp_dir + "thumb_" + filename
             self.take_preview(cmdline_preview)
             try:
                 f=Image.open(thumb_preview)
@@ -317,7 +341,7 @@ class Camera_gPhoto:
 
         return s
 
-    def take_picture(self, filename="/tmp/picture.jpg"):
+    def take_picture(self, filename=tmp_dir + "picture.jpg"):
 
         # Note: this is *supposed* to handle self.rotate in the same
         # way the OpenCV code does. It doesn't yet. Maybe it doesn't
