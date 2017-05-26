@@ -13,8 +13,8 @@ from time import sleep, time
 from PIL import Image
 
 from gui import GuiException, GUI_PyGame as GuiModule
-from camera import CameraException, Camera_cv as CameraModule
-# from camera import CameraException, Camera_gPhoto as CameraModule
+#from camera import CameraException, Camera_cv as CameraModule
+from camera import CameraException, Camera_gPhoto as CameraModule
 from slideshow import Slideshow
 from events import Rpi_GPIO as GPIO
 
@@ -38,11 +38,14 @@ display_size = (0, 0)
 
 # Is the monitor on its side? (For portrait photos on landscape monitors).
 # If True, text will be rotated 90 degrees counterclockwise
-display_rotate = False
+display_rotate = True
 
-# Is the camera on its side? (For portrait photos without gravity sensor)
+# Is the camera on its side? (For portrait orientation. Note: EXIF is ignored!)
 # If True, the "right" side of the photo will be assumed to be the actual top.
-camera_rotate = False
+camera_rotate = True
+
+# Does the camera return rotated previews? (Set to None for same as camera_rotate)
+preview_rotate = None
 
 # Final size of assembled image (the montage of four thumbnails).
 # If printing, this should be same aspect ratio as the printer page.
@@ -276,10 +279,8 @@ class Photobooth:
             self.display.set_rotate(True)
 
         self.pictures      = PictureList(picture_basename)
-        self.camera        = CameraModule((picture_size[0]/2, picture_size[1]/2))
+        self.camera        = CameraModule((picture_size[0]/2, picture_size[1]/2), camera_rotate=camera_rotate, preview_rotate=preview_rotate)
         self.camera_rotate = camera_rotate
-        if camera_rotate:
-            self.camera.set_rotate(True)
 
         self.pic_size      = picture_size
         self.pose_time     = pose_time
@@ -511,9 +512,9 @@ class Photobooth:
 
         """
 
-        # If the camera is in portrait orientation but has no gravity sensor,
-        # we will need to rotate our assembled size as well. 
-        if self.camera.get_rotate():
+        # If the display is in portrait orientation,
+        # we should create an assembled image that fits it. 
+        if self.display.get_rotate():
             (H, W) = self.pic_size
         else:
             (W, H) = self.pic_size
