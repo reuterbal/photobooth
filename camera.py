@@ -206,7 +206,7 @@ class Camera_gPhoto:
                 print(self.cap.abilities)
             else:
                 print "Connecting to camera using command line gphoto2"
-                print(self.call_gphoto("-a", "/dev/null"))
+                print(self.call_gphoto("-a"))
         except CameraException as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
         except gpExcept as e:
@@ -216,7 +216,15 @@ class Camera_gPhoto:
         "Not needed for gphoto."
         return
 
-    def call_gphoto(self, action, filename):
+    def call_gphoto(self, action, filename="/dev/null"):
+        '''Run a gphoto2 command as a subprocess. 
+
+        action is in the form of a valid command line argument, e.g.,
+        '-a' or '--set-config capture=0'.
+
+        filename is the name of the JPG file written to by --capture and --preview.
+
+        '''
         # Try to run the command
         try:
             cmd = "gphoto2 --force-overwrite --quiet " + action + " --filename " + filename
@@ -263,11 +271,11 @@ class Camera_gPhoto:
             jpeg=self.cap.get_preview()
             f=numpy.array(Image(jpeg)) # Untested, but should work
 
-        elif piggyphoto_enabled:        # XXXX PLEASE TEST PLEASE TEST  XXXX
-            # Piggyphoto requires saving previews on filesystem!
+        elif piggyphoto_enabled:
+            # Piggyphoto requires saving previews on filesystem! Yuck.
             # XXX BUG. Shouldn't presume /dev/shm/ exists everywhere.
             piggy_preview = "/dev/shm/photobooth_piggy_preview.jpg"
-            self.cap.capture_preview(piggy_preview)
+            self.take_preview(piggy_preview)
             f=Image.open(piggy_preview)
             f=numpy.array(f)
         else:
