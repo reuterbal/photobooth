@@ -10,7 +10,6 @@ import pygame
 import numpy
 from PIL import Image
 
-
 # Temp directory for storing pictures
 if os.access("/dev/shm", os.W_OK):
     tmp_dir = "/dev/shm/"       # Don't abuse Raspberry Pi SD card, if possible
@@ -275,12 +274,15 @@ class Camera_gPhoto:
         If a maximum size -- (w,h) -- is passed in, the returned image
         will be quickly decimated using numpy to be at most that large.
         """
-        if gphoto2cffi_enabled:        # XXXX PLEASE TEST PLEASE TEST  XXXX
-            jpeg=self.cap.get_preview()
-            f=numpy.array(Image(jpeg)) # Untested, but should work
+        if gphoto2cffi_enabled:
+            # Cffi can return the preview as a string. Yay!
+            import StringIO   # Ugh. PIL wants stdio methods. (Maybe use scipy?)
+            jpeg= StringIO.StringIO(self.cap.get_preview())
+            f=numpy.array(Image.open(jpeg))
 
         elif piggyphoto_enabled:
             # Piggyphoto requires saving previews on filesystem! Yuck.
+            # Probably should try a stringio hack, like for CFFI, above.
             piggy_preview = tmp_dir + "photobooth_piggy_preview.jpg"
             self.take_preview(piggy_preview)
             f=Image.open(piggy_preview)
