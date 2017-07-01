@@ -347,7 +347,10 @@ class Camera_gPhoto:
 
     def set_idle(self):
         if gphoto2cffi_enabled:
-            self.cap._get_config()['actions']['viewfinder'].set(False)
+            if 'viewfinder' in self.cap._get_config()['actions']:
+                self.cap._get_config()['actions']['viewfinder'].set(False)
+            else:
+                pass
         elif piggyphoto_enabled:
             pass
             # This doesn't work...
