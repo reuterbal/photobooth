@@ -240,18 +240,29 @@ class Camera_gPhoto:
         "Not needed for gphoto."
         return
 
-    def call_gphoto(self, action, filename="/dev/null"):
+    def call_gphoto(self, action, filename="/dev/null", verbose=False):
         '''Run a gphoto2 command as a subprocess. 
 
         action is in the form of a valid command line argument, e.g.,
         '-a' or '--set-config capture=0'.
 
-        filename is the name of the JPG file written to by --capture and --preview.
+        filename is the name of the JPG file written to by --capture.
 
+        The verbose flag simply removes "--quiet". Although the man
+        page for gphoto2 mentions the existence of a "--verbose" flag,
+        it doesn't work as of gphoto2 2.5.10.
+
+        Note that when using --capture-preview, the filename will
+        *always* be prefixed with "thumb_" as of gphoto2 2.5.10. You
+        can use the verbose flag to find out what gphoto2 has saved
+        your preview file as.
         '''
+
+        quiet="" if verbose else " --quiet "
+
         # Try to run the command
         try:
-            cmd = "gphoto2 --force-overwrite --quiet " + action + " --filename " + filename
+            cmd = "gphoto2 --force-overwrite " + quiet + " " + action + " --filename " + filename
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
             if "ERROR" in output:
                 raise subprocess.CalledProcessError(returncode=0, cmd=cmd, output=output)
@@ -285,7 +296,13 @@ class Camera_gPhoto:
         elif piggyphoto_enabled:
             self.cap.capture_preview(filename)	
         else:
-            self.call_gphoto("--capture-preview", filename)
+            # Gross. gphoto2 always prepends "thumb_" to the filename.
+            # Parse its verbose output ("Saving file as /tmp/thumb_foo.jpg").
+            thumbname=self.call_gphoto("--capture-preview", filename, verbose=True)
+            if thumbname.startswith("Saving file as "):
+                import os
+                thumbname=thumbname[15:].rstrip()
+                os.rename(thumbname, filename)
 
     def get_preview_array(self, max_size=None):
         """Get a quick preview from the camera and return it as a 2D array
