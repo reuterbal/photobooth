@@ -206,10 +206,19 @@ class Camera_gPhoto:
         # Print the capabilities of the connected camera
         try:
             if gphoto2cffi_enabled:
-                print "Connecting to camera using gphoto2cffi"
-                self.cap = gp.Camera()
-                print(self.cap.status)
-                print(self.cap.supported_operations)
+                try:
+                    print "Connecting to camera using gphoto2cffi"
+                    self.cap = gp.Camera()
+                    print(self.cap.status)
+                    print(self.cap.supported_operations)
+                except gp.errors.GPhoto2Error as e:
+                    print('Error: Could not open camera (' + e.message + ')')
+                    print('Make sure camera is turned on and plugged in, then restart this program.')
+                    raise e
+                except gp.errors.UnsupportedDevice as e:
+                    print('Error: Could not open camera (' + e.message + ')')
+                    print('Make sure camera is turned on and plugged in, then restart this program.')
+                    raise e
             elif piggyphoto_enabled:
                 print "Connecting to camera using piggyphoto"
                 self.cap = gp.camera()
@@ -217,19 +226,15 @@ class Camera_gPhoto:
             else:
                 print "Connecting to camera using command line gphoto2"
                 print(self.call_gphoto("-a"))
-        except gp.errors.GPhoto2Error as e:
-            print('Error: Could not open camera (' + e.message + ')')
-            print('Make sure camera is turned on and plugged in, then restart this program.')
-            raise e
-        except gp.errors.UnsupportedDevice as e:
-            print('Error: Could not open camera (' + e.message + ')')
-            print('Make sure camera is turned on and plugged in, then restart this program.')
-            raise e
         except CameraException as e:
-            print('Warning: Listing camera capabilities failed (' + e.message + ')')
+            if "not found" in e.message:
+                print("Could not find the 'gphoto2' command. Try: sudo apt-get install gphoto2")
+                exit (1)
+            else:
+                print('Warning: Listing camera capabilities failed (' + e.message + ')')
+
         except gpExcept as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
-            raise e
 
     def reinit(self):
         "Not needed for gphoto."
@@ -255,9 +260,10 @@ class Camera_gPhoto:
                 raise CameraException("Can't focus!\nMove a little bit!", True)
             elif "No camera found" in e.output:
                 raise CameraException("No (supported) camera detected!", False)
-            elif "command not found" in e.output:
+            elif "not found" in e.output:
                 raise CameraException("gPhoto2 not found!", False)
             else:
+                print("Unknown error running commandline gphoto2: " + e.output)
                 raise CameraException("Unknown error!\n" + '\n'.join(e.output.split('\n')[1:3]), False)
         return output
 
