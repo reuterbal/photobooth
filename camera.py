@@ -297,7 +297,11 @@ class Camera_gPhoto:
         if gphoto2cffi_enabled:
             # Cffi can return the preview as a string. Yay!
             import StringIO   # Ugh. PIL wants stdio methods. (Maybe use scipy?)
-            cffi_preview = StringIO.StringIO(self.cap.get_preview())
+            cffi_preview = self.cap.get_preview()
+            if len(cffi_preview) == 0:
+                print("gphoto2cffi's get_preview() returned an empty string. Power cycle camera?")
+                raise CameraException("get_preview failed.")
+            cffi_preview = StringIO.StringIO(cffi_preview)
             f=Image.open(cffi_preview)
             if self.rotate:     # Is camera on its side?
                 f=f.transpose(Image.ROTATE_90)
