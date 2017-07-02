@@ -200,13 +200,14 @@ class Camera_gPhoto:
 
     def __init__(self, resolution=(10000,10000), camera_rotate=False):
         self.resolution = resolution # XXX Not used for gphoto?
-        self.rotate = camera_rotate  # XXX Not yet implemented for gphoto.
+        self.rotate = camera_rotate
 
         # Print the capabilities of the connected camera
         try:
             if gphoto2cffi_enabled:
                 print "Connecting to camera using gphoto2cffi"
                 self.cap = gp.Camera()
+                print(self.cap.status)
             elif piggyphoto_enabled:
                 print "Connecting to camera using piggyphoto"
                 self.cap = gp.camera()
@@ -214,6 +215,10 @@ class Camera_gPhoto:
             else:
                 print "Connecting to camera using command line gphoto2"
                 print(self.call_gphoto("-a"))
+        except gp.errors.UnsupportedDevice as e:
+            print('Error: Could not open camera (' + e.message + ')')
+            print('Make sure camera is turned on and plugged in, then restart this program.')
+            raise e
         except CameraException as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
         except gpExcept as e:
@@ -250,6 +255,8 @@ class Camera_gPhoto:
         return output
 
     def set_rotate(self, camera_rotate):
+        # Theoretically we could use cap.status.orientation for CFFI
+        # (not piggyphoto, though), but that won't work for all cameras.
         '''Force rotation of camera. Currently EXIF Orientation is always ignored.'''
         self.rotate = camera_rotate
 
@@ -277,9 +284,11 @@ class Camera_gPhoto:
         if gphoto2cffi_enabled:
             # Cffi can return the preview as a string. Yay!
             import StringIO   # Ugh. PIL wants stdio methods. (Maybe use scipy?)
-            jpeg= StringIO.StringIO(self.cap.get_preview())
-            f=numpy.array(Image.open(jpeg))
-
+            cffi_preview = StringIO.StringIO(self.cap.get_preview())
+            f=Image.open(cffi_preview)
+            if self.rotate:     # Is camera on its side?
+                f=f.transpose(Image.ROTATE_90)
+            f=numpy.array(f)
         elif piggyphoto_enabled:
             # Piggyphoto requires saving previews on filesystem! Yuck.
             # Probably should try a stringio hack, like for CFFI, above.
@@ -331,11 +340,17 @@ class Camera_gPhoto:
 
     def take_picture(self, filename=tmp_dir + "picture.jpg"):
         if gphoto2cffi_enabled:
-            self._save_picture(filename, self.cap.capture())
+            try:
+                self._save_picture(filename, self.cap.capture())
+            except gp.errors.CameraIOError:
+                # Bug in gphoto2cffi? On my Canon A510, I have to do this
+                f=self.cap.capture(to_camera_storage=True)
+                f.save(filename)
         elif piggyphoto_enabled:
             self.cap.capture_image(filename)
         else:
             self.call_gphoto("--capture-image-and-download", filename)
+
         if self.rotate:         # Is camera on its side?
             f=Image.open(filename)
             f=f.transpose(Image.ROTATE_90)
@@ -348,12 +363,17 @@ class Camera_gPhoto:
         f.close()
 
     def set_idle(self):
-        if gphoto2cffi_enabled:
-            if 'viewfinder' in self.cap._get_config()['actions']:
-                self.cap._get_config()['actions']['viewfinder'].set(False)
-            else:
+        try:
+            if gphoto2cffi_enabled:
+                if 'viewfinder' in self.cap._get_config()['actions']:
+                    self.cap._get_config()['actions']['viewfinder'].set(False)
+                else:
+                    pass
+            elif piggyphoto_enabled:
                 pass
-        elif piggyphoto_enabled:
+                # This doesn't work...
+                #self.cap.config.main.actions.viewfinder.value = 0
+
+        except:
+            # set_idle is run when quitting, so errors should be ignored.
             pass
-            # This doesn't work...
-            #self.cap.config.main.actions.viewfinder.value = 0
