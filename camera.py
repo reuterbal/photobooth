@@ -201,6 +201,7 @@ class Camera_gPhoto:
     def __init__(self, resolution=(10000,10000), camera_rotate=False):
         self.resolution = resolution # XXX Not used for gphoto?
         self.rotate = camera_rotate
+        self.gphoto2cffi_buggy_capture=False # Work around bug in capture()?
 
         # Print the capabilities of the connected camera
         try:
@@ -208,6 +209,7 @@ class Camera_gPhoto:
                 print "Connecting to camera using gphoto2cffi"
                 self.cap = gp.Camera()
                 print(self.cap.status)
+                print(self.cap.supported_operations)
             elif piggyphoto_enabled:
                 print "Connecting to camera using piggyphoto"
                 self.cap = gp.camera()
@@ -215,6 +217,10 @@ class Camera_gPhoto:
             else:
                 print "Connecting to camera using command line gphoto2"
                 print(self.call_gphoto("-a"))
+        except gp.errors.GPhoto2Error as e:
+            print('Error: Could not open camera (' + e.message + ')')
+            print('Make sure camera is turned on and plugged in, then restart this program.')
+            raise e
         except gp.errors.UnsupportedDevice as e:
             print('Error: Could not open camera (' + e.message + ')')
             print('Make sure camera is turned on and plugged in, then restart this program.')
@@ -223,6 +229,7 @@ class Camera_gPhoto:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
         except gpExcept as e:
             print('Warning: Listing camera capabilities failed (' + e.message + ')')
+            raise e
 
     def reinit(self):
         "Not needed for gphoto."
@@ -340,12 +347,21 @@ class Camera_gPhoto:
 
     def take_picture(self, filename=tmp_dir + "picture.jpg"):
         if gphoto2cffi_enabled:
-            try:
-                self._save_picture(filename, self.cap.capture())
-            except gp.errors.CameraIOError:
-                # Bug in gphoto2cffi? On my Canon A510, I have to do this
+            if self.gphoto2cffi_buggy_capture:
                 f=self.cap.capture(to_camera_storage=True)
                 f.save(filename)
+                f.remove()
+            else:
+                try:
+                    self._save_picture(filename, self.cap.capture())
+                except gp.errors.CameraIOError as e:
+                    # The above fails on Canon A510 ("File not found")
+                    print('gphoto2cffi capture() error: ' + e.message) 
+                    print('Detected gphoto2cffi capture bug. Trying with to_camera_storage=True.') 
+                    self.gphoto2cffi_buggy_capture=True
+                    f=self.cap.capture(to_camera_storage=True)
+                    f.save(filename)
+                    f.remove()
         elif piggyphoto_enabled:
             self.cap.capture_image(filename)
         else:
