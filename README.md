@@ -23,12 +23,13 @@ setting display_size in photobooth.py).
 writing to /tmp. SD Cards, like on the Raspberry Pi, have a limited
 number of writes and so it doesn't make sense to be writing 30 JPEGs
 per second while people are posing.
-* Helper script (jbp.sh) for Raspian (or Debian Jessie) to install a working
+* Helper script (utils/jbp.sh) for Raspian (or Debian Jessie) to install a working
 version of gphoto2. The photobooth program requires gphoto2 >= 2.5.6,
 but it's not in the standard repositories. The original author
 suggested downloading and compiling it from source, which works but
-takes a very long time on a Pi. Much simpler and faster is to add the "backports"
-repository and install a newer gphoto from there.
+takes a very long time on a Pi. Much simpler and faster is to add the
+"jessie backports" repository and install a newer gphoto from there.
+The jbp.sh script takes care of doing all of that for you.
 * Framerate greatly improved during preview. The original code was so
 slow (at least with the webcams I was using) that posing for pictures
 was difficult. (Biggest improvements from blitting an array instead of
