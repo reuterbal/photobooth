@@ -148,7 +148,7 @@ rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
      not being able to show a "true" black. (Darkest color is 16, not 0).
 
    * Group 2: DMT (Display Monitor Timing), which is intended for
-     computer monitors. CEA modes are always progressive, never
+     computer monitors. DMT modes are always progressive, never
      interlaced. DMT doesn't have CEA's overscan annoyances and will
      actually use the darkest black available on your monitor. The
      downside is that DMT modes default to using the DVI "drive" which
