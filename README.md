@@ -1,6 +1,247 @@
 # photobooth
 A Raspberry-Pi powered photobooth using gPhoto 2.
 
+<img src="README.md.d/polaroid_overlap.png" max-width="100%"
+     title="Examples from Photobooth"/>
+
+## Spork notice
+
+This was intended to be a temporary fork from br's original
+photobooth. However, he/she has not yet responded to my pull requests
+to fold my additions back into the original project. You'll find br's
+original README appended below my notes. --b9
+
+### Major differences
+* Allow portrait photos (just like a real photobooth!) by putting
+camera and monitor on their side. You can either edit the
+photobooth.py file and change display_rotate and camera_rotate, or
+just hit the 'r' key at run time toggle rotation.
+* Automatically prints to default printer if python-cups is installed.
+  * The idea is that you'll set up the default queue to be a photo printer set to 4x6 (or whatever paper size you use).
+  * Automatic printing can be disabled by default in the program by setting auto_print=False at the top of photobooth.py.
+  * Automatic printing can be toggled at run time by hitting the 'p' key.
+  * An individual print can be cancelled during a 10 second countdown. If the button is pressed (or actually any event happens) during that time, printing will be cancelled.
+* Much improved display handling. Now defaults to native resolution instead
+of being hardcoded to 1824x984. (You can still force a resolution by
+setting display_size in photobooth.py).
+* Uses /dev/shm (if available) to store preview files instead of
+writing to /tmp. SD Cards, like on the Raspberry Pi, have a limited
+number of writes and so it doesn't make sense to be writing 30 JPEGs
+per second while people are posing.
+* Helper script (utils/jbp.sh) for Raspian (or Debian Jessie) to install a working
+version of gphoto2. The photobooth program requires gphoto2 >= 2.5.6,
+but it's not in the standard repositories. The original author
+suggested downloading and compiling it from source, which works but
+takes a very long time on a Pi. Much simpler and faster is to add the
+"jessie backports" repository and install a newer gphoto from there.
+The jbp.sh script takes care of doing all of that for you.
+* Framerate greatly improved during preview. The original code was so
+slow (at least with the webcams I was using) that posing for pictures
+was difficult. (Biggest improvements from blitting an array instead of
+a Pygame Surface, blitting to a subsurface of the display, and from
+caching the countdown rendered text.)
+* If you're curious about your frame rate, you can press '1' to test
+the original blitting (but with the improved text cache), or '2' which
+adds the improved array blitting, or '3' which adds subsurface
+blitting. After 5 seconds, the screen will show your FPS.
+
+
+### Implementation notes
+
+In theory, reality and theory are the same. In reality, they are not.
+Here are some notes on things I did to make this photobooth work
+nicely on the particular hardware I have. (Raspberry Pi 3B, HP w2207h
+rotatable HDMI monitor with builtin speakers, Logitech QuickCam)
+
+* First problem: Setting up the photo printer required an ugly kludge.
+  The first printer I tested (Canon Pixma MP) actually worked great
+  once I set a few default options to the [CUPS
+  queue](http://localhost:631/):
+
+  * Media size: 4x6
+  * Color Precision: Best
+  * Media Type: Glossy Photo Paper
+  * Shrink page if necessary: Shrink (print the whole page)
+  * Borderless: Yes
+  * Error Policy: abort-job
+
+  I could just send any JPEG over and the Gutenprint driver would
+  automatically rotate, scale, and center it for me. Nice!
+
+  However, the next printer I tried, an HP Officejet 7300, did not
+  have a nice Gutenprint driver. Instead, I had to use hpcups
+  (`apt-get install printer-driver-hpcups)`, which apparently does not
+  rotate, shrink, or center images.
+
+* Printing solution: I made a hack that simply calls ImageMagick's
+  `convert` before printing to rotate and force the media size to be
+  4x6:
+
+  ```
+  convert filename.jpg -rotate -90 -page 4x6 filename.pdf
+  ```
+
+  This works because the print driver apparently obeys the page size
+  specified in PNG and PDF files and scales appropriately.
+
+  * DIGRESSION: the proper solution would perhaps have been to change
+  the photobooth.py software to handle all rotate, scale, and
+  centering on its own. However, that would require photobooth.py
+  knowing the media size, which turns out to be rather ugly. It is
+  possible to query CUPS for the current media size, but it returns
+  strings which are driver dependent. For example, for Gutenprint I
+  would specify "4x6", but for hpcups, I need to specify "Photo4x6.FB"
+  (I believe "FB" stands for "full bleed" which means "don't add
+  borders").
+
+* Second problem: no camera. I had intended to use my nifty Canon
+  PowerShot for capturing the photos. I had not known that Canon
+  stopped allowing any API remote control of the PowerShot line and so
+  it would not work. (Shoulda kept my old PowerShot!)
+
+* [Here](http://gphoto.org/doc/remote) is a (partial) list of gphoto2
+  compatible cameras which *can* do "remote capture" (snap a photo
+  under computer control).
+
+* Solution: I ransacked my junk draw and came up with an old USB
+  webcam (Logitech QuickCam, VGA). It worked once I switched
+  photobooth.py to use OpenCV instead of Gphoto. (Thank you original
+  author, BR, who thoughtfully added in that option!) However, it was
+  limited to VGA resolution (640x480) and the kernel driver (gspca)
+  seems a bit glitchy. (Occasional graphical artifacts, sometimes
+  camera needs to be unplugged and replugged in. It may not be a
+  driver problem: perhaps my power supply can't supply enough
+  current?)
+
+* Next problem: postage stamp sized previews during the "POSE" time.
+  As noted above, for speed I had changed the photobooth to blit a raw
+  array (not a Surface) to the pygame display. One cannot easily scale
+  up raw arrays (Pygame transformations only work on Surfaces), so my
+  code works great if the camera is a higher resolution than the
+  display (which is what you'd normally expect). However, my lousy
+  resolution QuickCam gave me a tiny island of a preview, adrift in a
+  sea of black, wasted pixels.
+
+  On a normal computer, it is possible to force the screen resolution
+  to be lower by setting `display_size = (640, 480)` in photobooth.py.
+  However, that does not work for my situation as the Raspberry Pi 3B
+  is not able to dynamically switch the HDMI resolution.
+
+* Solution: edit /boot/config.txt and force the HDMI mode to a lower
+  resolution. I set mine to 640x480 like so:
+    ```
+    hdmi_group=2
+    hdmi_mode=4
+    ```
+  I found which mode number was 640x480 by typing `tvservice -m DMT` .
+
+* To play a nice shutter sound when taking pictures, I enabled HDMI
+    audio by editing /boot/config.txt and uncommenting `hdmi_drive=2`.
+
+* DIGRESSION: the Raspberry Pi can configure an HDMI monitor in one of
+  two ways:
+
+   * Group 1: CEA (Consumer Electronics Association), which is
+     intended for televisions. CEA has the benefit of automatically
+     using speakers builtin to the display. It has the downside of
+     using "overscan" (a black border around the image) by default and
+     not being able to show a "true" black. (Darkest color is 16, not 0).
+
+   * Group 2: DMT (Display Monitor Timing), which is intended for
+     computer monitors. DMT modes are always progressive, never
+     interlaced. DMT doesn't have CEA's overscan annoyances and will
+     actually use the darkest black available on your monitor. The
+     downside is that DMT modes default to using the DVI "drive" which
+     cannot send audio to speakers over HDMI.
+
+     You can force a Raspberry Pi to find your monitor's speakers
+     either permanently or temporarily:
+
+     *** Permanently: uncomment or add `hdmi_drive=2` in
+         /boot/config.txt and reboot.
+
+     *** Temporarily: Use the `tvservice -e ... HDMI` command and then
+         switch virtual terminals to refresh the screen.
+         Unfortunately, tvservice doesn't let you change just the
+         DRIVE, you have to change the GROUP and MODE simultaneously,
+         so you'll need to run `tvservice -s` first to find out what
+         GROUP and MODE you are using. (Note that `tvservice -s` shows
+         the DRIVE at the beginning, but `tvservice -e` requires the
+         DRIVE to be specified at the end.)
+
+	 ```
+	 $ tvservice -s
+	 state 0x12000a [DVI DMT (58) RGB full 16:10], 1680x1050 @ 60.00Hz, progressive
+
+	 $ tvservice -e "DMT 58 HDMI"
+	 $ # Now press Ctrl-Alt-F1 then Ctrl-Alt-F7
+	 ```
+* Sound latency
+
+  If you have trouble with the shutter and beep sounds seeming to come
+  half a second too late, try running 'pulseaudio --kill' at the
+  command line and try running photobooth again. That fixes it for me.
+
+### GPIO pins
+
+The photobooth uses two GPIO pins for switches and one for an LED
+lamp.
+* GPIO 24 (pin 18): button to shutdown photobooth
+* GPIO 23 (pin 16): button to take pictures
+* GPIO  4 (pin  7): +3.3V for blinking LED (use a resistor)
+
+They can hooked up to any convenient GND, but some handy ones are
+shown in the diagram below.
+
+    /---------------------------\
+    | 01          02            |
+    | 03          04            |
+    | 05          06            |
+    | 07 LED+     08            |
+    | 09 Gnd      10            |
+    | 11          12            |
+    | 13          14 Gnd        |
+    | 15          16 SNAP PHOTO |
+    | 17          18 SHUTDOWN   |
+    | 19          20 Gnd        |
+    | 21          22            |
+    | 23          24            |
+    | 25          26            |
+    | 27          28            |
+    | 29          30            |
+    | 31          32            |
+    | 33          34            |
+    | 35          36            |
+    | 37          38            |
+    | 39          40            |
+    \---------------------------/
+
+### Sounds provenance
+
+The sound files "shutter.wav", "bip1.wav", and "bip2.wav" are from
+Freesound.org. Bip1 and 2 were created by Xinaesthete and are under a
+Creative Commons Attribution License. You can download the original
+files from:
+
+      https://www.freesound.org/people/xinaesthete/sounds/26953/
+      https://www.freesound.org/people/xinaesthete/sounds/26954/
+
+### Happy Ending
+
+Two love-struck teens who met at a party where hackerb9's Photobooth
+was installed were orbiting around each other the entire night, both
+too shy to swap contact info. Until the very end, that is. The guy
+took a photobooth print that had them looking especially cute, cut it,
+saved two photos for himself, scribbled his number on the other two,
+and passed it to the girl as they parted ways. I don't know if they
+ever dated, but I suspect so given how pleased she was with the
+gesture.
+
+____
+
+## I've appended below, nearly unchanged, br's original README file.
+
+
 ## Description
 Python application to build your own photobooth using a [Raspberry Pi](https://www.raspberrypi.org/), [gPhoto2](http://gphoto.sourceforge.net/) and [pygame](https://www.pygame.org).
 
@@ -12,6 +253,9 @@ The code was developed from scratch but inspired by the following tutorials/proj
 ## Requirements
 
 ### Software stack
+
+    TLDR: sudo apt-get install python-pygame gphoto2 python-opencv python-cups
+
 The following is required for running this photobooth application. I used the versions given in brackets, others might work just as well.
 
 * [Python](https://www.python.org) (2.7.3)
@@ -32,7 +276,7 @@ RPi.GPIO is necessary to use external buttons as a trigger but it works just fin
 Simply download `photobooth.py` or clone the repository and run it.
 It opens the GUI, prints the features of the connected camera, e.g.,
 ```
-$ ./photobooth.py 
+$ ./photobooth.py
 Abilities for camera             : Canon EOS 500D
 Serial port support              : no
 USB support                      : yes
@@ -53,7 +297,7 @@ Available actions:
 * Press `c`: Take four pictures, arrange them in a grid and display them for some seconds.
 * Hit a switch that closes GPIO23 (Pin 16) and GND: Take four pictures, arrange them in a grid and display them for some seconds.
 * Click anywhere on the screen: Take four pictures, arrange them in a grid and display them for some seconds.
- 
+
 All pictures taken are stored in a subfolder of the current working directory, named `YYYY-mm-dd` after the current date. Existing files are not overwritten.
 
 ## Installation
@@ -75,7 +319,7 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
 4. Run `sudo apt-get update` and `sudo apt-get upgrade` to upgrade all installed software.
 
 5. Install any additionally required software:
-  * Pillow: 
+  * Pillow:
 
     ```
     sudo apt-get install python-dev python-pip libjpeg8-dev
@@ -117,7 +361,13 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
 
 8. Optional but highly recommended, as it improves performance significantly: install some Python bindings for gPhoto2. For that, either [Piggyphoto](https://github.com/alexdu/piggyphoto) or [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi) can be used. At the moment, Piggyphoto doesn't allow to disable the sensor while idle, so gphoto2-cffi is preferred.
 
-   8.1 Installing gphoto2-cffi:
+   8.1a Install gphoto2-cffi:
+   ```
+   sudo apt-get install python-pip
+   sudo pip install gphoto2-cffi
+   ```
+   		
+   8.1b Alternate: Installing gphoto2-cffi (the hard way):
    Install [cffi](https://bitbucket.org/cffi/cffi)
    ```
    sudo apt-get install libffi6 libffi-dev python-cffi
@@ -130,7 +380,12 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
    sudo python setup.py install
    ```
 
-   8.2 Install Piggyphoto:
+   8.2a Install Piggyphoto:
+   ```
+   sudo apt-get install python-piggyphoto
+   ```
+
+   8.2b Alternate: Install Piggyphoto (the old way):
    Download [Piggyphoto](https://github.com/alexdu/piggyphoto) and put the folder `piggyphoto` into the Photobooth-directory.
 
 9. Optionally make the software run automatically on startup. To do that, you must simply add a corresponding line in the autostart file of LXDE, which can be found at `~/.config/lxsession/LXDE-pi/autostart`. Assuming you cloned the Photobooth repository into `/home/pi/photobooth`, add the following line into the autostart-file:
