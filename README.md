@@ -2,7 +2,7 @@
 A Raspberry-Pi powered photobooth using gPhoto 2.
 
 ![Example photo from this program ](/README.md.d/pic00025.jpg)
-<img src="README.md.d/pic00025.jpg" width="20%" />
+<img src="README.md.d/pic00025.jpg" width="100cm" />
 
 ## Spork notice
 
