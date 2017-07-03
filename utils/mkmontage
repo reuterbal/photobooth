@@ -1,0 +1,14 @@
+#!/bin/sh -x
+# Just a helper script to make the montage of photos to use as
+# examples in README.md.d/. With 9 photos, this results in an image
+# exactly 600 pixels wide .
+# 
+
+montage -shadow null: *.jpg null:\
+	-auto-orient  -thumbnail 400x400 \
+        -background black +polaroid -resize 30% \
+        -gravity center -background none -extent 160x160 \
+        -background none -geometry -50+5  -tile x1  polaroid_overlap.png
+
+convert polaroid_overlap.png -shave 2 foo.png
+mv foo.png polaroid_overlap.png
