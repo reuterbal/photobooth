@@ -342,7 +342,13 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
 
 8. Optional but highly recommended, as it improves performance significantly: install some Python bindings for gPhoto2. For that, either [Piggyphoto](https://github.com/alexdu/piggyphoto) or [gphoto2-cffi](https://github.com/jbaiter/gphoto2-cffi) can be used. At the moment, Piggyphoto doesn't allow to disable the sensor while idle, so gphoto2-cffi is preferred.
 
-   8.1 Installing gphoto2-cffi:
+   8.1a Install gphoto2-cffi:
+   ```
+   sudo apt-get install python-pip
+   sudo pip install gphoto2-cffi
+   ```
+   		
+   8.1b Alternate: Installing gphoto2-cffi (the hard way):
    Install [cffi](https://bitbucket.org/cffi/cffi)
    ```
    sudo apt-get install libffi6 libffi-dev python-cffi
@@ -355,7 +361,12 @@ A brief description on how to set-up a Raspberry Pi to use this photobooth softw
    sudo python setup.py install
    ```
 
-   8.2 Install Piggyphoto:
+   8.2a Install Piggyphoto:
+   ```
+   sudo apt-get install python-piggyphoto
+   ```
+
+   8.2b Alternate: Install Piggyphoto (the old way):
    Download [Piggyphoto](https://github.com/alexdu/piggyphoto) and put the folder `piggyphoto` into the Photobooth-directory.
 
 9. Optionally make the software run automatically on startup. To do that, you must simply add a corresponding line in the autostart file of LXDE, which can be found at `~/.config/lxsession/LXDE-pi/autostart`. Assuming you cloned the Photobooth repository into `/home/pi/photobooth`, add the following line into the autostart-file:
