@@ -1,7 +1,8 @@
 # photobooth
 A Raspberry-Pi powered photobooth using gPhoto 2.
 
-<img src="README.md.d/polaroid_overlap.png" width="100%" alt="Examples from Photobooth"/>
+<img src="README.md.d/polaroid_overlap.png" max-width="100%"
+     title="Examples from Photobooth"/>
 
 ## Spork notice
 
