@@ -1,10 +1,14 @@
 # photobooth
 A Raspberry-Pi powered photobooth using gPhoto 2.
 
+![Example photo from this program ](/README.md.d/pic00025.jpg)
+
 ## Spork notice
-This is intended to be a temporary fork from br's original photobooth.
-Hopefully, he/she will fold my additions back into the original
-project. You'll find br's original README appended below. --b9
+
+This was intended to be a temporary fork from br's original
+photobooth. However, he/she has not yet responded to my pull requests
+to fold my additions back into the original project. You'll find br's
+original README appended below my notes. --b9
 
 ### Major differences
 * Allow portrait photos (just like a real photobooth!) by putting
