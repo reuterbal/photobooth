@@ -226,6 +226,19 @@ files from:
       https://www.freesound.org/people/xinaesthete/sounds/26953/
       https://www.freesound.org/people/xinaesthete/sounds/26954/
 
+### Happy Ending
+
+Two love-struck teens who met at a party where hackerb9's Photobooth
+was installed were orbiting around each other the entire night, both
+too shy to swap contact info. Until the very end, that is. The guy
+took a photobooth print that had them looking especially cute, cut it,
+saved two photos for himself, scribbled his number on the other two,
+and passed it to the girl as they parted ways. I don't know if they
+ever dated, but I suspect so given how pleased she was with the
+gesture.
+
+____
+
 ## I've appended below, nearly unchanged, br's original README file.
 
 
