@@ -1,4 +1,0 @@
-#define transparent_width 8
-#define transparent_height 8
-static unsigned char transparent_bits[] = {
-   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
