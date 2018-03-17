@@ -5,5 +5,5 @@ import Config, PyQt5Gui
 
 def main(argv):
 
-	config = Config.Config('photobooth.cfg')
-	return PyQt5Gui.run(argv, config)
+    config = Config.Config('photobooth.cfg')
+    return PyQt5Gui.run(argv, config)
