@@ -1,16 +1,83 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout)
+from PyQt5.QtGui import QPainter, QPixmap
 
-class PyQt5Gui(QMainWindow):
+class PyQt5Gui:
+
+    def __init__(self, argv, config):
+
+        global cfg
+        cfg = config
+
+        self._app = QApplication(argv)
+        self._p = PyQt5MainWindow()
+
+
+    def run(self, send, recv):
+
+        receiver = PyQt5Receiver(recv)
+        receiver.notify.connect(self._p.showMessage)
+        receiver.start()
+
+        self._p.transport = send
+
+        return self._app.exec_()
+
+
+class PyQt5Receiver(QThread):
+
+    notify = pyqtSignal(object)
+
+    def __init__(self, transport):
+
+        super().__init__()
+
+        self._transport = transport
+
+
+    def handle(self, event):
+
+        self.notify.emit(event)
+
+
+    def run(self):
+
+        while True:
+            try:
+                event = self._transport.recv()
+            except EOFError:
+                break
+            else:
+                print('Connector: ' + event)
+                self.handle(event)
+
+
+
+class PyQt5MainWindow(QMainWindow):
 
     def __init__(self):
 
         super().__init__()
 
         self.initUI()
+
+
+    @property
+    def transport(self):
+
+        return self._transport
+
+
+    @transport.setter
+    def transport(self, new_transport):
+
+        if not hasattr(new_transport, 'send'):
+            raise ValueError('PyQt5MainWindow.transport must provide send()')
+
+        self._transport = new_transport
 
 
     def initUI(self):
@@ -40,24 +107,35 @@ class PyQt5Gui(QMainWindow):
         self.setCentralWidget(content)
 
 
+    def showIdle(self):
+        
+        self.showMessage('Hit the button!', 'homer.jpg')
+
+
+    def showMessage(self, message, picture=None):
+
+        content = PyQt5PictureMessage(message, picture)
+        self.setCentralWidget(content)
+
+
     def closeEvent(self, e):
 
         reply = QMessageBox.question(self, 'Confirmation', "Quit Photobooth?",
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
+            self.transport.close()
             e.accept()
         else:
             e.ignore()
 
 
-    def keyPressEvent(self, e):
-        pass
-        # if self.photobooth.status == Status.idle:
-        #     if e.key() == Qt.Key_Escape:
-        #         self.showStart()
-            # elif e.key() == Qt.Key_Space:
-            #     self.centralWidget().trigger()
+    def keyPressEvent(self, event):
+
+        if event.key() == Qt.Key_Escape:
+            self.showStart()
+        elif event.key() == Qt.Key_Space:
+            self.transport.send('triggered')
 
 
 
@@ -66,7 +144,7 @@ class PyQt5Start(QFrame):
 
     def __init__(self, parent):
         
-        super().__init__(parent)
+        super().__init__()
 
         self.initFrame(parent)
 
@@ -79,7 +157,7 @@ class PyQt5Start(QFrame):
 
         btnStart = QPushButton('Start Photobooth')
         btnStart.resize(btnStart.sizeHint())
-        # btnStart.clicked.connect(parent.showPhotobooth)
+        btnStart.clicked.connect(parent.showIdle)
         grid.addWidget(btnStart, 0, 0)
 
         btnSettings = QPushButton('Settings')
@@ -98,7 +176,7 @@ class PyQt5Settings(QFrame):
 
     def __init__(self, parent):
         
-        super().__init__(parent)
+        super().__init__()
 
         self._parent = parent
         self.initFrame()
@@ -247,11 +325,32 @@ class PyQt5Settings(QFrame):
         self._parent.showSettings()
 
 
-def run(argv, config):
 
-    global cfg
-    cfg = config
+class PyQt5PictureMessage(QFrame):
 
-    app = QApplication(argv)
-    p = PyQt5Gui()
-    return app.exec_()
+    def __init__(self, message, picture=None):
+        
+        super().__init__()
+
+        self._message = message
+        self._picture = picture
+
+        self.initFrame()
+
+
+    def initFrame(self):
+
+        self.setStyleSheet('background-color: black;')
+
+
+    def paintEvent(self, event):
+
+        painter = QPainter()
+        painter.begin(self)
+
+        if self._picture != None:
+            pix = QPixmap(self._picture).scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            painter.drawPixmap(pix.rect(), pix, pix.rect())
+
+        painter.drawText(event.rect(), Qt.AlignCenter, self._message)
+        painter.end()
