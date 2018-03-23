@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import Gui
+
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout)
-from PyQt5.QtGui import QPainter, QPixmap
+from PyQt5.QtGui import QImage, QPainter, QPixmap
 
-class PyQt5Gui:
+class PyQt5Gui(Gui.Gui):
 
     def __init__(self, argv, config):
+
+        super().__init__()
 
         global cfg
         cfg = config
@@ -19,12 +23,54 @@ class PyQt5Gui:
     def run(self, send, recv):
 
         receiver = PyQt5Receiver(recv)
-        receiver.notify.connect(self._p.showMessage)
+        receiver.notify.connect(self.handleState)
         receiver.start()
 
         self._p.transport = send
+        self._p.handleEscape = self.showStart
+
+        self.showStart()
 
         return self._app.exec_()
+
+
+    def close(self):
+
+        self._p.close()
+
+
+    def handleState(self, state):
+
+        if not isinstance(state, Gui.GuiState):
+            raise ValueError('Invalid data received')
+
+        if isinstance(state, Gui.IdleState):
+            self.showIdle()
+        elif isinstance(state, Gui.PoseState):
+            self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
+        elif isinstance(state, Gui.PreviewState):
+            img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
+            self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
+        elif isinstance(state, Gui.PictureState):
+            img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
+            self._p.setCentralWidget(PyQt5PictureMessage('', QPixmap.fromImage(img)))
+        else:
+            raise ValueError('Unknown state')
+
+
+    def showStart(self):
+
+        self._p.setCentralWidget(PyQt5Start(self))
+
+
+    def showSettings(self):
+
+        self._p.setCentralWidget(PyQt5Settings(self))
+
+
+    def showIdle(self):
+
+        self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!', 'homer.jpg'))
 
 
 class PyQt5Receiver(QThread):
@@ -38,21 +84,20 @@ class PyQt5Receiver(QThread):
         self._transport = transport
 
 
-    def handle(self, event):
+    def handle(self, state):
 
-        self.notify.emit(event)
+        self.notify.emit(state)
 
 
     def run(self):
 
         while True:
             try:
-                event = self._transport.recv()
+                state = self._transport.recv()
             except EOFError:
                 break
             else:
-                print('Connector: ' + event)
-                self.handle(event)
+                self.handle(state)
 
 
 
@@ -79,12 +124,25 @@ class PyQt5MainWindow(QMainWindow):
 
         self._transport = new_transport
 
+    @property
+    def handleEscape(self):
+
+        return self._handle_escape
+
+    @handleEscape.setter
+    def handleEscape(self, func):
+
+        if not callable(func):
+            raise ValueError('Escape key handler must be callable')
+
+        self._handle_escape = func
+
 
     def initUI(self):
 
         global cfg
 
-        self.showStart()
+        # self.showStart()
         self.setWindowTitle('Photobooth')
 
         if cfg.getBool('Gui', 'fullscreen'):
@@ -95,21 +153,21 @@ class PyQt5MainWindow(QMainWindow):
             self.show()
 
 
-    def showStart(self):
+    # def showStart(self):
 
-        content = PyQt5Start(self)
-        self.setCentralWidget(content)
-
-
-    def showSettings(self):
-
-        content = PyQt5Settings(self)
-        self.setCentralWidget(content)
+    #     content = PyQt5Start(self)
+    #     self.setCentralWidget(content)
 
 
-    def showIdle(self):
+    # def showSettings(self):
+
+    #     content = PyQt5Settings(self)
+    #     self.setCentralWidget(content)
+
+
+    # def showIdle(self):
         
-        self.showMessage('Hit the button!', 'homer.jpg')
+    #     self.showMessage('Hit the button!', 'homer.jpg')
 
 
     def showMessage(self, message, picture=None):
@@ -133,7 +191,7 @@ class PyQt5MainWindow(QMainWindow):
     def keyPressEvent(self, event):
 
         if event.key() == Qt.Key_Escape:
-            self.showStart()
+            self.handleEscape()
         elif event.key() == Qt.Key_Space:
             self.transport.send('triggered')
 
@@ -142,14 +200,14 @@ class PyQt5MainWindow(QMainWindow):
 
 class PyQt5Start(QFrame):
 
-    def __init__(self, parent):
+    def __init__(self, gui):
         
         super().__init__()
 
-        self.initFrame(parent)
+        self.initFrame(gui)
 
 
-    def initFrame(self, parent):
+    def initFrame(self, gui):
 
         grid = QGridLayout()
         grid.setSpacing(100)
@@ -157,28 +215,29 @@ class PyQt5Start(QFrame):
 
         btnStart = QPushButton('Start Photobooth')
         btnStart.resize(btnStart.sizeHint())
-        btnStart.clicked.connect(parent.showIdle)
+        btnStart.clicked.connect(gui.showIdle)
         grid.addWidget(btnStart, 0, 0)
 
         btnSettings = QPushButton('Settings')
         btnSettings.resize(btnSettings.sizeHint())
-        btnSettings.clicked.connect(parent.showSettings)
+        btnSettings.clicked.connect(gui.showSettings)
         grid.addWidget(btnSettings, 0, 1)
 
         btnQuit = QPushButton('Quit')
         btnQuit.resize(btnQuit.sizeHint())
-        btnQuit.clicked.connect(parent.close)
+        btnQuit.clicked.connect(gui.close)
         grid.addWidget(btnQuit, 0, 2)
 
 
 
 class PyQt5Settings(QFrame):
 
-    def __init__(self, parent):
+    def __init__(self, gui):
         
         super().__init__()
 
-        self._parent = parent
+        self._gui = gui
+
         self.initFrame()
 
 
@@ -284,7 +343,7 @@ class PyQt5Settings(QFrame):
 
         btnCancel = QPushButton('Cancel')
         btnCancel.resize(btnCancel.sizeHint())
-        btnCancel.clicked.connect(self._parent.showStart)
+        btnCancel.clicked.connect(self._gui.showStart)
         layout.addWidget(btnCancel)
 
         btnRestore = QPushButton('Restore defaults')
@@ -314,7 +373,7 @@ class PyQt5Settings(QFrame):
         cfg.set('Camera', 'gphoto2_wrapper', wrapper_idx2val[self._value_widgets['Camera']['gphoto2_wrapper'].currentIndex()])
 
         cfg.write()
-        self._parent.showStart()
+        self._gui.showStart()
 
 
     def restoreDefaults(self):
@@ -322,7 +381,7 @@ class PyQt5Settings(QFrame):
         global cfg
 
         cfg.defaults()
-        self._parent.showSettings()
+        self._gui.showSettings()
 
 
 
@@ -340,7 +399,7 @@ class PyQt5PictureMessage(QFrame):
 
     def initFrame(self):
 
-        self.setStyleSheet('background-color: black;')
+        self.setStyleSheet('background-color: white;')
 
 
     def paintEvent(self, event):

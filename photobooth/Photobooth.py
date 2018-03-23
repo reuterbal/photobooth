@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from Config import Config
+import Gui
 from PyQt5Gui import PyQt5Gui
+from CameraOpenCV import CameraOpenCV as Camera
 
 from multiprocessing import Pipe, Process
 
-from time import sleep
+from time import clock, sleep
 
 
 class Photobooth:
 
     def __init__(self):
 
-        pass
+        self._cap = Camera()
 
 
     def run(self, send, recv):
@@ -24,7 +26,6 @@ class Photobooth:
             except EOFError:
                 return 1
             else:
-                print('Photobooth: ' + event)
                 self.trigger(send)
 
         return 0
@@ -32,15 +33,29 @@ class Photobooth:
 
     def trigger(self, send):
 
-        send.send('Pose')
-
-        sleep(3)
-
-        send.send('Picture')
+        send.send(Gui.PoseState())
 
         sleep(2)
 
-        send.send('idle')
+        if self._cap.hasPreview:
+            tic = clock()
+            toc = clock() - tic
+
+            while toc < 3:
+                send.send( Gui.PreviewState(
+                    message = str(3 - int(toc)), 
+                    picture = self._cap.getPreview() ) )
+                toc = clock() - tic
+        else:
+            for i in range(3):
+                send.send( Gui.PreviewState(str(i)) )
+                sleep(1)
+
+        send.send(Gui.PictureState(self._cap.getPicture()))
+
+        sleep(2)
+
+        send.send(Gui.IdleState())
 
 
 def main_photobooth(send, recv):
