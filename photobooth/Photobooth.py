@@ -8,7 +8,7 @@ from CameraOpenCV import CameraOpenCV as Camera
 
 from multiprocessing import Pipe, Process
 
-from time import clock, sleep
+from time import time, sleep
 
 
 class Photobooth:
@@ -38,14 +38,13 @@ class Photobooth:
         sleep(2)
 
         if self._cap.hasPreview:
-            tic = clock()
-            toc = clock() - tic
+            tic, toc = time(), 0
 
             while toc < 3:
                 send.send( Gui.PreviewState(
                     message = str(3 - int(toc)), 
                     picture = self._cap.getPreview() ) )
-                toc = clock() - tic
+                toc = time() - tic
         else:
             for i in range(3):
                 send.send( Gui.PreviewState(str(i)) )

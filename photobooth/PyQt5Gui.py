@@ -26,8 +26,8 @@ class PyQt5Gui(Gui.Gui):
         receiver.notify.connect(self.handleState)
         receiver.start()
 
+        self._transport = send
         self._p.transport = send
-        self._p.handleEscape = self.showStart
 
         self.showStart()
 
@@ -37,6 +37,15 @@ class PyQt5Gui(Gui.Gui):
     def close(self):
 
         self._p.close()
+
+
+    def handleKeypressEvent(self, event):
+
+        if event.key() == Qt.Key_Escape:
+            self.showStart()
+        elif event.key() == Qt.Key_Space:
+            self._p.handleKeypressEvent = lambda event : None
+            self._transport.send('triggered')
 
 
     def handleState(self, state):
@@ -60,16 +69,19 @@ class PyQt5Gui(Gui.Gui):
 
     def showStart(self):
 
+        self._p.handleKeypressEvent = lambda event : None
         self._p.setCentralWidget(PyQt5Start(self))
 
 
     def showSettings(self):
 
+        self._p.handleKeypressEvent = lambda event : None
         self._p.setCentralWidget(PyQt5Settings(self))
 
 
     def showIdle(self):
 
+        self._p.handleKeypressEvent = self.handleKeypressEvent
         self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!', 'homer.jpg'))
 
 
@@ -107,6 +119,8 @@ class PyQt5MainWindow(QMainWindow):
 
         super().__init__()
 
+        self.handleKeypressEvent = lambda event : None
+
         self.initUI()
 
 
@@ -125,24 +139,24 @@ class PyQt5MainWindow(QMainWindow):
         self._transport = new_transport
 
     @property
-    def handleEscape(self):
+    def handleKeypressEvent(self):
 
-        return self._handle_escape
+        return self._handle_key
 
-    @handleEscape.setter
-    def handleEscape(self, func):
+
+    @handleKeypressEvent.setter
+    def handleKeypressEvent(self, func):
 
         if not callable(func):
-            raise ValueError('Escape key handler must be callable')
+            raise ValueError('Keypress event handler must be callable')
 
-        self._handle_escape = func
+        self._handle_key = func
 
 
     def initUI(self):
 
         global cfg
 
-        # self.showStart()
         self.setWindowTitle('Photobooth')
 
         if cfg.getBool('Gui', 'fullscreen'):
@@ -151,23 +165,6 @@ class PyQt5MainWindow(QMainWindow):
             self.resize(cfg.getInt('Gui', 'width'), 
                         cfg.getInt('Gui', 'height'))
             self.show()
-
-
-    # def showStart(self):
-
-    #     content = PyQt5Start(self)
-    #     self.setCentralWidget(content)
-
-
-    # def showSettings(self):
-
-    #     content = PyQt5Settings(self)
-    #     self.setCentralWidget(content)
-
-
-    # def showIdle(self):
-        
-    #     self.showMessage('Hit the button!', 'homer.jpg')
 
 
     def showMessage(self, message, picture=None):
@@ -190,10 +187,7 @@ class PyQt5MainWindow(QMainWindow):
 
     def keyPressEvent(self, event):
 
-        if event.key() == Qt.Key_Escape:
-            self.handleEscape()
-        elif event.key() == Qt.Key_Space:
-            self.transport.send('triggered')
+        self.handleKeypressEvent(event)
 
 
 
