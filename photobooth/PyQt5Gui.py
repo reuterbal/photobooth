@@ -3,6 +3,8 @@
 
 import Gui
 
+from PIL import ImageQt
+
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt5.QtGui import QImage, QPainter, QPixmap
@@ -56,13 +58,15 @@ class PyQt5Gui(Gui.Gui):
         if isinstance(state, Gui.IdleState):
             self.showIdle()
         elif isinstance(state, Gui.PoseState):
-            self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
+            self._p.setCentralWidget(PyQt5PictureMessage('Will capture 4 pictures!'))
         elif isinstance(state, Gui.PreviewState):
-            img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
+            # img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
+            img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
         elif isinstance(state, Gui.PictureState):
-            img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
-            self._p.setCentralWidget(PyQt5PictureMessage('', QPixmap.fromImage(img)))
+            # img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
+            img = ImageQt.ImageQt(state.picture)
+            self._p.setCentralWidget(PyQt5PictureMessage('', img))
         else:
             raise ValueError('Unknown state')
 
@@ -402,7 +406,11 @@ class PyQt5PictureMessage(QFrame):
         painter.begin(self)
 
         if self._picture != None:
-            pix = QPixmap(self._picture).scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            if isinstance(self._picture, QImage):
+                pix = QPixmap.fromImage(self._picture)
+            else:
+                pix = QPixmap(self._picture)
+            pix = pix.scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             painter.drawPixmap(pix.rect(), pix, pix.rect())
 
         painter.drawText(event.rect(), Qt.AlignCenter, self._message)
