@@ -21,6 +21,41 @@ class GuiState:
         assert not kwargs
 
 
+
+class ErrorState(GuiState):
+
+    def __init__(self, title, message, **kwargs):
+
+        super().__init__(**kwargs)
+
+        self.title = title
+        self.message = message
+        
+
+    @property
+    def title(self):
+
+        return self._title
+
+
+    @title.setter
+    def title(self, title):
+
+        self._title = title
+
+
+    @property
+    def message(self):
+
+        return self._message
+
+
+    @message.setter
+    def message(self, message):
+
+        self._message = message
+
+
 class IdleState(GuiState):
 
     def __init__(self, **kwargs):
@@ -35,7 +70,7 @@ class PictureState(GuiState):
 
         super().__init__(**kwargs)
 
-        self._pic = picture
+        self.picture = picture
 
 
     @property
@@ -56,7 +91,7 @@ class MessageState(GuiState):
 
         super().__init__(**kwargs)
 
-        self._msg = message
+        self.message = message
 
 
     @property

@@ -67,6 +67,8 @@ class PyQt5Gui(Gui.Gui):
             # img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
+        elif isinstance(state, Gui.ErrorState):
+            self.showError(state.title, state.message)
         else:
             raise ValueError('Unknown state')
 
@@ -87,6 +89,13 @@ class PyQt5Gui(Gui.Gui):
 
         self._p.handleKeypressEvent = self.handleKeypressEvent
         self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!', 'homer.jpg'))
+
+
+    def showError(self, title, message):
+
+        if QMessageBox.warning(self._p, title,message, QMessageBox.Ok, 
+            QMessageBox.Ok) == QMessageBox.Ok:
+            self.showIdle()
 
 
 class PyQt5Receiver(QThread):

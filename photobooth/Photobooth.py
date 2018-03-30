@@ -2,27 +2,46 @@
 # -*- coding: utf-8 -*-
 
 from Config import Config
+
+from PictureList import PictureList
+
 import Gui
 from PyQt5Gui import PyQt5Gui
+
 from CameraOpenCV import CameraOpenCV as Camera
 
 from PIL import Image
 
 from multiprocessing import Pipe, Process
 
-from time import time, sleep
+from time import time, sleep, localtime, strftime
 
 
 output_size = (1920, 1080)
 min_distance = (10, 10)
 num_pictures = (2, 2)
 pose_time = 2
+picture_basename = strftime('%Y-%m-%d/photobooth', localtime())
 
 class Photobooth:
 
     def __init__(self):
 
         self._cap = Camera()
+
+
+    @property
+    def getNextFilename(self):
+
+        return self._get_next_filename
+
+    @getNextFilename.setter
+    def getNextFilename(self, func):
+
+        if not callable(func):
+            raise ValueError('getNextFilename must be callable')
+
+        self._get_next_filename = func
 
 
     def run(self, send, recv):
@@ -35,7 +54,11 @@ class Photobooth:
             except EOFError:
                 return 1
             else:
-                self.trigger()
+                try:
+                    self.trigger()
+                except RuntimeError as e:
+                    print('Camera error: ' + str(e))
+                    self._send.send( Gui.ErrorState('Camera error', str(e)) )
 
         return 0
 
@@ -71,10 +94,10 @@ class Photobooth:
             ( output_size[i] - (num_pictures[i] + 1) * min_distance[i] ) / 
             ( num_pictures[i] * picture_size[i]) ) for i in range(2) ) )
 
-        output_picture_size = tuple( int(picture_size[0] * resize_factor)
+        output_picture_size = tuple( int(picture_size[i] * resize_factor)
             for i in range(2) )
-        output_picture_dist = tuple( int( ( output_size[i] - num_pictures[i] * 
-                output_picture_size[i] ) / (num_pictures[i] + 1) )
+        output_picture_dist = tuple( ( output_size[i] - num_pictures[i] * 
+                output_picture_size[i] ) // (num_pictures[i] + 1)
             for i in range(2) )
 
         output_image = Image.new('RGB', output_size, (255, 255, 255))
@@ -93,7 +116,8 @@ class Photobooth:
 
     def capturePictures(self):
 
-        pictures = [self.captureSinglePicture() for i in range(2) for _ in range(num_pictures[i])]
+        pictures = [self.captureSinglePicture() 
+            for i in range(2) for _ in range(num_pictures[i])]
         return self.assemblePictures(pictures)
 
 
@@ -103,7 +127,9 @@ class Photobooth:
 
         sleep(2)
 
-        self._send.send(Gui.PictureState(self.capturePictures()))
+        img = self.capturePictures()
+        img.save(self.getNextFilename(), 'JPEG')
+        self._send.send(Gui.PictureState(img))
 
         sleep(5)
 
@@ -112,7 +138,11 @@ class Photobooth:
 
 def main_photobooth(send, recv):
 
+    picture_list = PictureList(picture_basename)
+
     photobooth = Photobooth()
+    photobooth.getNextFilename = picture_list.getNext
+
     return photobooth.run(send, recv)
 
 
