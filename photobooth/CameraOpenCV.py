@@ -15,9 +15,9 @@ class CameraOpenCV(Camera):
         self.hasPreview = True
         self.hasIdle = False
 
-        # self._cap = cv2.VideoCapture(0)
-        # if not self._cap.isOpened():
-        #     raise RuntimeError('Camera could not be opened')
+        self._cap = cv2.VideoCapture(0)
+        if not self._cap.isOpened():
+            raise RuntimeError('Camera could not be opened')
 
 
     def getPreview(self):

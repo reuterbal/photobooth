@@ -10,7 +10,7 @@ from PyQt5Gui import PyQt5Gui
 
 from CameraOpenCV import CameraOpenCV as Camera
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 from multiprocessing import Pipe, Process
 
@@ -71,7 +71,7 @@ class Photobooth:
             while toc < pose_time:
                 self._send.send( Gui.PreviewState(
                     message = str(pose_time - int(toc)), 
-                    picture = self._cap.getPreview() ) )
+                    picture = ImageOps.mirror(self._cap.getPreview()) ) )
                 toc = time() - tic
         else:
             for i in range(pose_time):

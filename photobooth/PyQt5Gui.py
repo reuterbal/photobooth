@@ -60,11 +60,9 @@ class PyQt5Gui(Gui.Gui):
         elif isinstance(state, Gui.PoseState):
             self._p.setCentralWidget(PyQt5PictureMessage('Will capture 4 pictures!'))
         elif isinstance(state, Gui.PreviewState):
-            # img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
         elif isinstance(state, Gui.PictureState):
-            # img = QImage(state.picture, state.picture.shape[1], state.picture.shape[0], QImage.Format_RGB888)
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
         elif isinstance(state, Gui.ErrorState):
@@ -88,7 +86,7 @@ class PyQt5Gui(Gui.Gui):
     def showIdle(self):
 
         self._p.handleKeypressEvent = self.handleKeypressEvent
-        self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!', 'homer.jpg'))
+        self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!'))#, 'homer.jpg'))
 
 
     def showError(self, title, message):
