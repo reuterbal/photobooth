@@ -13,11 +13,23 @@ class CameraOpenCV(Camera):
         super().__init__()
 
         self.hasPreview = True
-        self.hasIdle = False
+        self.hasIdle = True
 
-        self._cap = cv2.VideoCapture(0)
+        self._cap = cv2.VideoCapture()
+
+
+    def setActive(self):
+
         if not self._cap.isOpened():
-            raise RuntimeError('Camera could not be opened')
+            self._cap.open(0)
+            if not self._cap.isOpened():
+                raise RuntimeError('Camera could not be opened')
+
+
+    def setIdle(self):
+
+        if self._cap.isOpened():
+            self._cap.release()
 
 
     def getPreview(self):
@@ -27,6 +39,7 @@ class CameraOpenCV(Camera):
 
     def getPicture(self):
         
+        self.setActive()
         status, frame = self._cap.read()
         if not status:
             raise RuntimeError('Failed to capture picture')

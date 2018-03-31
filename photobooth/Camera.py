@@ -37,6 +37,22 @@ class Camera:
         self._has_idle = value
 
 
+    def setActive(self):
+
+        if not self.hasIdle:
+            pass
+        else:
+            raise NotImplementedError()
+
+
+    def setIdle(self):
+
+        if not self.hasIdle:
+            raise RuntimeError('Camera does not have idle functionality')
+
+        raise NotImplementedError()
+
+
     def getPreview(self):
 
         if not self.hasPreview:

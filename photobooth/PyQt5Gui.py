@@ -58,7 +58,11 @@ class PyQt5Gui(Gui.Gui):
         if isinstance(state, Gui.IdleState):
             self.showIdle()
         elif isinstance(state, Gui.PoseState):
-            self._p.setCentralWidget(PyQt5PictureMessage('Will capture 4 pictures!'))
+            global cfg
+            num_pictures = ( cfg.getInt('Photobooth', 'num_pictures_x') * 
+                cfg.getInt('Photobooth', 'num_pictures_y') )
+            self._p.setCentralWidget(
+                PyQt5PictureMessage('Will capture {} pictures!'.format(num_pictures)))
         elif isinstance(state, Gui.PreviewState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
@@ -86,7 +90,7 @@ class PyQt5Gui(Gui.Gui):
     def showIdle(self):
 
         self._p.handleKeypressEvent = self.handleKeypressEvent
-        self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!'))#, 'homer.jpg'))
+        self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!'))
 
 
     def showError(self, title, message):
@@ -254,6 +258,7 @@ class PyQt5Settings(QFrame):
         grid.addWidget(self.createGuiSettings(), 0, 0)
         grid.addWidget(self.createGpioSettings(), 1, 0)
         grid.addWidget(self.createCameraSettings(), 0, 1)
+        grid.addWidget(self.createPhotoboothSettings(), 1, 1)
 
         layout = QVBoxLayout()
         layout.addLayout(grid)
@@ -336,6 +341,32 @@ class PyQt5Settings(QFrame):
         return widget
 
 
+    def createPhotoboothSettings(self):
+
+        global cfg
+
+        self._value_widgets['Photobooth'] = {}
+        self._value_widgets['Photobooth']['show_preview'] = QCheckBox('Show preview while countdown (restart required)')
+        if cfg.getBool('Photobooth', 'show_preview'):
+            self._value_widgets['Photobooth']['show_preview'].toggle()
+        self._value_widgets['Photobooth']['num_pictures_x'] = QLineEdit(cfg.get('Photobooth', 'num_pictures_x'))
+        self._value_widgets['Photobooth']['num_pictures_y'] = QLineEdit(cfg.get('Photobooth', 'num_pictures_y'))
+
+        layout = QFormLayout()
+        layout.addRow(self._value_widgets['Photobooth']['show_preview'])
+
+        sublayout = QHBoxLayout()
+        sublayout.addWidget(QLabel('Number of pictures'))
+        sublayout.addWidget(self._value_widgets['Photobooth']['num_pictures_x'])
+        sublayout.addWidget(QLabel('x'))
+        sublayout.addWidget(self._value_widgets['Photobooth']['num_pictures_y'])
+        layout.addRow(sublayout)
+
+        widget = QGroupBox('Photobooth settings')
+        widget.setLayout(layout)
+        return widget
+
+
     def createButtons(self):
 
         layout = QHBoxLayout()
@@ -373,6 +404,10 @@ class PyQt5Settings(QFrame):
         cfg.set('Gpio', 'exit_channel', self._value_widgets['Gpio']['exit_channel'].text())
         cfg.set('Gpio', 'trigger_channel', self._value_widgets['Gpio']['trigger_channel'].text())
         cfg.set('Gpio', 'lamp_channel', self._value_widgets['Gpio']['lamp_channel'].text())
+
+        cfg.set('Photobooth', 'show_preview', str(self._value_widgets['Photobooth']['show_preview'].isChecked()))
+        cfg.set('Photobooth', 'num_pictures_x', self._value_widgets['Photobooth']['num_pictures_x'].text())
+        cfg.set('Photobooth', 'num_pictures_y', self._value_widgets['Photobooth']['num_pictures_y'].text())
 
         wrapper_idx2val = [ 'commandline', 'piggyphoto', 'gphoto2-cffi' ]
         cfg.set('Camera', 'gphoto2_wrapper', wrapper_idx2val[self._value_widgets['Camera']['gphoto2_wrapper'].currentIndex()])
