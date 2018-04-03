@@ -59,8 +59,8 @@ class PyQt5Gui(Gui.Gui):
             self.showIdle()
         elif isinstance(state, Gui.PoseState):
             global cfg
-            num_pictures = ( cfg.getInt('Photobooth', 'num_pictures_x') * 
-                cfg.getInt('Photobooth', 'num_pictures_y') )
+            num_pictures = ( cfg.getInt('Picture', 'num_x') * 
+                cfg.getInt('Picture', 'num_y') )
             self._p.setCentralWidget(
                 PyQt5PictureMessage('Will capture {} pictures!'.format(num_pictures)))
         elif isinstance(state, Gui.PreviewState):
@@ -259,6 +259,7 @@ class PyQt5Settings(QFrame):
         grid.addWidget(self.createGpioSettings(), 1, 0)
         grid.addWidget(self.createCameraSettings(), 0, 1)
         grid.addWidget(self.createPhotoboothSettings(), 1, 1)
+        grid.addWidget(self.createPictureSettings(), 2, 1)
 
         layout = QVBoxLayout()
         layout.addLayout(grid)
@@ -303,8 +304,8 @@ class PyQt5Settings(QFrame):
         layout = QFormLayout()
         layout.addRow(self._value_widgets['Gpio']['enable'])
         layout.addRow(QLabel('Exit channel:'), self._value_widgets['Gpio']['exit_channel'])
-        layout.addRow(QLabel('Trigger channel'), self._value_widgets['Gpio']['trigger_channel'])
-        layout.addRow(QLabel('Lamp channel'), self._value_widgets['Gpio']['lamp_channel'])
+        layout.addRow(QLabel('Trigger channel:'), self._value_widgets['Gpio']['trigger_channel'])
+        layout.addRow(QLabel('Lamp channel:'), self._value_widgets['Gpio']['lamp_channel'])
 
         widget = QGroupBox('GPIO settings')
         widget.setLayout(layout)
@@ -349,20 +350,60 @@ class PyQt5Settings(QFrame):
         self._value_widgets['Photobooth']['show_preview'] = QCheckBox('Show preview while countdown (restart required)')
         if cfg.getBool('Photobooth', 'show_preview'):
             self._value_widgets['Photobooth']['show_preview'].toggle()
-        self._value_widgets['Photobooth']['num_pictures_x'] = QLineEdit(cfg.get('Photobooth', 'num_pictures_x'))
-        self._value_widgets['Photobooth']['num_pictures_y'] = QLineEdit(cfg.get('Photobooth', 'num_pictures_y'))
+        self._value_widgets['Photobooth']['pose_time'] = QLineEdit(cfg.get('Photobooth', 'pose_time'))
+        self._value_widgets['Photobooth']['countdown_time'] = QLineEdit(cfg.get('Photobooth', 'countdown_time'))
+        self._value_widgets['Photobooth']['display_time'] = QLineEdit(cfg.get('Photobooth', 'display_time'))
 
         layout = QFormLayout()
         layout.addRow(self._value_widgets['Photobooth']['show_preview'])
-
-        sublayout = QHBoxLayout()
-        sublayout.addWidget(QLabel('Number of pictures'))
-        sublayout.addWidget(self._value_widgets['Photobooth']['num_pictures_x'])
-        sublayout.addWidget(QLabel('x'))
-        sublayout.addWidget(self._value_widgets['Photobooth']['num_pictures_y'])
-        layout.addRow(sublayout)
+        layout.addRow(QLabel('Pose time [s]:'), self._value_widgets['Photobooth']['pose_time'])
+        layout.addRow(QLabel('Countdown time [s]:'), self._value_widgets['Photobooth']['countdown_time'])
+        layout.addRow(QLabel('Display time [s]:'), self._value_widgets['Photobooth']['display_time'])
 
         widget = QGroupBox('Photobooth settings')
+        widget.setLayout(layout)
+        return widget
+
+
+    def createPictureSettings(self):
+
+        global cfg
+
+        self._value_widgets['Picture'] = {}
+        self._value_widgets['Picture']['num_x'] = QLineEdit(cfg.get('Picture', 'num_x'))
+        self._value_widgets['Picture']['num_y'] = QLineEdit(cfg.get('Picture', 'num_y'))
+        self._value_widgets['Picture']['size_x'] = QLineEdit(cfg.get('Picture', 'size_x'))
+        self._value_widgets['Picture']['size_y'] = QLineEdit(cfg.get('Picture', 'size_y'))
+        self._value_widgets['Picture']['min_dist_x'] = QLineEdit(cfg.get('Picture', 'min_dist_x'))
+        self._value_widgets['Picture']['min_dist_y'] = QLineEdit(cfg.get('Picture', 'min_dist_y'))
+        self._value_widgets['Picture']['basename'] = QLineEdit(cfg.get('Picture', 'basename'))
+
+        layout = QFormLayout()
+
+        sublayout_num = QHBoxLayout()
+        sublayout_num.addWidget(QLabel('Number of shots per picture:'))
+        sublayout_num.addWidget(self._value_widgets['Picture']['num_x'])
+        sublayout_num.addWidget(QLabel('x'))
+        sublayout_num.addWidget(self._value_widgets['Picture']['num_y'])
+        layout.addRow(sublayout_num)
+
+        sublayout_size = QHBoxLayout()
+        sublayout_size.addWidget(QLabel('Size of assembled picture:'))
+        sublayout_size.addWidget(self._value_widgets['Picture']['size_x'])
+        sublayout_size.addWidget(QLabel('x'))
+        sublayout_size.addWidget(self._value_widgets['Picture']['size_y'])
+        layout.addRow(sublayout_size)
+
+        sublayout_dist = QHBoxLayout()
+        sublayout_dist.addWidget(QLabel('Min. distance between shots in picture:'))
+        sublayout_dist.addWidget(self._value_widgets['Picture']['min_dist_x'])
+        sublayout_dist.addWidget(QLabel('x'))
+        sublayout_dist.addWidget(self._value_widgets['Picture']['min_dist_y'])
+        layout.addRow(sublayout_dist)
+
+        layout.addRow(QLabel('Basename of output files:'), self._value_widgets['Picture']['basename'])
+
+        widget = QGroupBox('Picture settings')
         widget.setLayout(layout)
         return widget
 
@@ -406,8 +447,17 @@ class PyQt5Settings(QFrame):
         cfg.set('Gpio', 'lamp_channel', self._value_widgets['Gpio']['lamp_channel'].text())
 
         cfg.set('Photobooth', 'show_preview', str(self._value_widgets['Photobooth']['show_preview'].isChecked()))
-        cfg.set('Photobooth', 'num_pictures_x', self._value_widgets['Photobooth']['num_pictures_x'].text())
-        cfg.set('Photobooth', 'num_pictures_y', self._value_widgets['Photobooth']['num_pictures_y'].text())
+        cfg.set('Photobooth', 'pose_time', str(self._value_widgets['Photobooth']['pose_time'].text()))
+        cfg.set('Photobooth', 'countdown_time', str(self._value_widgets['Photobooth']['countdown_time'].text()))
+        cfg.set('Photobooth', 'display_time', str(self._value_widgets['Photobooth']['display_time'].text()))
+
+        cfg.set('Picture', 'num_x', self._value_widgets['Picture']['num_x'].text())
+        cfg.set('Picture', 'num_y', self._value_widgets['Picture']['num_y'].text())
+        cfg.set('Picture', 'size_x', self._value_widgets['Picture']['size_x'].text())
+        cfg.set('Picture', 'size_y', self._value_widgets['Picture']['size_y'].text())
+        cfg.set('Picture', 'min_dist_x', self._value_widgets['Picture']['min_dist_x'].text())
+        cfg.set('Picture', 'min_dist_y', self._value_widgets['Picture']['min_dist_y'].text())
+        cfg.set('Picture', 'basename', self._value_widgets['Picture']['basename'].text())
 
         wrapper_idx2val = [ 'commandline', 'piggyphoto', 'gphoto2-cffi' ]
         cfg.set('Camera', 'gphoto2_wrapper', wrapper_idx2val[self._value_widgets['Camera']['gphoto2_wrapper'].currentIndex()])

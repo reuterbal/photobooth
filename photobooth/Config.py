@@ -10,7 +10,7 @@ class Config:
 
         self._filename = filename
 
-        self._cfg = configparser.ConfigParser()
+        self._cfg = configparser.ConfigParser(interpolation=None)
         self.defaults()
         self.read()
 

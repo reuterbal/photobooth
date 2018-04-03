@@ -4,6 +4,7 @@
 from Config import Config
 
 from PictureList import PictureList
+from PictureDimensions import PictureDimensions
 
 import Gui
 from PyQt5Gui import PyQt5Gui
@@ -17,41 +18,34 @@ from multiprocessing import Pipe, Process
 from time import time, sleep, localtime, strftime
 
 
-output_size = (1920, 1080)
-min_distance = (10, 10)
-# num_pictures = (2, 2)
-pose_time = 2
-picture_basename = strftime('%Y-%m-%d/photobooth', localtime())
 
 class Photobooth:
 
     def __init__(self, config):
 
+        picture_basename = strftime(config.get('Picture', 'basename'), localtime())
+
         self._cap = Camera()
-        self._cfg = config
+        self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
+        self._pic_list = PictureList(picture_basename)
 
-        if ( self._cfg.getBool('Photobooth', 'show_preview') 
+        self._pose_time = config.getInt('Photobooth', 'pose_time')
+        self._countdown_time = config.getInt('Photobooth', 'countdown_time')
+        self._display_time = config.getInt('Photobooth', 'display_time')
+
+        if ( config.getBool('Photobooth', 'show_preview') 
             and self._cap.hasPreview ):
-            self.showCounter = self.showCounterPreview
+            self._show_counter = self.showCounterPreview
         else:
-            self.showCounter = self.showCounterNoPreview
+            self._show_counter = self.showCounterNoPreview
 
-        self.numPictures = ( self._cfg.getInt('Photobooth', 'num_pictures_x') ,
-                             self._cfg.getInt('Photobooth', 'num_pictures_y') )
+        self._get_next_filename = self._pic_list.getNext
+
 
     @property
     def getNextFilename(self):
 
         return self._get_next_filename
-
-
-    @getNextFilename.setter
-    def getNextFilename(self, func):
-
-        if not callable(func):
-            raise ValueError('getNextFilename must be callable')
-
-        self._get_next_filename = func
 
 
     @property
@@ -60,33 +54,28 @@ class Photobooth:
         return self._show_counter
 
 
-    @showCounter.setter
-    def showCounter(self, func):
+    @property
+    def poseTime(self):
 
-        if not callable(func):
-            raise ValueError('showCounter must be callable')
-
-        self._show_counter = func
+        return self._pose_time
 
 
     @property
-    def numPictures(self):
+    def countdownTime(self):
 
-        return self._num_pictures
+        return self._countdown_time
 
 
-    @numPictures.setter
-    def numPictures(self, num_pictures):
+    @property
+    def displayTime(self):
 
-        if len(num_pictures) != 2:
-            raise ValueError('num_pictures must have two entries')
-
-        self._num_pictures = num_pictures
+        return self._display_time
 
 
     def run(self, send, recv):
 
         self._send = send
+        self.setCameraIdle()
 
         while True:
             try:
@@ -118,16 +107,16 @@ class Photobooth:
 
         tic, toc = time(), 0
 
-        while toc < pose_time:
+        while toc < self.countdownTime:
             self._send.send( Gui.PreviewState(
-                message = str(pose_time - int(toc)), 
+                message = str(self.countdownTime - int(toc)), 
                 picture = ImageOps.mirror(self._cap.getPreview()) ) )
             toc = time() - tic
 
 
     def showCounterNoPreview(self):
 
-        for i in range(pose_time):
+        for i in range(self.countdownTime):
             self._send.send( Gui.PreviewState(str(i)) )
             sleep(1)
 
@@ -141,37 +130,18 @@ class Photobooth:
 
     def assemblePictures(self, pictures):
 
-        # TODO: determine sizes only once
-        picture_size = pictures[0].size
+        output_image = Image.new('RGB', self._pic_dims.outputSize, (255, 255, 255))
 
-        resize_factor = min( ( (
-            ( output_size[i] - (self.numPictures[i] + 1) * min_distance[i] ) / 
-            ( self.numPictures[i] * picture_size[i]) ) for i in range(2) ) )
-
-        output_picture_size = tuple( int(picture_size[i] * resize_factor)
-            for i in range(2) )
-        output_picture_dist = tuple( ( output_size[i] - self.numPictures[i] * 
-                output_picture_size[i] ) // (self.numPictures[i] + 1)
-            for i in range(2) )
-
-        output_image = Image.new('RGB', output_size, (255, 255, 255))
-
-        idx = 0
-        for img in pictures:
-            pos = (idx % self.numPictures[0], idx // self.numPictures[0])
-            img = img.resize(output_picture_size)
-            offset = tuple( (pos[i] + 1) * output_picture_dist[i] +
-                pos[i] * output_picture_size[i] for i in range(2) )
-            output_image.paste(img, offset)
-            idx += 1
+        for i in range(self._pic_dims.totalNumPictures):
+            output_image.paste(pictures[i].resize(self._pic_dims.thumbnailSize), 
+                self._pic_dims.thumbnailOffset[i])
 
         return output_image
 
 
     def capturePictures(self):
 
-        pictures = [self.captureSinglePicture() 
-            for i in range(2) for _ in range(self.numPictures[i])]
+        pictures = [ self.captureSinglePicture() for _ in range(self._pic_dims.totalNumPictures) ]
         return self.assemblePictures(pictures)
 
 
@@ -180,7 +150,7 @@ class Photobooth:
         self._send.send(Gui.PoseState())
         self.setCameraActive()
 
-        sleep(2)
+        sleep(self.poseTime)
 
         img = self.capturePictures()
         img.save(self.getNextFilename(), 'JPEG')
@@ -188,18 +158,14 @@ class Photobooth:
 
         self.setCameraIdle()
 
-        sleep(5)
+        sleep(self.displayTime)
 
         self._send.send(Gui.IdleState())
 
 
 def main_photobooth(config, send, recv):
 
-    picture_list = PictureList(picture_basename)
-
     photobooth = Photobooth(config)
-    photobooth.getNextFilename = picture_list.getNext
-
     return photobooth.run(send, recv)
 
 
