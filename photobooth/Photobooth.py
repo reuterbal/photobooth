@@ -169,7 +169,7 @@ def main_photobooth(config, send, recv):
     return photobooth.run(send, recv)
 
 
-def main(argv):
+def run(argv):
 
     config = Config('photobooth.cfg')
 
@@ -181,3 +181,20 @@ def main(argv):
 
     gui = PyQt5Gui(argv, config)
     return gui.run(event_send, gui_recv)
+
+
+def main(argv):
+
+    known_status_codes = {
+        -1: 'Initializing photobooth',
+        -2: 'Restarting photobooth and reloading config'
+    }
+
+    status_code = -1
+
+    while status_code in known_status_codes:
+        print(known_status_codes[status_code])
+
+        status_code = run(argv)
+
+    return status_code

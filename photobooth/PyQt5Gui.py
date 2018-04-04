@@ -33,12 +33,20 @@ class PyQt5Gui(Gui.Gui):
 
         self.showStart()
 
-        return self._app.exec_()
+        exit_code = self._app.exec_()
+        self._p = None
+
+        return exit_code
 
 
     def close(self):
 
         self._p.close()
+
+
+    def restart(self):
+        
+        self._app.exit(-2)
 
 
     def handleKeypressEvent(self, event):
@@ -284,7 +292,7 @@ class PyQt5Settings(QFrame):
         layout.addRow(QLabel('Width:'), self._value_widgets['Gui']['width'])
         layout.addRow(QLabel('Height:'), self._value_widgets['Gui']['height'])
 
-        widget = QGroupBox('Interface settings (restart required)')
+        widget = QGroupBox('Interface settings')
         widget.setLayout(layout)
         return widget
 
@@ -294,7 +302,7 @@ class PyQt5Settings(QFrame):
         global cfg
 
         self._value_widgets['Gpio'] = {}
-        self._value_widgets['Gpio']['enable'] = QCheckBox('Enable GPIO (restart required)')
+        self._value_widgets['Gpio']['enable'] = QCheckBox('Enable GPIO')
         if cfg.getBool('Gpio', 'enable'):
             self._value_widgets['Gpio']['enable'].toggle()
         self._value_widgets['Gpio']['exit_channel'] = QLineEdit(cfg.get('Gpio', 'exit_channel'))
@@ -347,7 +355,7 @@ class PyQt5Settings(QFrame):
         global cfg
 
         self._value_widgets['Photobooth'] = {}
-        self._value_widgets['Photobooth']['show_preview'] = QCheckBox('Show preview while countdown (restart required)')
+        self._value_widgets['Photobooth']['show_preview'] = QCheckBox('Show preview while countdown')
         if cfg.getBool('Photobooth', 'show_preview'):
             self._value_widgets['Photobooth']['show_preview'].toggle()
         self._value_widgets['Photobooth']['pose_time'] = QLineEdit(cfg.get('Photobooth', 'pose_time'))
@@ -463,7 +471,7 @@ class PyQt5Settings(QFrame):
         cfg.set('Camera', 'gphoto2_wrapper', wrapper_idx2val[self._value_widgets['Camera']['gphoto2_wrapper'].currentIndex()])
 
         cfg.write()
-        self._gui.showStart()
+        self._gui.restart()
 
 
     def restoreDefaults(self):
