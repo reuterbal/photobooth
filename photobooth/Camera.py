@@ -8,6 +8,22 @@ class Camera:
         self.hasPreview = False
         self.hasIdle = False
 
+
+    def __enter__(self):
+
+        return self
+
+
+    def __exit__(self, exc_type, exc_value, traceback):
+
+        self.cleanup()
+
+
+    def cleanup(self):
+
+        pass
+        
+
     @property
     def hasPreview(self):
 

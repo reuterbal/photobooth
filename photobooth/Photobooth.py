@@ -9,8 +9,6 @@ from PictureDimensions import PictureDimensions
 import Gui
 from PyQt5Gui import PyQt5Gui
 
-from CameraOpenCV import CameraOpenCV as Camera
-
 from PIL import Image, ImageOps
 
 from multiprocessing import Pipe, Process
@@ -21,11 +19,11 @@ from time import time, sleep, localtime, strftime
 
 class Photobooth:
 
-    def __init__(self, config):
+    def __init__(self, config, camera):
 
         picture_basename = strftime(config.get('Picture', 'basename'), localtime())
 
-        self._cap = Camera()
+        self._cap = camera
         self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
         self._pic_list = PictureList(picture_basename)
 
@@ -117,7 +115,9 @@ class Photobooth:
     def showCounterNoPreview(self):
 
         for i in range(self.countdownTime):
-            self._send.send( Gui.PreviewState(str(i)) )
+            self._send.send( Gui.PreviewState(
+                message = str(i),
+                picture = Image.new('RGB', (1,1), 'white') ) )
             sleep(1)
 
 
@@ -165,8 +165,20 @@ class Photobooth:
 
 def main_photobooth(config, send, recv):
 
-    photobooth = Photobooth(config)
-    return photobooth.run(send, recv)
+    if config.get('Camera', 'module') == 'python-gphoto2':
+        from CameraGphoto2 import CameraGphoto2 as Camera
+    elif config.get('Camera', 'module') == 'gphoto2-cffi':
+        from CameraGphoto2Cffi import CameraGphoto2Cffi as Camera
+    elif config.get('Camera', 'module') == 'gphoto2-commandline':
+        from CameraGphoto2CommandLine import CameraGphoto2CommandLine as Camera
+    elif config.get('Camera', 'module') == 'opencv':
+        from CameraOpenCV import CameraOpenCV as Camera
+    else:
+        raise ImportError('Unknown camera module "' + config.get('Camera', 'module') + '"')
+
+    with Camera() as cap:
+        photobooth = Photobooth(config, cap)
+        return photobooth.run(send, recv)
 
 
 def run(argv):

@@ -324,26 +324,27 @@ class PyQt5Settings(QFrame):
 
         global cfg
 
-        wrapper = QComboBox()
-        wrapper.addItem('command line')
-        wrapper.addItem('piggyphoto')
-        wrapper.addItem('gphoto2-cffi')
+        self._camera_modules = [
+            ('gphoto2-commandline', 'gphoto2 via command line'),
+            # ('piggyphoto', 'piggyphoto'),
+            ('gphoto2-cffi', 'gphoto2-cffi'),
+            ('python-gphoto2', 'python-gphoto2'),
+            ('opencv', 'OpenCV'),
+            ('', 'none') ]
 
-        current_wrapper = cfg.get('Camera', 'gphoto2_wrapper')
-        if current_wrapper == 'commandline':
-            wrapper.setCurrentIndex(0)
-        elif current_wrapper == 'piggyphoto':
-            wrapper.setCurrentIndex(1)
-        elif current_wrapper == 'gphoto2-cffi':
-            wrapper.setCurrentIndex(2)
-        else:
-            wrapper.setCurrentIndex(-1)
+        wrapper = QComboBox()
+        for m in self._camera_modules:
+            wrapper.addItem(m[1])
+
+        current_wrapper = cfg.get('Camera', 'module')
+        idx = [x for x, m in enumerate(self._camera_modules) if m[0] == current_wrapper]
+        wrapper.setCurrentIndex(idx[0] if len(idx) > 0 else -1)
 
         self._value_widgets['Camera'] = {}
-        self._value_widgets['Camera']['gphoto2_wrapper'] = wrapper
+        self._value_widgets['Camera']['module'] = wrapper
 
         layout = QFormLayout()
-        layout.addRow(QLabel('gPhoto2 wrapper:'), self._value_widgets['Camera']['gphoto2_wrapper'])
+        layout.addRow(QLabel('Camera module:'), self._value_widgets['Camera']['module'])
 
         widget = QGroupBox('Camera settings')
         widget.setLayout(layout)
@@ -467,8 +468,9 @@ class PyQt5Settings(QFrame):
         cfg.set('Picture', 'min_dist_y', self._value_widgets['Picture']['min_dist_y'].text())
         cfg.set('Picture', 'basename', self._value_widgets['Picture']['basename'].text())
 
-        wrapper_idx2val = [ 'commandline', 'piggyphoto', 'gphoto2-cffi' ]
-        cfg.set('Camera', 'gphoto2_wrapper', wrapper_idx2val[self._value_widgets['Camera']['gphoto2_wrapper'].currentIndex()])
+        # wrapper_idx2val = [ 'commandline', 'piggyphoto', 'gphoto2-cffi', '' ]
+        # cfg.set('Camera', 'module', wrapper_idx2val[self._value_widgets['Camera']['module'].currentIndex()])
+        cfg.set('Camera', 'module', self._camera_modules[self._value_widgets['Camera']['module'].currentIndex()][0])
 
         cfg.write()
         self._gui.restart()
