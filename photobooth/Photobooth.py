@@ -27,7 +27,7 @@ class Photobooth:
         self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
         self._pic_list = PictureList(picture_basename)
 
-        self._pose_time = config.getInt('Photobooth', 'pose_time')
+        self._greeter_time = config.getInt('Photobooth', 'greeter_time')
         self._countdown_time = config.getInt('Photobooth', 'countdown_time')
         self._display_time = config.getInt('Photobooth', 'display_time')
 
@@ -53,9 +53,9 @@ class Photobooth:
 
 
     @property
-    def poseTime(self):
+    def greeterTime(self):
 
-        return self._pose_time
+        return self._greeter_time
 
 
     @property
@@ -78,6 +78,9 @@ class Photobooth:
         while True:
             try:
                 event = recv.recv()
+                if str(event) != 'triggered':
+                    print('Unknown event received: ' + str(event))
+                    raise RuntimeError('Unknown event received', str(event))
             except EOFError:
                 return 1
             else:
@@ -121,10 +124,15 @@ class Photobooth:
             sleep(1)
 
 
+    def showPose(self):
+
+        self._send.send( Gui.PoseState() )
+
+
     def captureSinglePicture(self):
 
         self.showCounter()
-
+        self.showPose()
         return self._cap.getPicture()
 
 
@@ -147,10 +155,10 @@ class Photobooth:
 
     def trigger(self):
 
-        self._send.send(Gui.PoseState())
+        self._send.send(Gui.GreeterState())
         self.setCameraActive()
 
-        sleep(self.poseTime)
+        sleep(self.greeterTime)
 
         img = self.capturePictures()
         img.save(self.getNextFilename(), 'JPEG')
@@ -165,20 +173,29 @@ class Photobooth:
 
 def main_photobooth(config, send, recv):
 
-    if config.get('Camera', 'module') == 'python-gphoto2':
-        from CameraGphoto2 import CameraGphoto2 as Camera
-    elif config.get('Camera', 'module') == 'gphoto2-cffi':
-        from CameraGphoto2Cffi import CameraGphoto2Cffi as Camera
-    elif config.get('Camera', 'module') == 'gphoto2-commandline':
-        from CameraGphoto2CommandLine import CameraGphoto2CommandLine as Camera
-    elif config.get('Camera', 'module') == 'opencv':
-        from CameraOpenCV import CameraOpenCV as Camera
-    else:
-        raise ImportError('Unknown camera module "' + config.get('Camera', 'module') + '"')
+    while True:
+        try:
+            if config.get('Camera', 'module') == 'python-gphoto2':
+                from CameraGphoto2 import CameraGphoto2 as Camera
+            elif config.get('Camera', 'module') == 'gphoto2-cffi':
+                from CameraGphoto2Cffi import CameraGphoto2Cffi as Camera
+            elif config.get('Camera', 'module') == 'gphoto2-commandline':
+                from CameraGphoto2CommandLine import CameraGphoto2CommandLine as Camera
+            elif config.get('Camera', 'module') == 'opencv':
+                from CameraOpenCV import CameraOpenCV as Camera
+            else:
+                raise ModuleNotFoundError('Unknown camera module "' + config.get('Camera', 'module') + '"')
 
-    with Camera() as cap:
-        photobooth = Photobooth(config, cap)
-        return photobooth.run(send, recv)
+            with Camera() as cap:
+                photobooth = Photobooth(config, cap)
+                return photobooth.run(send, recv)
+
+        except BaseException as e:
+            send.send( Gui.ErrorState('Camera error', str(e), True) )
+            event = recv.recv()
+            if str(event) != 'ack':
+                    print('Unknown event received: ' + str(event))
+                    raise RuntimeError('Unknown event received', str(event))
 
 
 def run(argv):

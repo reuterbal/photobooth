@@ -20,6 +20,7 @@ class PyQt5Gui(Gui.Gui):
 
         self._app = QApplication(argv)
         self._p = PyQt5MainWindow()
+        self._lastState = self.showStart
 
 
     def run(self, send, recv):
@@ -54,8 +55,14 @@ class PyQt5Gui(Gui.Gui):
         if event.key() == Qt.Key_Escape:
             self.showStart()
         elif event.key() == Qt.Key_Space:
-            self._p.handleKeypressEvent = lambda event : None
+            self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
             self._transport.send('triggered')
+
+
+    def handleKeypressEventNoTrigger(self, event):
+
+        if event.key() == Qt.Key_Escape:
+            self.showStart()
 
 
     def handleState(self, state):
@@ -65,7 +72,7 @@ class PyQt5Gui(Gui.Gui):
 
         if isinstance(state, Gui.IdleState):
             self.showIdle()
-        elif isinstance(state, Gui.PoseState):
+        elif isinstance(state, Gui.GreeterState):
             global cfg
             num_pictures = ( cfg.getInt('Picture', 'num_x') * 
                 cfg.getInt('Picture', 'num_y') )
@@ -74,6 +81,8 @@ class PyQt5Gui(Gui.Gui):
         elif isinstance(state, Gui.PreviewState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
+        elif isinstance(state, Gui.PoseState):
+            self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
         elif isinstance(state, Gui.PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
@@ -86,18 +95,21 @@ class PyQt5Gui(Gui.Gui):
     def showStart(self):
 
         self._p.handleKeypressEvent = lambda event : None
+        self._lastState = self.showStart
         self._p.setCentralWidget(PyQt5Start(self))
 
 
     def showSettings(self):
 
         self._p.handleKeypressEvent = lambda event : None
+        self._lastState = self.showSettings
         self._p.setCentralWidget(PyQt5Settings(self))
 
 
     def showIdle(self):
 
         self._p.handleKeypressEvent = self.handleKeypressEvent
+        self._lastState = self.showIdle
         self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!'))
 
 
@@ -105,7 +117,8 @@ class PyQt5Gui(Gui.Gui):
 
         if QMessageBox.warning(self._p, title,message, QMessageBox.Ok, 
             QMessageBox.Ok) == QMessageBox.Ok:
-            self.showIdle()
+            self._transport.send('ack')
+            self._lastState()
 
 
 class PyQt5Receiver(QThread):
@@ -359,13 +372,13 @@ class PyQt5Settings(QFrame):
         self._value_widgets['Photobooth']['show_preview'] = QCheckBox('Show preview while countdown')
         if cfg.getBool('Photobooth', 'show_preview'):
             self._value_widgets['Photobooth']['show_preview'].toggle()
-        self._value_widgets['Photobooth']['pose_time'] = QLineEdit(cfg.get('Photobooth', 'pose_time'))
+        self._value_widgets['Photobooth']['greeter_time'] = QLineEdit(cfg.get('Photobooth', 'greeter_time'))
         self._value_widgets['Photobooth']['countdown_time'] = QLineEdit(cfg.get('Photobooth', 'countdown_time'))
         self._value_widgets['Photobooth']['display_time'] = QLineEdit(cfg.get('Photobooth', 'display_time'))
 
         layout = QFormLayout()
         layout.addRow(self._value_widgets['Photobooth']['show_preview'])
-        layout.addRow(QLabel('Pose time [s]:'), self._value_widgets['Photobooth']['pose_time'])
+        layout.addRow(QLabel('Pose time [s]:'), self._value_widgets['Photobooth']['greeter_time'])
         layout.addRow(QLabel('Countdown time [s]:'), self._value_widgets['Photobooth']['countdown_time'])
         layout.addRow(QLabel('Display time [s]:'), self._value_widgets['Photobooth']['display_time'])
 
@@ -456,7 +469,7 @@ class PyQt5Settings(QFrame):
         cfg.set('Gpio', 'lamp_channel', self._value_widgets['Gpio']['lamp_channel'].text())
 
         cfg.set('Photobooth', 'show_preview', str(self._value_widgets['Photobooth']['show_preview'].isChecked()))
-        cfg.set('Photobooth', 'pose_time', str(self._value_widgets['Photobooth']['pose_time'].text()))
+        cfg.set('Photobooth', 'greeter_time', str(self._value_widgets['Photobooth']['greeter_time'].text()))
         cfg.set('Photobooth', 'countdown_time', str(self._value_widgets['Photobooth']['countdown_time'].text()))
         cfg.set('Photobooth', 'display_time', str(self._value_widgets['Photobooth']['display_time'].text()))
 
@@ -468,8 +481,6 @@ class PyQt5Settings(QFrame):
         cfg.set('Picture', 'min_dist_y', self._value_widgets['Picture']['min_dist_y'].text())
         cfg.set('Picture', 'basename', self._value_widgets['Picture']['basename'].text())
 
-        # wrapper_idx2val = [ 'commandline', 'piggyphoto', 'gphoto2-cffi', '' ]
-        # cfg.set('Camera', 'module', wrapper_idx2val[self._value_widgets['Camera']['module'].currentIndex()])
         cfg.set('Camera', 'module', self._camera_modules[self._value_widgets['Camera']['module'].currentIndex()][0])
 
         cfg.write()

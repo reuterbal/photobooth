@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import io
+import io, logging
 
 from PIL import Image
 
@@ -18,6 +18,11 @@ class CameraGphoto2Cffi(Camera):
 
         self.hasPreview = True
         self.hasIdle = True
+
+        # Avoid output cluttered
+        logging.basicConfig(
+            format='%(levelname)s: %(name)s: %(message)s', 
+            level=logging.CRITICAL)
 
         self._setupCamera()
 

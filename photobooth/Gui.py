@@ -110,6 +110,13 @@ class MessageState(GuiState):
 
 
 
+class GreeterState(GuiState):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+
 class PoseState(GuiState):
 
     def __init__(self, **kwargs):
