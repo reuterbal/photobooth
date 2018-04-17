@@ -7,7 +7,7 @@ from PIL import Image
 
 import gphoto2cffi as gp
 
-from Camera import Camera
+from . import Camera
 
 
 class CameraGphoto2Cffi(Camera):

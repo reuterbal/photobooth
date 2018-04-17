@@ -7,7 +7,7 @@ from PIL import Image
 
 import gphoto2 as gp
 
-from Camera import Camera
+from . import Camera
 
 
 class CameraGphoto2(Camera):

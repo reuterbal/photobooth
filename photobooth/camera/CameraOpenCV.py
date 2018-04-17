@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from Camera import Camera
-
 from PIL import Image
+
 import cv2
+
+from . import Camera
 
 class CameraOpenCV(Camera):
 

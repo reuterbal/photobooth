@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
+# Available camera modules as tuples of (config name, module name, class name)
+modules = (
+    ('python-gphoto2', 'CameraGphoto2', 'CameraGphoto2'),
+    ('gphoto2-cffi', 'CameraGphoto2Cffi', 'CameraGphoto2Cffi'),
+    ('gphoto2-commandline', 'CameraGphoto2CommandLine', 'CameraGphoto2CommandLine'),
+    ('opencv', 'CameraOpenCV', 'CameraOpenCV') )
+
+
 class Camera:
 
     def __init__(self):

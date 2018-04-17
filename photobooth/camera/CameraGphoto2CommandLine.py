@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from Camera import Camera
-
 from PIL import Image
 import os, subprocess
+
+from . import Camera
 
 class CameraGphoto2CommandLine(Camera):
 

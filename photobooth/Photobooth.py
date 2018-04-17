@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from Config import Config
-
-from PictureList import PictureList
-from PictureDimensions import PictureDimensions
-
-import Gui
-from PyQt5Gui import PyQt5Gui
-
-from PIL import Image, ImageOps
-
 from multiprocessing import Pipe, Process
 
 from time import time, sleep, localtime, strftime
 
+import importlib
+
+from PIL import Image, ImageOps
+
+from Config import Config
+from PictureList import PictureList
+from PictureDimensions import PictureDimensions
+
+import camera, gui
 
 
 class Photobooth:
@@ -88,7 +87,7 @@ class Photobooth:
                     self.trigger()
                 except RuntimeError as e:
                     print('Camera error: ' + str(e))
-                    self._send.send( Gui.ErrorState('Camera error', str(e)) )
+                    self._send.send( gui.ErrorState('Camera error', str(e)) )
 
         return 0
         
@@ -109,7 +108,7 @@ class Photobooth:
         tic, toc = time(), 0
 
         while toc < self.countdownTime:
-            self._send.send( Gui.PreviewState(
+            self._send.send( gui.PreviewState(
                 message = str(self.countdownTime - int(toc)), 
                 picture = ImageOps.mirror(self._cap.getPreview()) ) )
             toc = time() - tic
@@ -118,7 +117,7 @@ class Photobooth:
     def showCounterNoPreview(self):
 
         for i in range(self.countdownTime):
-            self._send.send( Gui.PreviewState(
+            self._send.send( gui.PreviewState(
                 message = str(i),
                 picture = Image.new('RGB', (1,1), 'white') ) )
             sleep(1)
@@ -126,7 +125,7 @@ class Photobooth:
 
     def showPose(self):
 
-        self._send.send( Gui.PoseState() )
+        self._send.send( gui.PoseState() )
 
 
     def captureSinglePicture(self):
@@ -155,43 +154,52 @@ class Photobooth:
 
     def trigger(self):
 
-        self._send.send(Gui.GreeterState())
+        self._send.send(gui.GreeterState())
         self.setCameraActive()
 
         sleep(self.greeterTime)
 
         img = self.capturePictures()
         img.save(self.getNextFilename(), 'JPEG')
-        self._send.send(Gui.PictureState(img))
+        self._send.send(gui.PictureState(img))
 
         self.setCameraIdle()
 
         sleep(self.displayTime)
 
-        self._send.send(Gui.IdleState())
+        self._send.send(gui.IdleState())
+
+
+def lookup_and_import(module_list, name, package=None):
+
+    result = next(((mod_name, class_name) 
+                for config_name, mod_name, class_name in module_list
+                if name == config_name), None)
+    print(result)
+    
+    if package == None:
+        import_module = importlib.import_module(result[0])
+    else:
+        import_module = importlib.import_module('.' + result[0], package)
+
+    if result[1] == None:
+        return import_module
+    else:
+        return getattr(import_module, result[1])
 
 
 def main_photobooth(config, send, recv):
 
     while True:
         try:
-            if config.get('Camera', 'module') == 'python-gphoto2':
-                from CameraGphoto2 import CameraGphoto2 as Camera
-            elif config.get('Camera', 'module') == 'gphoto2-cffi':
-                from CameraGphoto2Cffi import CameraGphoto2Cffi as Camera
-            elif config.get('Camera', 'module') == 'gphoto2-commandline':
-                from CameraGphoto2CommandLine import CameraGphoto2CommandLine as Camera
-            elif config.get('Camera', 'module') == 'opencv':
-                from CameraOpenCV import CameraOpenCV as Camera
-            else:
-                raise ModuleNotFoundError('Unknown camera module "' + config.get('Camera', 'module') + '"')
+            Camera = lookup_and_import(camera.modules, config.get('Camera', 'module'), 'camera')
 
             with Camera() as cap:
                 photobooth = Photobooth(config, cap)
                 return photobooth.run(send, recv)
 
         except BaseException as e:
-            send.send( Gui.ErrorState('Camera error', str(e), True) )
+            send.send( gui.ErrorState('Camera error', str(e)) )
             event = recv.recv()
             if str(event) != 'ack':
                     print('Unknown event received: ' + str(event))
@@ -208,8 +216,8 @@ def run(argv):
     photobooth = Process(target=main_photobooth, args=(config, gui_send, event_recv), daemon=True)
     photobooth.start()
 
-    gui = PyQt5Gui(argv, config)
-    return gui.run(event_send, gui_recv)
+    Gui = lookup_and_import(gui.modules, config.get('Gui', 'module'), 'gui')
+    return Gui(argv, config).run(event_send, gui_recv)
 
 
 def main(argv):

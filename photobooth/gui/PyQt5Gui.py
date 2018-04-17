@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import Gui
+# import Gui
 
 from PIL import ImageQt
 
@@ -9,7 +9,9 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 
-class PyQt5Gui(Gui.Gui):
+from . import *
+
+class PyQt5Gui(Gui):
 
     def __init__(self, argv, config):
 
@@ -67,26 +69,26 @@ class PyQt5Gui(Gui.Gui):
 
     def handleState(self, state):
 
-        if not isinstance(state, Gui.GuiState):
+        if not isinstance(state, GuiState):
             raise ValueError('Invalid data received')
 
-        if isinstance(state, Gui.IdleState):
+        if isinstance(state, IdleState):
             self.showIdle()
-        elif isinstance(state, Gui.GreeterState):
+        elif isinstance(state, GreeterState):
             global cfg
             num_pictures = ( cfg.getInt('Picture', 'num_x') * 
                 cfg.getInt('Picture', 'num_y') )
             self._p.setCentralWidget(
                 PyQt5PictureMessage('Will capture {} pictures!'.format(num_pictures)))
-        elif isinstance(state, Gui.PreviewState):
+        elif isinstance(state, PreviewState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
-        elif isinstance(state, Gui.PoseState):
+        elif isinstance(state, PoseState):
             self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
-        elif isinstance(state, Gui.PictureState):
+        elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
-        elif isinstance(state, Gui.ErrorState):
+        elif isinstance(state, ErrorState):
             self.showError(state.title, state.message)
         else:
             raise ValueError('Unknown state')

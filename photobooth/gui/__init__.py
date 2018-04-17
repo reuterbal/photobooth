@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
+# Available gui modules as tuples of (config name, module name, class name)
+modules = ( ('qt5', 'PyQt5Gui', 'PyQt5Gui'), )
+
+
 class Gui:
 
     def __init__(self):
