@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys, Photobooth
+import sys, main
 
-sys.exit(Photobooth.main(sys.argv))
+sys.exit(main.main(sys.argv))

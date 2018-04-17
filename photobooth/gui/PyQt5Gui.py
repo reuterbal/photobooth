@@ -117,10 +117,13 @@ class PyQt5Gui(Gui):
 
     def showError(self, title, message):
 
-        if QMessageBox.warning(self._p, title,message, QMessageBox.Ok, 
-            QMessageBox.Ok) == QMessageBox.Ok:
+        reply = QMessageBox.warning(self._p, title,message, QMessageBox.Close | QMessageBox.Retry, 
+            QMessageBox.Retry) 
+        if reply == QMessageBox.Retry:
             self._transport.send('ack')
             self._lastState()
+        else:
+            self.close()
 
 
 class PyQt5Receiver(QThread):
