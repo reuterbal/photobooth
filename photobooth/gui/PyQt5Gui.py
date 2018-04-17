@@ -123,7 +123,8 @@ class PyQt5Gui(Gui):
             self._transport.send('ack')
             self._lastState()
         else:
-            self.close()
+            self._transport.send('cancel')
+            self.showStart()
 
 
 class PyQt5Receiver(QThread):

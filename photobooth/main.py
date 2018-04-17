@@ -38,9 +38,13 @@ def main_photobooth(config, send, recv):
         except BaseException as e:
             send.send( gui.ErrorState('Camera error', str(e)) )
             event = recv.recv()
-            if str(event) != 'ack':
-                    print('Unknown event received: ' + str(event))
-                    raise RuntimeError('Unknown event received', str(event))
+            if str(event) == 'cancel':
+                return 1
+            elif str(event) == 'ack':
+                pass
+            else:
+                print('Unknown event received: ' + str(event))
+                raise RuntimeError('Unknown event received', str(event))
 
 
 def run(argv):

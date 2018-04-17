@@ -83,6 +83,14 @@ class Photobooth:
                 except RuntimeError as e:
                     print('Camera error: ' + str(e))
                     self._send.send( gui.ErrorState('Camera error', str(e)) )
+                    event = recv.recv()
+                    if str(event) == 'cancel':
+                        return 1
+                    elif str(event) == 'ack':
+                        pass
+                    else:
+                        print('Unknown event received: ' + str(event))
+                        raise RuntimeError('Unknown event received', str(event))
 
         return 0
         
