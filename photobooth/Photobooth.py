@@ -10,7 +10,6 @@ from PictureDimensions import PictureDimensions
 
 import gui
 
-
 class Photobooth:
 
     def __init__(self, config, camera):

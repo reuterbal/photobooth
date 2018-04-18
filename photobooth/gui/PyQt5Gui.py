@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# import Gui
-
 from PIL import ImageQt
 
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
@@ -10,6 +8,9 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QF
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 
 from . import *
+import camera, printer
+
+from printer.PrinterPyQt5 import PrinterPyQt5 as Printer
 
 class PyQt5Gui(Gui):
 
@@ -23,6 +24,7 @@ class PyQt5Gui(Gui):
         self._app = QApplication(argv)
         self._p = PyQt5MainWindow()
         self._lastState = self.showStart
+        self._printer = Printer((cfg.getInt('Printer', 'width'), cfg.getInt('Printer', 'height')))
 
 
     def run(self, send, recv):
@@ -88,6 +90,8 @@ class PyQt5Gui(Gui):
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
+
+            self._printer.print('test.pdf', state.picture)
         elif isinstance(state, ErrorState):
             self.showError(state.title, state.message)
         else:
@@ -284,6 +288,7 @@ class PyQt5Settings(QFrame):
         grid = QGridLayout()
         grid.addWidget(self.createGuiSettings(), 0, 0)
         grid.addWidget(self.createGpioSettings(), 1, 0)
+        grid.addWidget(self.createPrinterSettings(), 2, 0)
         grid.addWidget(self.createCameraSettings(), 0, 1)
         grid.addWidget(self.createPhotoboothSettings(), 1, 1)
         grid.addWidget(self.createPictureSettings(), 2, 1)
@@ -295,6 +300,18 @@ class PyQt5Settings(QFrame):
         self.setLayout(layout)
 
 
+    def createModuleComboBox(self, module_list, current_module):
+
+        cb = QComboBox()
+        for m in module_list:
+            cb.addItem(m[0])
+
+        idx = [x for x, m in enumerate(module_list) if m[0] == current_module]
+        cb.setCurrentIndex(idx[0] if len(idx) > 0 else -1)
+
+        return cb
+
+
     def createGuiSettings(self):
 
         global cfg
@@ -303,13 +320,20 @@ class PyQt5Settings(QFrame):
         self._value_widgets['Gui']['fullscreen'] = QCheckBox('Enable fullscreen')
         if cfg.getBool('Gui', 'fullscreen'):
             self._value_widgets['Gui']['fullscreen'].toggle()
+        self._value_widgets['Gui']['module'] = self.createModuleComboBox(modules, cfg.get('Gui', 'module'))
         self._value_widgets['Gui']['width'] = QLineEdit(cfg.get('Gui', 'width'))
         self._value_widgets['Gui']['height'] = QLineEdit(cfg.get('Gui', 'height'))
 
         layout = QFormLayout()
         layout.addRow(self._value_widgets['Gui']['fullscreen'])
-        layout.addRow(QLabel('Width:'), self._value_widgets['Gui']['width'])
-        layout.addRow(QLabel('Height:'), self._value_widgets['Gui']['height'])
+        layout.addRow(QLabel('Gui module:'), self._value_widgets['Gui']['module'])
+
+        sublayout_size = QHBoxLayout()
+        sublayout_size.addWidget(QLabel('Window size [px]:'))
+        sublayout_size.addWidget(self._value_widgets['Gui']['width'])
+        sublayout_size.addWidget(QLabel('x'))
+        sublayout_size.addWidget(self._value_widgets['Gui']['height'])
+        layout.addRow(sublayout_size)
 
         widget = QGroupBox('Interface settings')
         widget.setLayout(layout)
@@ -339,28 +363,39 @@ class PyQt5Settings(QFrame):
         return widget
 
 
+    def createPrinterSettings(self):
+
+        global cfg
+
+        self._value_widgets['Printer'] = {}
+        self._value_widgets['Printer']['enable'] = QCheckBox('Enable Printing')
+        if cfg.getBool('Printer', 'enable'):
+            self._value_widgets['Printer']['enable'].toggle()
+        self._value_widgets['Printer']['module'] = self.createModuleComboBox(printer.modules, cfg.get('Printer', 'module'))
+        self._value_widgets['Printer']['width'] = QLineEdit(cfg.get('Printer', 'width'))
+        self._value_widgets['Printer']['height'] = QLineEdit(cfg.get('Printer', 'height'))
+
+        layout = QFormLayout()
+        layout.addRow(self._value_widgets['Printer']['enable'])
+        layout.addRow(QLabel('Printer module:'), self._value_widgets['Printer']['module'])
+        
+        sublayout_size = QHBoxLayout()
+        sublayout_size.addWidget(QLabel('Paper size [mm]:'))
+        sublayout_size.addWidget(self._value_widgets['Printer']['width'])
+        sublayout_size.addWidget(QLabel('x'))
+        sublayout_size.addWidget(self._value_widgets['Printer']['height'])
+        layout.addRow(sublayout_size)
+
+        widget = QGroupBox('Printer settings')
+        widget.setLayout(layout)
+        return widget
+
     def createCameraSettings(self):
 
         global cfg
 
-        self._camera_modules = [
-            ('gphoto2-commandline', 'gphoto2 via command line'),
-            # ('piggyphoto', 'piggyphoto'),
-            ('gphoto2-cffi', 'gphoto2-cffi'),
-            ('python-gphoto2', 'python-gphoto2'),
-            ('opencv', 'OpenCV'),
-            ('', 'none') ]
-
-        wrapper = QComboBox()
-        for m in self._camera_modules:
-            wrapper.addItem(m[1])
-
-        current_wrapper = cfg.get('Camera', 'module')
-        idx = [x for x, m in enumerate(self._camera_modules) if m[0] == current_wrapper]
-        wrapper.setCurrentIndex(idx[0] if len(idx) > 0 else -1)
-
         self._value_widgets['Camera'] = {}
-        self._value_widgets['Camera']['module'] = wrapper
+        self._value_widgets['Camera']['module'] = self.createModuleComboBox(camera.modules, cfg.get('Camera', 'module'))
 
         layout = QFormLayout()
         layout.addRow(QLabel('Camera module:'), self._value_widgets['Camera']['module'])
@@ -443,7 +478,7 @@ class PyQt5Settings(QFrame):
 
         btnSave = QPushButton('Save')
         btnSave.resize(btnSave.sizeHint())
-        btnSave.clicked.connect(self.storeConfig)
+        btnSave.clicked.connect(self.storeConfigAndRestart)
         layout.addWidget(btnSave)
 
         btnCancel = QPushButton('Cancel')
@@ -461,11 +496,12 @@ class PyQt5Settings(QFrame):
         return widget
 
 
-    def storeConfig(self):
+    def storeConfigAndRestart(self):
 
         global cfg
 
         cfg.set('Gui', 'fullscreen', str(self._value_widgets['Gui']['fullscreen'].isChecked()))
+        cfg.set('Gui', 'module', modules[self._value_widgets['Gui']['module'].currentIndex()][0])
         cfg.set('Gui', 'width', self._value_widgets['Gui']['width'].text())
         cfg.set('Gui', 'height', self._value_widgets['Gui']['height'].text())
 
@@ -473,6 +509,11 @@ class PyQt5Settings(QFrame):
         cfg.set('Gpio', 'exit_channel', self._value_widgets['Gpio']['exit_channel'].text())
         cfg.set('Gpio', 'trigger_channel', self._value_widgets['Gpio']['trigger_channel'].text())
         cfg.set('Gpio', 'lamp_channel', self._value_widgets['Gpio']['lamp_channel'].text())
+
+        cfg.set('Printer', 'enable', str(self._value_widgets['Printer']['enable'].isChecked()))
+        cfg.set('Printer', 'module', modules[self._value_widgets['Printer']['module'].currentIndex()][0])
+        cfg.set('Printer', 'width', self._value_widgets['Printer']['width'].text())
+        cfg.set('Printer', 'height', self._value_widgets['Printer']['height'].text())
 
         cfg.set('Photobooth', 'show_preview', str(self._value_widgets['Photobooth']['show_preview'].isChecked()))
         cfg.set('Photobooth', 'greeter_time', str(self._value_widgets['Photobooth']['greeter_time'].text()))
@@ -487,7 +528,7 @@ class PyQt5Settings(QFrame):
         cfg.set('Picture', 'min_dist_y', self._value_widgets['Picture']['min_dist_y'].text())
         cfg.set('Picture', 'basename', self._value_widgets['Picture']['basename'].text())
 
-        cfg.set('Camera', 'module', self._camera_modules[self._value_widgets['Camera']['module'].currentIndex()][0])
+        cfg.set('Camera', 'module', camera.modules[self._value_widgets['Camera']['module'].currentIndex()][0])
 
         cfg.write()
         self._gui.restart()
@@ -499,6 +540,7 @@ class PyQt5Settings(QFrame):
 
         cfg.defaults()
         self._gui.showSettings()
+
 
 
 
@@ -521,8 +563,7 @@ class PyQt5PictureMessage(QFrame):
 
     def paintEvent(self, event):
 
-        painter = QPainter()
-        painter.begin(self)
+        painter = QPainter(self)
 
         if self._picture != None:
             if isinstance(self._picture, QImage):
