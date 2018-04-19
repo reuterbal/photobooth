@@ -3,7 +3,7 @@
 
 from PIL import ImageQt
 
-from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, QPoint, QThread, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 
@@ -24,7 +24,8 @@ class PyQt5Gui(Gui):
         self._app = QApplication(argv)
         self._p = PyQt5MainWindow()
         self._lastState = self.showStart
-        self._printer = Printer((cfg.getInt('Printer', 'width'), cfg.getInt('Printer', 'height')))
+        self._printer = Printer((cfg.getInt('Printer', 'width'), 
+                                 cfg.getInt('Printer', 'height')), True)
 
 
     def run(self, send, recv):
@@ -34,7 +35,6 @@ class PyQt5Gui(Gui):
         receiver.start()
 
         self._transport = send
-        self._p.transport = send
 
         self.showStart()
 
@@ -91,7 +91,7 @@ class PyQt5Gui(Gui):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
 
-            self._printer.print('test.pdf', state.picture)
+            self._printer.print(state.picture)
         elif isinstance(state, ErrorState):
             self.showError(state.title, state.message)
         else:
@@ -110,6 +110,13 @@ class PyQt5Gui(Gui):
         self._p.handleKeypressEvent = lambda event : None
         self._lastState = self.showSettings
         self._p.setCentralWidget(PyQt5Settings(self))
+
+
+    def showStartPhotobooth(self):
+
+        self._lastState = self.showStartPhotobooth
+        self._transport.send('start')
+        self._p.setCentralWidget(PyQt5PictureMessage('Starting the photobooth...'))
 
 
     def showIdle(self):
@@ -171,20 +178,6 @@ class PyQt5MainWindow(QMainWindow):
 
 
     @property
-    def transport(self):
-
-        return self._transport
-
-
-    @transport.setter
-    def transport(self, new_transport):
-
-        if not hasattr(new_transport, 'send'):
-            raise ValueError('PyQt5MainWindow.transport must provide send()')
-
-        self._transport = new_transport
-
-    @property
     def handleKeypressEvent(self):
 
         return self._handle_key
@@ -213,19 +206,13 @@ class PyQt5MainWindow(QMainWindow):
             self.show()
 
 
-    def showMessage(self, message, picture=None):
-
-        content = PyQt5PictureMessage(message, picture)
-        self.setCentralWidget(content)
-
-
     def closeEvent(self, e):
 
         reply = QMessageBox.question(self, 'Confirmation', "Quit Photobooth?",
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            self.transport.close()
+            # self.transport.close()
             e.accept()
         else:
             e.ignore()
@@ -255,7 +242,7 @@ class PyQt5Start(QFrame):
 
         btnStart = QPushButton('Start Photobooth')
         btnStart.resize(btnStart.sizeHint())
-        btnStart.clicked.connect(gui.showIdle)
+        btnStart.clicked.connect(gui.showStartPhotobooth)
         grid.addWidget(btnStart, 0, 0)
 
         btnSettings = QPushButton('Settings')
@@ -389,6 +376,7 @@ class PyQt5Settings(QFrame):
         widget = QGroupBox('Printer settings')
         widget.setLayout(layout)
         return widget
+
 
     def createCameraSettings(self):
 
@@ -571,7 +559,10 @@ class PyQt5PictureMessage(QFrame):
             else:
                 pix = QPixmap(self._picture)
             pix = pix.scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            painter.drawPixmap(pix.rect(), pix, pix.rect())
+
+            origin = ( (self.rect().width() - pix.width()) // 2,
+                       (self.rect().height() - pix.height()) // 2 )
+            painter.drawPixmap(QPoint(*origin), pix)
 
         painter.drawText(event.rect(), Qt.AlignCenter, self._message)
         painter.end()

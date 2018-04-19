@@ -27,6 +27,11 @@ def lookup_and_import(module_list, name, package=None):
 
 def main_photobooth(config, send, recv):
 
+    event = recv.recv()
+    if str(event) != 'start':
+        print('Unknown event received: ' + str(event))
+        raise RuntimeError('Unknown event received', str(event))
+
     while True:
         try:
             Camera = lookup_and_import(camera.modules, config.get('Camera', 'module'), 'camera')

@@ -67,6 +67,7 @@ class Photobooth:
 
         self._send = send
         self.setCameraIdle()
+        self._send.send(gui.IdleState())
 
         while True:
             try:
