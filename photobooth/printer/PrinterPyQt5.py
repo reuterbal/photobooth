@@ -35,9 +35,9 @@ class PrinterPyQt5(Printer):
         img = img.scaled(self._printer.pageRect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         printable_size = self._printer.pageRect(QPrinter.DevicePixel)
-        offset = ( (printable_size.width() - img.width()) // 2,
+        origin = ( (printable_size.width() - img.width()) // 2,
                    (printable_size.height() - img.height()) // 2 )
         
         painter = QPainter(self._printer)
-        painter.drawImage(QPoint(*offset), img)
+        painter.drawImage(QPoint(*origin), img)
         painter.end()

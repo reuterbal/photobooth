@@ -59,7 +59,6 @@ class PyQt5Gui(Gui):
         if event.key() == Qt.Key_Escape:
             self.showStart()
         elif event.key() == Qt.Key_Space:
-            self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
             self._transport.send('triggered')
 
 
@@ -78,6 +77,7 @@ class PyQt5Gui(Gui):
             self.showIdle()
         elif isinstance(state, GreeterState):
             global cfg
+            self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
             num_pictures = ( cfg.getInt('Picture', 'num_x') * 
                 cfg.getInt('Picture', 'num_y') )
             self._p.setCentralWidget(
@@ -335,15 +335,15 @@ class PyQt5Settings(QFrame):
         self._value_widgets['Gpio']['enable'] = QCheckBox('Enable GPIO')
         if cfg.getBool('Gpio', 'enable'):
             self._value_widgets['Gpio']['enable'].toggle()
-        self._value_widgets['Gpio']['exit_channel'] = QLineEdit(cfg.get('Gpio', 'exit_channel'))
-        self._value_widgets['Gpio']['trigger_channel'] = QLineEdit(cfg.get('Gpio', 'trigger_channel'))
-        self._value_widgets['Gpio']['lamp_channel'] = QLineEdit(cfg.get('Gpio', 'lamp_channel'))
+        self._value_widgets['Gpio']['exit_pin'] = QLineEdit(cfg.get('Gpio', 'exit_pin'))
+        self._value_widgets['Gpio']['trigger_pin'] = QLineEdit(cfg.get('Gpio', 'trigger_pin'))
+        self._value_widgets['Gpio']['lamp_pin'] = QLineEdit(cfg.get('Gpio', 'lamp_pin'))
 
         layout = QFormLayout()
         layout.addRow(self._value_widgets['Gpio']['enable'])
-        layout.addRow(QLabel('Exit channel:'), self._value_widgets['Gpio']['exit_channel'])
-        layout.addRow(QLabel('Trigger channel:'), self._value_widgets['Gpio']['trigger_channel'])
-        layout.addRow(QLabel('Lamp channel:'), self._value_widgets['Gpio']['lamp_channel'])
+        layout.addRow(QLabel('Exit pin (BCM numbering):'), self._value_widgets['Gpio']['exit_pin'])
+        layout.addRow(QLabel('Trigger pin (BCM numbering):'), self._value_widgets['Gpio']['trigger_pin'])
+        layout.addRow(QLabel('Lamp pin (BCM numbering):'), self._value_widgets['Gpio']['lamp_pin'])
 
         widget = QGroupBox('GPIO settings')
         widget.setLayout(layout)
@@ -494,9 +494,9 @@ class PyQt5Settings(QFrame):
         cfg.set('Gui', 'height', self._value_widgets['Gui']['height'].text())
 
         cfg.set('Gpio', 'enable', str(self._value_widgets['Gpio']['enable'].isChecked()))
-        cfg.set('Gpio', 'exit_channel', self._value_widgets['Gpio']['exit_channel'].text())
-        cfg.set('Gpio', 'trigger_channel', self._value_widgets['Gpio']['trigger_channel'].text())
-        cfg.set('Gpio', 'lamp_channel', self._value_widgets['Gpio']['lamp_channel'].text())
+        cfg.set('Gpio', 'exit_pin', self._value_widgets['Gpio']['exit_pin'].text())
+        cfg.set('Gpio', 'trigger_pin', self._value_widgets['Gpio']['trigger_pin'].text())
+        cfg.set('Gpio', 'lamp_pin', self._value_widgets['Gpio']['lamp_pin'].text())
 
         cfg.set('Printer', 'enable', str(self._value_widgets['Printer']['enable'].isChecked()))
         cfg.set('Printer', 'module', modules[self._value_widgets['Printer']['module'].currentIndex()][0])

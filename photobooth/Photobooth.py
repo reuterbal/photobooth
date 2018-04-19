@@ -14,15 +14,21 @@ class Photobooth:
 
     def __init__(self, config, camera):
 
-        picture_basename = strftime(config.get('Picture', 'basename'), localtime())
+        self.initCamera(config, camera)
+        self.initGpio(config)
+        self.initTimings(config)
+
+        self.triggerOff()
+
+
+    def initCamera(self, config, camera):
 
         self._cap = camera
         self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
-        self._pic_list = PictureList(picture_basename)
 
-        self._greeter_time = config.getInt('Photobooth', 'greeter_time')
-        self._countdown_time = config.getInt('Photobooth', 'countdown_time')
-        self._display_time = config.getInt('Photobooth', 'display_time')
+        picture_basename = strftime(config.get('Picture', 'basename'), localtime())        
+        self._pic_list = PictureList(picture_basename)
+        self._get_next_filename = self._pic_list.getNext
 
         if ( config.getBool('Photobooth', 'show_preview') 
             and self._cap.hasPreview ):
@@ -30,7 +36,36 @@ class Photobooth:
         else:
             self._show_counter = self.showCounterNoPreview
 
-        self._get_next_filename = self._pic_list.getNext
+
+    def initGpio(self, config):
+        
+        if config.getBool('Gpio', 'enable'):
+            from Gpio import Gpio
+
+            self._gpio = Gpio()
+
+            lamp = self._gpio.setLamp(config.getInt('Gpio', 'lamp_pin'))
+            self._lampOn = lambda : self._gpio.lampOn(lamp)
+            self._lampOff = lambda : self._gpio.lampOff(lamp)
+
+            self._gpio.setButton(config.getInt('Gpio', 'trigger_pin'), self.gpioTrigger)
+            self._gpio.setButton(config.getInt('Gpio', 'exit_pin'), self.teardown)
+        else:
+            self._lampOn = lambda : None
+            self._lampOff = lambda : None
+
+
+    def initTimings(self, config):
+
+        self._greeter_time = config.getInt('Photobooth', 'greeter_time')
+        self._countdown_time = config.getInt('Photobooth', 'countdown_time')
+        self._display_time = config.getInt('Photobooth', 'display_time')
+
+
+    def teardown(self):
+
+        self.triggerOff()
+        self.setCameraIdle()
 
 
     @property
@@ -68,6 +103,7 @@ class Photobooth:
         self._send = send
         self.setCameraIdle()
         self._send.send(gui.IdleState())
+        self.triggerOn()
 
         while True:
             try:
@@ -85,6 +121,7 @@ class Photobooth:
                     self._send.send( gui.ErrorState('Camera error', str(e)) )
                     event = recv.recv()
                     if str(event) == 'cancel':
+                        self.teardown()
                         return 1
                     elif str(event) == 'ack':
                         pass
@@ -158,6 +195,7 @@ class Photobooth:
     def trigger(self):
 
         self._send.send(gui.GreeterState())
+        self.triggerOff()
         self.setCameraActive()
 
         sleep(self.greeterTime)
@@ -171,4 +209,21 @@ class Photobooth:
         sleep(self.displayTime)
 
         self._send.send(gui.IdleState())
+        self._lampOn()
 
+
+    def gpioTrigger(self):
+
+        self._gpioTrigger()
+
+
+    def triggerOff(self):
+
+        self._lampOff()
+        self._gpioTrigger = lambda : None
+
+
+    def triggerOn(self):
+
+        self._lampOn()
+        self._gpioTrigger = self.trigger
