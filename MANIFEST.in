@@ -1,0 +1,3 @@
+include *.md
+include LICENSE.txt
+recursive-include photobooth *.cfg
