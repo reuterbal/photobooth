@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from pkg_resources import get_distribution, DistributionNotFound
+try:
+    __version__ = get_distribution('photobooth').version
+except DistributionNotFound:
+    __version__ = 'unknown'
+
 from multiprocessing import Pipe, Process
 import importlib
 
 import camera, gui
 from Config import Config
 from Photobooth import Photobooth
+
 
 def lookup_and_import(module_list, name, package=None):
 
@@ -53,6 +60,7 @@ def main_photobooth(config, send, recv):
 
 
 def run(argv):
+    print('Photobooth version:', __version__)
 
     config = Config('photobooth.cfg')
 
