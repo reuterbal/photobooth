@@ -161,6 +161,8 @@ setup(
         # 'test': ['coverage'],
     },
 
+    python_requires='>=3',
+
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     #
