@@ -198,8 +198,7 @@ class Photobooth:
 
     def capturePictures(self):
 
-        pictures = [ self.captureSinglePicture() for _ in range(self._pic_dims.totalNumPictures) ]
-        return self.assemblePictures(pictures)
+        return [ self.captureSinglePicture() for _ in range(self._pic_dims.totalNumPictures) ]
 
 
     def trigger(self):
@@ -210,7 +209,10 @@ class Photobooth:
 
         sleep(self.greeterTime)
 
-        img = self.capturePictures()
+        pics = self.capturePictures()
+        self._send.send(gui.AssembleState())
+
+        img = self.assemblePictures(pics)
         img.save(self.getNextFilename(), 'JPEG')
         self._send.send(gui.PictureState(img))
 

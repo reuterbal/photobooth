@@ -87,6 +87,8 @@ class PyQt5Gui(Gui):
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
         elif isinstance(state, PoseState):
             self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
+        elif isinstance(state, AssembleState):
+            self._p.setCentralWidget(PyQt5PictureMessage('Please wait!\nAssembling picture...'))
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
