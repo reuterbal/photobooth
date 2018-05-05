@@ -32,12 +32,7 @@ def lookup_and_import(module_list, name, package=None):
         return getattr(import_module, result[1])
 
 
-def main_photobooth(config, send, recv):
-
-    event = recv.recv()
-    if str(event) != 'start':
-        print('Unknown event received: ' + str(event))
-        raise RuntimeError('Unknown event received', str(event))
+def start_photobooth(config, send, recv):
 
     while True:
         try:
@@ -50,16 +45,30 @@ def main_photobooth(config, send, recv):
         except BaseException as e:
             send.send( gui.ErrorState('Camera error', str(e)) )
             event = recv.recv()
-            if str(event) == 'cancel':
-                return 1
-            elif str(event) == 'ack':
-                pass
+            if str(event) in ('cancel', 'ack'):
+                return -1
             else:
                 print('Unknown event received: ' + str(event))
                 raise RuntimeError('Unknown event received', str(event))
 
 
+def main_photobooth(config, send, recv):
+
+    while True:
+        event = recv.recv()
+
+        if str(event) != 'start':
+            print('Unknown event received: ' + str(event))
+            raise RuntimeError('Unknown event received', str(event))
+
+        exit_status = start_photobooth(config, send, recv)
+
+        if exit_status != -1:
+            return exit_status
+
+
 def run(argv):
+
     print('Photobooth version:', __version__)
 
     config = Config('photobooth.cfg')

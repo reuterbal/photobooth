@@ -128,7 +128,8 @@ class PyQt5Gui(Gui):
 
     def showError(self, title, message):
 
-        reply = QMessageBox.warning(self._p, title,message, QMessageBox.Close | QMessageBox.Retry, 
+        print('ERROR: ' + title + ': ' + message)
+        reply = QMessageBox.warning(self._p, title, message, QMessageBox.Close | QMessageBox.Retry, 
             QMessageBox.Retry) 
         if reply == QMessageBox.Retry:
             self._transport.send('ack')
