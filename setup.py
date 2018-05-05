@@ -100,9 +100,9 @@ setup(
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
-		'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: End Users/Desktop',
 
-		'Topic :: Multimedia :: Graphics :: Capture :: Digital Camera',
+        'Topic :: Multimedia :: Graphics :: Capture :: Digital Camera',
 
         # Pick your license as you wish
         'License :: OSI Approved :: GNU Affero General Public License v3',
@@ -121,7 +121,7 @@ setup(
     # project page. What does your project relate to?
     #
     # Note that this is a string of words separated by whitespace, not a list.
-    keywords='photobooth gphoto2 camera raspberry pi',  # Optional
+    keywords='photobooth gphoto2 opencv camera raspberry pi',  # Optional
 
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
@@ -141,12 +141,11 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-    	'pyqt5', 
-    	'opencv-python', 
-    	'Pillow', 
-    	'gpiozero',
-    	'gphoto2',
-    	'gphoto2-cffi'],  # Optional
+        'opencv-python', 
+        'Pillow', 
+        'gpiozero',
+        'gphoto2',
+        'gphoto2-cffi'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
@@ -157,7 +156,7 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
-        # 'dev': ['check-manifest'],
+        'dev': ['PyQt5'],
         # 'test': ['coverage'],
     },
 
