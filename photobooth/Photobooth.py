@@ -98,17 +98,27 @@ class Photobooth:
         return self._display_time
 
 
-    def run(self, send, recv):
+    def initRun(self):
 
-        self._send = send
         self.setCameraIdle()
         self._send.send(gui.IdleState())
         self.triggerOn()
 
+
+    def run(self, send, recv):
+
+        self._send = send
+        self.initRun()
+
         while True:
             try:
                 event = recv.recv()
-                if str(event) != 'triggered':
+
+                if str(event) == 'start':
+                    print('Camera already started')
+                    self.initRun()
+                    continue
+                elif str(event) != 'triggered':
                     print('Unknown event received: ' + str(event))
                     raise RuntimeError('Unknown event received', str(event))
             except EOFError:
