@@ -10,9 +10,9 @@ except DistributionNotFound:
 from multiprocessing import Pipe, Process
 import importlib
 
-import camera, gui
-from Config import Config
-from Photobooth import Photobooth
+from . import camera, gui
+from .Config import Config
+from .Photobooth import Photobooth
 
 
 def lookup_and_import(module_list, name, package=None):
@@ -22,9 +22,9 @@ def lookup_and_import(module_list, name, package=None):
                 if name == config_name), None)
     
     if package == None:
-        import_module = importlib.import_module(result[0])
+        import_module = importlib.import_module('photobooth.' + result[0])
     else:
-        import_module = importlib.import_module('.' + result[0], package)
+        import_module = importlib.import_module('photobooth.' + package + '.' + result[0])
 
     if result[1] == None:
         return import_module

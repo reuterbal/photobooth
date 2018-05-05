@@ -5,10 +5,10 @@ from time import time, sleep, localtime, strftime
 
 from PIL import Image, ImageOps
 
-from PictureList import PictureList
-from PictureDimensions import PictureDimensions
+from .PictureList import PictureList
+from .PictureDimensions import PictureDimensions
 
-import gui
+from . import gui
 
 class Photobooth:
 

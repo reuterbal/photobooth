@@ -8,9 +8,9 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QF
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 
 from . import *
-import camera, printer
+from .. import camera, printer
 
-from printer.PrinterPyQt5 import PrinterPyQt5 as Printer
+from ..printer.PrinterPyQt5 import PrinterPyQt5 as Printer
 
 class PyQt5Gui(Gui):
 
