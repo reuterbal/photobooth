@@ -3,9 +3,13 @@
 
 from PIL import ImageQt
 
-from PyQt5.QtCore import Qt, QObject, QPoint, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, QPoint, QThread, QTimer, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt5.QtGui import QImage, QPainter, QPixmap
+
+import math
+from PyQt5.QtGui import QBrush, QPen, QColor
+from PyQt5.QtCore import QRect
 
 from . import *
 from .. import camera, printer
@@ -78,17 +82,20 @@ class PyQt5Gui(Gui):
         elif isinstance(state, GreeterState):
             global cfg
             self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
-            num_pictures = ( cfg.getInt('Picture', 'num_x') * 
+            num_pictures = ( 
+                cfg.getInt('Picture', 'num_x') * 
                 cfg.getInt('Picture', 'num_y') )
             self._p.setCentralWidget(
                 PyQt5PictureMessage('Will capture {} pictures!'.format(num_pictures)))
+            QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, lambda : self._transport.send('ack'))
+
         elif isinstance(state, PreviewState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
         elif isinstance(state, PoseState):
             self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
         elif isinstance(state, AssembleState):
-            self._p.setCentralWidget(PyQt5PictureMessage('Please wait!\nAssembling picture...'))
+            self._p.setCentralWidget(PyQt5WaitMessage('Processing picture...'))
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
@@ -118,7 +125,7 @@ class PyQt5Gui(Gui):
 
         self._lastState = self.showStartPhotobooth
         self._transport.send('start')
-        self._p.setCentralWidget(PyQt5PictureMessage('Starting the photobooth...'))
+        self._p.setCentralWidget(PyQt5WaitMessage('Starting the photobooth...'))
 
 
     def showIdle(self):
@@ -532,6 +539,67 @@ class PyQt5Settings(QFrame):
         cfg.defaults()
         self._gui.showSettings()
 
+
+
+
+class PyQt5WaitMessage(QFrame):
+    # With spinning wait clock, inspired by 
+    # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator
+
+    def __init__(self, message):
+        
+        super().__init__()
+
+        self._message = message
+
+        self.initFrame()
+
+
+    def initFrame(self):
+
+        self.setStyleSheet('background-color: white;')
+
+
+    def paintEvent(self, event):
+
+        painter = QPainter(self)
+
+        rect = QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, Qt.AlignCenter, self._message)
+
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(QPen(Qt.NoPen))
+
+        center = (self.width() / 2, self.height() / 2)
+
+        dots = 8
+        pos = self._counter % dots
+
+        for i in range(dots):
+
+            distance = (pos - i) % dots
+            color = (distance + 1) / (dots + 1) * 255
+            painter.setBrush(QBrush(QColor(color, color, color)))
+
+            painter.drawEllipse(
+                center[0] + 180 / dots * math.cos(2 * math.pi * i / dots) - 20,
+                center[1] + 180 / dots * math.sin(2 * math.pi * i / dots) - 20,
+                15, 15)
+
+        painter.end()
+
+
+    def showEvent(self, event):
+    
+        self._counter = 0
+        self.startTimer(100)
+        
+    
+
+    def timerEvent(self, event):
+    
+        self._counter += 1
+        self.update()
 
 
 

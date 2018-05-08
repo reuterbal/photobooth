@@ -108,11 +108,12 @@ class Photobooth:
     def run(self, send, recv):
 
         self._send = send
+        self._recv = recv
         self.initRun()
 
         while True:
             try:
-                event = recv.recv()
+                event = self._recv.recv()
 
                 if str(event) == 'start':
                     print('Camera already started')
@@ -129,7 +130,7 @@ class Photobooth:
                 except RuntimeError as e:
                     print('Camera error: ' + str(e))
                     self._send.send( gui.ErrorState('Camera error', str(e)) )
-                    event = recv.recv()
+                    event = self._recv.recv()
                     if str(event) == 'cancel':
                         self.teardown()
                         return 1
@@ -207,7 +208,15 @@ class Photobooth:
         self.triggerOff()
         self.setCameraActive()
 
-        sleep(self.greeterTime)
+        event = self._recv.recv()
+        if str(event) == 'cancel':
+            self.teardown()
+            return 1
+        elif str(event) == 'ack':
+            pass
+        else:
+            print('Unknown event received: ' + str(event))
+            raise RuntimeError('Unknown event received', str(event))
 
         pics = self.capturePictures()
         self._send.send(gui.AssembleState())
