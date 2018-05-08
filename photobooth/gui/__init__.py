@@ -136,6 +136,13 @@ class AssembleState(GuiState):
         super().__init__(**kwargs)
 
 
+class CountdownState(GuiState):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+
 class PreviewState(MessageState, PictureState):
 
     def __init__(self, **kwargs):

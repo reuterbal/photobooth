@@ -89,9 +89,13 @@ class PyQt5Gui(Gui):
                 PyQt5PictureMessage('Will capture {} pictures!'.format(num_pictures)))
             QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, lambda : self._transport.send('ack'))
 
+        elif isinstance(state, CountdownState):
+            QTimer.singleShot(cfg.getInt('Photobooth', 'countdown_time') * 1000, lambda : self._transport.send('ack'))
+
         elif isinstance(state, PreviewState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
+            
         elif isinstance(state, PoseState):
             self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
         elif isinstance(state, AssembleState):
@@ -99,6 +103,7 @@ class PyQt5Gui(Gui):
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
+            QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, lambda : self._transport.send('ack'))
 
             self._printer.print(state.picture)
         elif isinstance(state, ErrorState):

@@ -158,20 +158,44 @@ class Photobooth:
 
         tic, toc = time(), 0
 
-        while toc < self.countdownTime:
+        self._send.send(gui.CountdownState())
+
+        while not self._recv.poll():
+            toc = time() - tic
             self._send.send( gui.PreviewState(
                 message = str(self.countdownTime - int(toc)), 
                 picture = ImageOps.mirror(self._cap.getPreview()) ) )
-            toc = time() - tic
+
+        event = self._recv.recv()
+        if str(event) == 'cancel':
+            self.teardown()
+            return 1
+        elif str(event) == 'ack':
+            pass
+        else:
+            print('Unknown event received: ' + str(event))
+            raise RuntimeError('Unknown event received', str(event))
 
 
     def showCounterNoPreview(self):
 
+        self._send.send(gui.CountdownState())
+
         for i in range(self.countdownTime):
             self._send.send( gui.PreviewState(
-                message = str(i),
+                message = str(self.countdownTime - i),
                 picture = Image.new('RGB', (1,1), 'white') ) )
             sleep(1)
+
+        event = self._recv.recv()
+        if str(event) == 'cancel':
+            self.teardown()
+            return 1
+        elif str(event) == 'ack':
+            pass
+        else:
+            print('Unknown event received: ' + str(event))
+            raise RuntimeError('Unknown event received', str(event))
 
 
     def showPose(self):
@@ -227,7 +251,15 @@ class Photobooth:
 
         self.setCameraIdle()
 
-        sleep(self.displayTime)
+        event = self._recv.recv()
+        if str(event) == 'cancel':
+            self.teardown()
+            return 1
+        elif str(event) == 'ack':
+            pass
+        else:
+            print('Unknown event received: ' + str(event))
+            raise RuntimeError('Unknown event received', str(event))
 
         self._send.send(gui.IdleState())
         self._lampOn()
