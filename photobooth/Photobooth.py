@@ -10,13 +10,23 @@ from .PictureDimensions import PictureDimensions
 
 from . import gui
 
+
+class TeardownException(Exception):
+
+    def __init__(self):
+
+        super().__init__()
+
+
 class Photobooth:
 
-    def __init__(self, config, camera):
+    def __init__(self, config, camera, send, recv):
+
+        self._send = send
+        self._recv = recv
 
         self.initCamera(config, camera)
         self.initGpio(config)
-        self.initTimings(config)
 
         self.triggerOff()
 
@@ -55,17 +65,42 @@ class Photobooth:
             self._lampOff = lambda : None
 
 
-    def initTimings(self, config):
-
-        self._greeter_time = config.getInt('Photobooth', 'greeter_time')
-        self._countdown_time = config.getInt('Photobooth', 'countdown_time')
-        self._display_time = config.getInt('Photobooth', 'display_time')
-
-
     def teardown(self):
 
+        print('Camera teardown')
         self.triggerOff()
         self.setCameraIdle()
+
+
+    def recvEvent(self, expected):
+
+        event = self._recv.recv()
+
+        try:
+            event_idx = expected.index(str(event))
+        except ValueError:
+            print('Photobooth: Unknown event received: ' + str(event))
+            raise ValueError('Unknown event received', str(event))
+
+        return event_idx
+
+
+    def recvAck(self):
+
+        events = ['ack', 'cancel', 'teardown']
+
+        if self.recvEvent(events) != 0:
+            print('Teardown of Photobooth requested')
+            raise TeardownException()
+
+
+    def recvTriggered(self):
+
+        events = ['triggered', 'teardown']
+
+        if self.recvEvent(events) != 0:
+            print('Teardown of Photobooth requested')
+            raise TeardownException()
 
 
     @property
@@ -80,24 +115,6 @@ class Photobooth:
         return self._show_counter
 
 
-    @property
-    def greeterTime(self):
-
-        return self._greeter_time
-
-
-    @property
-    def countdownTime(self):
-
-        return self._countdown_time
-
-
-    @property
-    def displayTime(self):
-
-        return self._display_time
-
-
     def initRun(self):
 
         self.setCameraIdle()
@@ -105,45 +122,26 @@ class Photobooth:
         self.triggerOn()
 
 
-    def run(self, send, recv):
+    def run(self):
 
-        self._send = send
-        self._recv = recv
         self.initRun()
 
-        while True:
-            try:
-                event = self._recv.recv()
+        try:
+            while True:
+                try:
+                    self.recvTriggered()
+                except EOFError:
+                    return 0
 
-                if str(event) == 'start':
-                    print('Camera already started')
-                    self.initRun()
-                    continue
-                elif str(event) == 'teardown':
-                    self.teardown()
-                    return -1
-                elif str(event) != 'triggered':
-                    print('Unknown event received: ' + str(event))
-                    raise RuntimeError('Unknown event received', str(event))
-            except EOFError:
-                return 1
-            else:
                 try:
                     self.trigger()
                 except RuntimeError as e:
                     print('Camera error: ' + str(e))
                     self._send.send( gui.ErrorState('Camera error', str(e)) )
-                    event = self._recv.recv()
-                    if str(event) == 'cancel':
-                        self.teardown()
-                        return 1
-                    elif str(event) == 'ack':
-                        pass
-                    else:
-                        print('Unknown event received: ' + str(event))
-                        raise RuntimeError('Unknown event received', str(event))
+                    self.recvAck()
 
-        return 0
+        except TeardownException:
+            return -1
         
 
     def setCameraActive(self):
@@ -159,46 +157,20 @@ class Photobooth:
 
     def showCounterPreview(self):
 
-        tic, toc = time(), 0
-
         self._send.send(gui.CountdownState())
 
         while not self._recv.poll():
-            toc = time() - tic
-            self._send.send( gui.PreviewState(
-                message = str(self.countdownTime - int(toc)), 
-                picture = ImageOps.mirror(self._cap.getPreview()) ) )
+            self._send.send( 
+                gui.PreviewState(picture = ImageOps.mirror(self._cap.getPreview())) )
 
-        event = self._recv.recv()
-        if str(event) == 'cancel':
-            self.teardown()
-            return 1
-        elif str(event) == 'ack':
-            pass
-        else:
-            print('Unknown event received: ' + str(event))
-            raise RuntimeError('Unknown event received', str(event))
+        self.recvAck()
 
 
     def showCounterNoPreview(self):
 
         self._send.send(gui.CountdownState())
-
-        for i in range(self.countdownTime):
-            self._send.send( gui.PreviewState(
-                message = str(self.countdownTime - i),
-                picture = Image.new('RGB', (1,1), 'white') ) )
-            sleep(1)
-
-        event = self._recv.recv()
-        if str(event) == 'cancel':
-            self.teardown()
-            return 1
-        elif str(event) == 'ack':
-            pass
-        else:
-            print('Unknown event received: ' + str(event))
-            raise RuntimeError('Unknown event received', str(event))
+        self.recvAck()
+        print('ack received')
 
 
     def showPose(self):
@@ -213,6 +185,11 @@ class Photobooth:
         return self._cap.getPicture()
 
 
+    def capturePictures(self):
+
+        return [ self.captureSinglePicture() for _ in range(self._pic_dims.totalNumPictures) ]
+
+
     def assemblePictures(self, pictures):
 
         output_image = Image.new('RGB', self._pic_dims.outputSize, (255, 255, 255))
@@ -224,26 +201,13 @@ class Photobooth:
         return output_image
 
 
-    def capturePictures(self):
-
-        return [ self.captureSinglePicture() for _ in range(self._pic_dims.totalNumPictures) ]
-
-
     def trigger(self):
 
         self._send.send(gui.GreeterState())
         self.triggerOff()
         self.setCameraActive()
 
-        event = self._recv.recv()
-        if str(event) == 'cancel':
-            self.teardown()
-            return 1
-        elif str(event) == 'ack':
-            pass
-        else:
-            print('Unknown event received: ' + str(event))
-            raise RuntimeError('Unknown event received', str(event))
+        self.recvAck()
 
         pics = self.capturePictures()
         self._send.send(gui.AssembleState())
@@ -254,15 +218,7 @@ class Photobooth:
 
         self.setCameraIdle()
 
-        event = self._recv.recv()
-        if str(event) == 'cancel':
-            self.teardown()
-            return 1
-        elif str(event) == 'ack':
-            pass
-        else:
-            print('Unknown event received: ' + str(event))
-            raise RuntimeError('Unknown event received', str(event))
+        self.recvAck()
 
         self._send.send(gui.IdleState())
         self.triggerOn()

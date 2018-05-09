@@ -39,8 +39,8 @@ def start_photobooth(config, send, recv):
             Camera = lookup_and_import(camera.modules, config.get('Camera', 'module'), 'camera')
 
             with Camera() as cap:
-                photobooth = Photobooth(config, cap)
-                return photobooth.run(send, recv)
+                photobooth = Photobooth(config, cap, send, recv)
+                return photobooth.run()
 
         except BaseException as e:
             send.send( gui.ErrorState('Camera error', str(e)) )
@@ -58,13 +58,13 @@ def main_photobooth(config, send, recv):
         event = recv.recv()
 
         if str(event) != 'start':
-            print('Unknown event received: ' + str(event))
-            raise RuntimeError('Unknown event received', str(event))
+            continue
 
-        exit_status = start_photobooth(config, send, recv)
+        status_code = start_photobooth(config, send, recv)
+        print('Camera exit')
 
-        if exit_status != -1:
-            return exit_status
+        if status_code != -1:
+            return status_code
 
 
 def run(argv):
@@ -80,7 +80,10 @@ def run(argv):
     photobooth.start()
 
     Gui = lookup_and_import(gui.modules, config.get('Gui', 'module'), 'gui')
-    return Gui(argv, config).run(event_send, gui_recv)
+    status_code = Gui(argv, config).run(event_send, gui_recv)
+
+    photobooth.join(1)
+    return status_code
 
 
 def main(argv):

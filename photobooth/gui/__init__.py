@@ -150,7 +150,7 @@ class CountdownState(GuiState):
         super().__init__(**kwargs)
 
 
-class PreviewState(MessageState, PictureState):
+class PreviewState(PictureState):
 
     def __init__(self, **kwargs):
 

@@ -61,7 +61,8 @@ class PyQt5Gui(Gui):
     def handleKeypressEvent(self, event):
 
         if event.key() == Qt.Key_Escape:
-            self.showStart()
+            # self.showStart()
+            self.handleState(TeardownState())
         elif event.key() == Qt.Key_Space:
             # self._transport.send('triggered')
             self.handleState(TriggerState())
@@ -70,7 +71,8 @@ class PyQt5Gui(Gui):
     def handleKeypressEventNoTrigger(self, event):
 
         if event.key() == Qt.Key_Escape:
-            self.showStart()
+            # self.showStart()
+            self.handleState(TeardownState())
 
 
     def handleState(self, state):
@@ -80,7 +82,7 @@ class PyQt5Gui(Gui):
 
         if isinstance(state, IdleState):
             self.showIdle()
-            
+
         elif isinstance(state, TriggerState):
             self._transport.send('triggered')
 
@@ -95,11 +97,11 @@ class PyQt5Gui(Gui):
             QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, lambda : self._transport.send('ack'))
 
         elif isinstance(state, CountdownState):
-            QTimer.singleShot(cfg.getInt('Photobooth', 'countdown_time') * 1000, lambda : self._transport.send('ack'))
+            self._p.setCentralWidget(PyQt5CountdownMessage(cfg.getInt('Photobooth', 'countdown_time'), lambda : self._transport.send('ack')))
 
         elif isinstance(state, PreviewState):
-            img = ImageQt.ImageQt(state.picture)
-            self._p.setCentralWidget(PyQt5PictureMessage(state.message, img))
+            self._p.centralWidget().picture = ImageQt.ImageQt(state.picture)
+            self._p.centralWidget().update()
             
         elif isinstance(state, PoseState):
             self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
@@ -630,6 +632,74 @@ class PyQt5WaitMessage(QFrame):
         self._counter += 1
         self.update()
 
+
+class PyQt5CountdownMessage(QFrame):
+
+    def __init__(self, time, action):
+        
+        super().__init__()
+
+        self._counter = time
+        self._action = action
+        self._picture = None
+
+        self.initFrame()
+
+
+    def initFrame(self):
+
+        self.setStyleSheet('background-color: white;')
+
+
+    @property
+    def counter(self):
+        
+        return self._counter
+
+
+    @property
+    def picture(self):
+
+        return self._picture
+
+    
+    @picture.setter
+    def picture(self, pic):
+
+        if not isinstance(pic, QImage):
+            raise ValueError('picture must be a QImage')
+
+        self._picture = pic
+
+
+    def paintEvent(self, event):
+
+        painter = QPainter(self)
+
+        if self._picture != None:
+            pix = QPixmap.fromImage(self._picture)
+            pix = pix.scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.FastTransformation)
+            origin = ( (self.rect().width() - pix.width()) // 2,
+                       (self.rect().height() - pix.height()) // 2 )
+            painter.drawPixmap(QPoint(*origin), pix)
+
+        painter.drawText(event.rect(), Qt.AlignCenter, str(self.counter))
+        painter.end()
+
+
+    def showEvent(self, event):
+    
+        self._timer = self.startTimer(1000)    
+    
+
+    def timerEvent(self, event):
+    
+        self._counter -= 1
+        self.update()
+
+        if self._counter == 0:
+            self.killTimer(self._timer)
+            self._action()
 
 
 class PyQt5PictureMessage(QFrame):
