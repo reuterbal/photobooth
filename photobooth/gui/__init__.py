@@ -115,6 +115,13 @@ class MessageState(GuiState):
 
 
 
+class TriggerState(GuiState):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+
 class GreeterState(GuiState):
 
     def __init__(self, **kwargs):

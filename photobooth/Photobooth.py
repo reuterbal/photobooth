@@ -262,7 +262,7 @@ class Photobooth:
             raise RuntimeError('Unknown event received', str(event))
 
         self._send.send(gui.IdleState())
-        self._lampOn()
+        self.triggerOn()
 
 
     def gpioTrigger(self):
@@ -279,4 +279,4 @@ class Photobooth:
     def triggerOn(self):
 
         self._lampOn()
-        self._gpioTrigger = self.trigger
+        self._gpioTrigger = lambda : self._send.send(Gui.TriggerState())

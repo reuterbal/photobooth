@@ -63,7 +63,8 @@ class PyQt5Gui(Gui):
         if event.key() == Qt.Key_Escape:
             self.showStart()
         elif event.key() == Qt.Key_Space:
-            self._transport.send('triggered')
+            # self._transport.send('triggered')
+            self.handleState(TriggerState())
 
 
     def handleKeypressEventNoTrigger(self, event):
@@ -79,6 +80,8 @@ class PyQt5Gui(Gui):
 
         if isinstance(state, IdleState):
             self.showIdle()
+        elif isinstance(state, TriggerState):
+            self._transport.send('triggered')
         elif isinstance(state, GreeterState):
             global cfg
             self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
