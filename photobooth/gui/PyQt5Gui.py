@@ -120,6 +120,8 @@ class PyQt5Gui(Gui):
         self._p.handleKeypressEvent = lambda event : None
         self._lastState = self.showStart
         self._p.setCentralWidget(PyQt5Start(self))
+        if QApplication.overrideCursor() != 0:
+            QApplication.restoreOverrideCursor()
 
 
     def showSettings(self):
@@ -134,6 +136,8 @@ class PyQt5Gui(Gui):
         self._lastState = self.showStartPhotobooth
         self._transport.send('start')
         self._p.setCentralWidget(PyQt5WaitMessage('Starting the photobooth...'))
+        if cfg.getBool('Gui', 'hide_cursor'):
+            QApplication.setOverrideCursor(Qt.BlankCursor)
 
 
     def showIdle(self):
@@ -328,6 +332,9 @@ class PyQt5Settings(QFrame):
         self._value_widgets['Gui']['module'] = self.createModuleComboBox(modules, cfg.get('Gui', 'module'))
         self._value_widgets['Gui']['width'] = QLineEdit(cfg.get('Gui', 'width'))
         self._value_widgets['Gui']['height'] = QLineEdit(cfg.get('Gui', 'height'))
+        self._value_widgets['Gui']['hide_cursor'] = QCheckBox('Hide cursor')
+        if cfg.getBool('Gui', 'hide_cursor'):
+            self._value_widgets['Gui']['hide_cursor'].toggle()
 
         layout = QFormLayout()
         layout.addRow(self._value_widgets['Gui']['fullscreen'])
@@ -339,6 +346,8 @@ class PyQt5Settings(QFrame):
         sublayout_size.addWidget(QLabel('x'))
         sublayout_size.addWidget(self._value_widgets['Gui']['height'])
         layout.addRow(sublayout_size)
+
+        layout.addRow(self._value_widgets['Gui']['hide_cursor'])
 
         widget = QGroupBox('Interface settings')
         widget.setLayout(layout)
@@ -510,6 +519,8 @@ class PyQt5Settings(QFrame):
         cfg.set('Gui', 'module', modules[self._value_widgets['Gui']['module'].currentIndex()][0])
         cfg.set('Gui', 'width', self._value_widgets['Gui']['width'].text())
         cfg.set('Gui', 'height', self._value_widgets['Gui']['height'].text())
+        cfg.set('Gui', 'hide_cursor', str(self._value_widgets['Gui']['hide_cursor'].isChecked()))
+
 
         cfg.set('Gpio', 'enable', str(self._value_widgets['Gpio']['enable'].isChecked()))
         cfg.set('Gpio', 'exit_pin', self._value_widgets['Gpio']['exit_pin'].text())
