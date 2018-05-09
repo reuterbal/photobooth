@@ -80,8 +80,10 @@ class PyQt5Gui(Gui):
 
         if isinstance(state, IdleState):
             self.showIdle()
+            
         elif isinstance(state, TriggerState):
             self._transport.send('triggered')
+
         elif isinstance(state, GreeterState):
             global cfg
             self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
@@ -101,16 +103,24 @@ class PyQt5Gui(Gui):
             
         elif isinstance(state, PoseState):
             self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
+
         elif isinstance(state, AssembleState):
             self._p.setCentralWidget(PyQt5WaitMessage('Processing picture...'))
+
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
             QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, lambda : self._transport.send('ack'))
 
             self._printer.print(state.picture)
+
+        elif isinstance(state, TeardownState):
+            self._transport.send('teardown')
+            self.showStart()
+
         elif isinstance(state, ErrorState):
             self.showError(state.title, state.message)
+
         else:
             raise ValueError('Unknown state')
 

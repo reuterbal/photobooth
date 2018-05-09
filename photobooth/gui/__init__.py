@@ -155,3 +155,9 @@ class PreviewState(MessageState, PictureState):
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
+
+class TeardownState(GuiState):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)

@@ -49,7 +49,7 @@ class Photobooth:
             self._lampOff = lambda : self._gpio.lampOff(lamp)
 
             self._gpio.setButton(config.getInt('Gpio', 'trigger_pin'), self.gpioTrigger)
-            self._gpio.setButton(config.getInt('Gpio', 'exit_pin'), self.teardown)
+            self._gpio.setButton(config.getInt('Gpio', 'exit_pin'), self.gpioExit)
         else:
             self._lampOn = lambda : None
             self._lampOff = lambda : None
@@ -119,6 +119,9 @@ class Photobooth:
                     print('Camera already started')
                     self.initRun()
                     continue
+                elif str(event) == 'teardown':
+                    self.teardown()
+                    return -1
                 elif str(event) != 'triggered':
                     print('Unknown event received: ' + str(event))
                     raise RuntimeError('Unknown event received', str(event))
@@ -268,6 +271,11 @@ class Photobooth:
     def gpioTrigger(self):
 
         self._gpioTrigger()
+
+
+    def gpioExit(self):
+
+        self._send.send(gui.TeardownState())
 
 
     def triggerOff(self):
