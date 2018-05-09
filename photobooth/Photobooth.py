@@ -279,4 +279,4 @@ class Photobooth:
     def triggerOn(self):
 
         self._lampOn()
-        self._gpioTrigger = lambda : self._send.send(Gui.TriggerState())
+        self._gpioTrigger = lambda : self._send.send(gui.TriggerState())
