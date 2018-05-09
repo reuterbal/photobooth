@@ -61,3 +61,23 @@ apt install gphoto2 libgphoto2-dev
 pip install gphoto2
 -or-
 pip install gphoto2-cffi
+
+
+apt install xinput-calibrator xserver-xorg-input-evdev
+
+/usr/share/X11/xorg.conf.d/99-eGalax.conf:
+```
+Section "InputClass"
+    Identifier "evdev tablet catchall"
+    MatchIsTablet "on"
+    MatchDevicePath "/dev/input/event*"
+    Driver "evdev"
+EndSection
+
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "eGalax Inc. Touch"
+    Option  "Calibration"   "19 1988 96 1965"
+    Option  "SwapAxes"      "0"
+EndSection
+```
