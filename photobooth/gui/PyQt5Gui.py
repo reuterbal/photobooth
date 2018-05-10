@@ -4,17 +4,20 @@
 from PIL import ImageQt
 
 from PyQt5.QtCore import Qt, QObject, QPoint, QThread, QTimer, pyqtSignal
-from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout)
+from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget)
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 
 import math
 from PyQt5.QtGui import QBrush, QPen, QColor
 from PyQt5.QtCore import QRect
 
+from .PyQt5GuiHelpers import QRoundProgressBar
+
 from . import *
 from .. import camera, printer
 
 from ..printer.PrinterPyQt5 import PrinterPyQt5 as Printer
+
 
 class PyQt5Gui(Gui):
 
@@ -649,22 +652,46 @@ class PyQt5WaitMessage(QFrame):
         self.update()
 
 
+
 class PyQt5CountdownMessage(QFrame):
 
     def __init__(self, time, action):
         
         super().__init__()
 
-        self._counter = time
+        self._step_size = 100
+        self._counter = time * (1000 // self._step_size)
         self._action = action
         self._picture = None
 
         self.initFrame()
+        self.initProgressBar(time)
 
 
     def initFrame(self):
 
         self.setStyleSheet('background-color: white;')
+
+
+    def initProgressBar(self, time):
+
+        self._bar = QRoundProgressBar()
+        self._bar.setBarStyle(QRoundProgressBar.StyleLine)
+        self._bar.setFixedSize(200, 200)
+
+        self._bar.setDataPenWidth(7)
+        self._bar.setOutlinePenWidth(10)
+
+        self._bar.setDecimals(0)
+        self._bar.setFormat('%v')
+
+        self._bar.setRange(0, time)
+        self._bar.setValue(time)
+
+
+    def updateProgressBar(self):
+
+        self._bar.setValue(self._counter / (1000 // self._step_size))
 
 
     @property
@@ -694,28 +721,34 @@ class PyQt5CountdownMessage(QFrame):
 
         if self._picture != None:
             pix = QPixmap.fromImage(self._picture)
-            pix = pix.scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.FastTransformation)
-            origin = ( (self.rect().width() - pix.width()) // 2,
-                       (self.rect().height() - pix.height()) // 2 )
+            pix = pix.scaled(self.size(), Qt.KeepAspectRatio, Qt.FastTransformation)
+            origin = ( (self.width() - pix.width()) // 2,
+                       (self.height() - pix.height()) // 2 )
             painter.drawPixmap(QPoint(*origin), pix)
 
-        painter.drawText(event.rect(), Qt.AlignCenter, str(self.counter))
+        # painter.drawText(event.rect(), Qt.AlignCenter, str(self.counter))
         painter.end()
+
+        offset = ( (self.width() - self._bar.width()) // 2, 
+                   (self.height() - self._bar.height()) // 2 )
+        self._bar.render(self, QPoint(*offset), self._bar.visibleRegion(), QWidget.DrawChildren)
 
 
     def showEvent(self, event):
     
-        self._timer = self.startTimer(1000)    
+        self._timer = self.startTimer(self._step_size)    
     
 
     def timerEvent(self, event):
     
         self._counter -= 1
-        self.update()
 
         if self._counter == 0:
             self.killTimer(self._timer)
             self._action()
+        else:
+            self.updateProgressBar()
+            self.update()
 
 
 class PyQt5PictureMessage(QFrame):
