@@ -32,13 +32,13 @@ class PyQt5Gui(Gui):
                                  cfg.getInt('Printer', 'height')), True)
 
 
-    def run(self, send, recv):
+    def run(self, conn):
 
-        receiver = PyQt5Receiver(recv)
+        receiver = PyQt5Receiver(conn)
         receiver.notify.connect(self.handleState)
         receiver.start()
 
-        self._transport = send
+        self._conn = conn
 
         self.showStart()
 
@@ -58,20 +58,37 @@ class PyQt5Gui(Gui):
         self._app.exit(-2)
 
 
+    def sendAck(self):
+
+        self._conn.send('ack')
+
+
+    def sendCancel(self):
+
+        self._conn.send('cancel')
+
+
+    def sendTrigger(self):
+
+        self._conn.send('triggered')
+
+
+    def sendTeardown(self):
+
+        self._conn.send('teardown')
+
+
     def handleKeypressEvent(self, event):
 
         if event.key() == Qt.Key_Escape:
-            # self.showStart()
             self.handleState(TeardownState())
         elif event.key() == Qt.Key_Space:
-            # self._transport.send('triggered')
             self.handleState(TriggerState())
 
 
     def handleKeypressEventNoTrigger(self, event):
 
         if event.key() == Qt.Key_Escape:
-            # self.showStart()
             self.handleState(TeardownState())
 
 
@@ -84,7 +101,7 @@ class PyQt5Gui(Gui):
             self.showIdle()
 
         elif isinstance(state, TriggerState):
-            self._transport.send('triggered')
+            self.sendTrigger()
 
         elif isinstance(state, GreeterState):
             global cfg
@@ -94,10 +111,10 @@ class PyQt5Gui(Gui):
                 cfg.getInt('Picture', 'num_y') )
             self._p.setCentralWidget(
                 PyQt5PictureMessage('Will capture {} pictures!'.format(num_pictures)))
-            QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, lambda : self._transport.send('ack'))
+            QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, self.sendAck)
 
         elif isinstance(state, CountdownState):
-            self._p.setCentralWidget(PyQt5CountdownMessage(cfg.getInt('Photobooth', 'countdown_time'), lambda : self._transport.send('ack')))
+            self._p.setCentralWidget(PyQt5CountdownMessage(cfg.getInt('Photobooth', 'countdown_time'), self.sendAck))
 
         elif isinstance(state, PreviewState):
             self._p.centralWidget().picture = ImageQt.ImageQt(state.picture)
@@ -112,12 +129,12 @@ class PyQt5Gui(Gui):
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
-            QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, lambda : self._transport.send('ack'))
+            QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, lambda : self.sendAck())
 
             self._printer.print(state.picture)
 
         elif isinstance(state, TeardownState):
-            self._transport.send('teardown')
+            self._conn.send('teardown')
             self.showStart()
 
         elif isinstance(state, ErrorState):
@@ -146,7 +163,7 @@ class PyQt5Gui(Gui):
     def showStartPhotobooth(self):
 
         self._lastState = self.showStartPhotobooth
-        self._transport.send('start')
+        self._conn.send('start')
         self._p.setCentralWidget(PyQt5WaitMessage('Starting the photobooth...'))
         if cfg.getBool('Gui', 'hide_cursor'):
             QApplication.setOverrideCursor(Qt.BlankCursor)
@@ -165,10 +182,10 @@ class PyQt5Gui(Gui):
         reply = QMessageBox.warning(self._p, title, message, QMessageBox.Close | QMessageBox.Retry, 
             QMessageBox.Retry) 
         if reply == QMessageBox.Retry:
-            self._transport.send('ack')
+            self.sendAck()
             self._lastState()
         else:
-            self._transport.send('cancel')
+            self.sendCancel()
             self.showStart()
 
 
@@ -176,11 +193,11 @@ class PyQt5Receiver(QThread):
 
     notify = pyqtSignal(object)
 
-    def __init__(self, transport):
+    def __init__(self, conn):
 
         super().__init__()
 
-        self._transport = transport
+        self._conn = conn
 
 
     def handle(self, state):
@@ -192,7 +209,7 @@ class PyQt5Receiver(QThread):
 
         while True:
             try:
-                state = self._transport.recv()
+                state = self._conn.recv()
             except EOFError:
                 break
             else:
@@ -246,7 +263,6 @@ class PyQt5MainWindow(QMainWindow):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            # self.transport.close()
             e.accept()
         else:
             e.ignore()

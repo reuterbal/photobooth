@@ -24,7 +24,8 @@ def lookup_and_import(module_list, name, package=None):
     if package == None:
         import_module = importlib.import_module('photobooth.' + result[0])
     else:
-        import_module = importlib.import_module('photobooth.' + package + '.' + result[0])
+        import_module = importlib.import_module(
+            'photobooth.' + package + '.' + result[0])
 
     if result[1] == None:
         return import_module
@@ -32,19 +33,20 @@ def lookup_and_import(module_list, name, package=None):
         return getattr(import_module, result[1])
 
 
-def start_photobooth(config, send, recv):
+def start_worker(config, conn):
 
     while True:
         try:
-            Camera = lookup_and_import(camera.modules, config.get('Camera', 'module'), 'camera')
+            Camera = lookup_and_import(
+                camera.modules, config.get('Camera', 'module'), 'camera')
 
             with Camera() as cap:
-                photobooth = Photobooth(config, cap, send, recv)
+                photobooth = Photobooth(config, cap, conn)
                 return photobooth.run()
 
         except BaseException as e:
-            send.send( gui.ErrorState('Camera error', str(e)) )
-            event = recv.recv()
+            conn.send( gui.ErrorState('Camera error', str(e)) )
+            event = conn.recv()
             if str(event) in ('cancel', 'ack'):
                 return -1
             else:
@@ -52,15 +54,15 @@ def start_photobooth(config, send, recv):
                 raise RuntimeError('Unknown event received', str(event))
 
 
-def main_photobooth(config, send, recv):
+def main_worker(config, conn):
 
     while True:
-        event = recv.recv()
+        event = conn.recv()
 
         if str(event) != 'start':
             continue
 
-        status_code = start_photobooth(config, send, recv)
+        status_code = start_worker(config, conn)
         print('Camera exit')
 
         if status_code != -1:
@@ -73,16 +75,15 @@ def run(argv):
 
     config = Config('photobooth.cfg')
 
-    event_recv, event_send = Pipe(duplex=False)
-    gui_recv, gui_send = Pipe(duplex=False)
+    gui_conn, worker_conn = Pipe()
 
-    photobooth = Process(target=main_photobooth, args=(config, gui_send, event_recv), daemon=True)
-    photobooth.start()
+    worker = Process(target=main_worker, args=(config, worker_conn), daemon=True)
+    worker.start()
 
     Gui = lookup_and_import(gui.modules, config.get('Gui', 'module'), 'gui')
-    status_code = Gui(argv, config).run(event_send, gui_recv)
+    status_code = Gui(argv, config).run(gui_conn)
 
-    photobooth.join(1)
+    worker.join(1)
     return status_code
 
 

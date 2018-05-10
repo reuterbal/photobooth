@@ -20,10 +20,9 @@ class TeardownException(Exception):
 
 class Photobooth:
 
-    def __init__(self, config, camera, send, recv):
+    def __init__(self, config, camera, conn):
 
-        self._send = send
-        self._recv = recv
+        self._conn = conn
 
         self.initCamera(config, camera)
         self.initGpio(config)
@@ -74,7 +73,7 @@ class Photobooth:
 
     def recvEvent(self, expected):
 
-        event = self._recv.recv()
+        event = self._conn.recv()
 
         try:
             event_idx = expected.index(str(event))
@@ -118,7 +117,7 @@ class Photobooth:
     def initRun(self):
 
         self.setCameraIdle()
-        self._send.send(gui.IdleState())
+        self._conn.send(gui.IdleState())
         self.triggerOn()
 
 
@@ -137,7 +136,7 @@ class Photobooth:
                     self.trigger()
                 except RuntimeError as e:
                     print('Camera error: ' + str(e))
-                    self._send.send( gui.ErrorState('Camera error', str(e)) )
+                    self._conn.send( gui.ErrorState('Camera error', str(e)) )
                     self.recvAck()
 
         except TeardownException:
@@ -157,10 +156,10 @@ class Photobooth:
 
     def showCounterPreview(self):
 
-        self._send.send(gui.CountdownState())
+        self._conn.send(gui.CountdownState())
 
-        while not self._recv.poll():
-            self._send.send( 
+        while not self._conn.poll():
+            self._conn.send( 
                 gui.PreviewState(picture = ImageOps.mirror(self._cap.getPreview())) )
 
         self.recvAck()
@@ -168,14 +167,14 @@ class Photobooth:
 
     def showCounterNoPreview(self):
 
-        self._send.send(gui.CountdownState())
+        self._conn.send(gui.CountdownState())
         self.recvAck()
         print('ack received')
 
 
     def showPose(self):
 
-        self._send.send( gui.PoseState() )
+        self._conn.send(gui.PoseState())
 
 
     def captureSinglePicture(self):
@@ -203,24 +202,24 @@ class Photobooth:
 
     def trigger(self):
 
-        self._send.send(gui.GreeterState())
+        self._conn.send(gui.GreeterState())
         self.triggerOff()
         self.setCameraActive()
 
         self.recvAck()
 
         pics = self.capturePictures()
-        self._send.send(gui.AssembleState())
+        self._conn.send(gui.AssembleState())
 
         img = self.assemblePictures(pics)
         img.save(self.getNextFilename(), 'JPEG')
-        self._send.send(gui.PictureState(img))
+        self._conn.send(gui.PictureState(img))
 
         self.setCameraIdle()
 
         self.recvAck()
 
-        self._send.send(gui.IdleState())
+        self._conn.send(gui.IdleState())
         self.triggerOn()
 
 
@@ -231,7 +230,7 @@ class Photobooth:
 
     def gpioExit(self):
 
-        self._send.send(gui.TeardownState())
+        self._conn.send(gui.TeardownState())
 
 
     def triggerOff(self):
@@ -243,4 +242,4 @@ class Photobooth:
     def triggerOn(self):
 
         self._lampOn()
-        self._gpioTrigger = lambda : self._send.send(gui.TriggerState())
+        self._gpioTrigger = lambda : self._conn.send(gui.TriggerState())
