@@ -33,17 +33,22 @@ class PyQt5Gui(Gui):
         self._app = QApplication(argv)
         self._p = PyQt5MainWindow()
         self._lastState = self.showStart
-        self._printer = Printer((cfg.getInt('Printer', 'width'), 
-                                 cfg.getInt('Printer', 'height')), True)
+        
+        self._postprocessList = []
+
+        if cfg.getBool('Printer', 'enable'):
+            self._postprocessList.append( PrintPostprocess( cfg.get('Printer', 'module'),
+                    (cfg.getInt('Printer', 'width'), cfg.getInt('Printer', 'height')) ) )
 
 
-    def run(self, camera_conn):
+    def run(self, camera_conn, worker_queue):
 
         receiver = PyQt5Receiver([camera_conn])
         receiver.notify.connect(self.handleState)
         receiver.start()
 
         self._conn = camera_conn
+        self._queue = worker_queue
 
         self.showStart()
 
@@ -134,9 +139,11 @@ class PyQt5Gui(Gui):
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
-            QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, lambda : self.sendAck())
+            # QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, self.sendAck)
+            QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, 
+                lambda : self.postprocessPicture(state.picture))
 
-            self._printer.print(state.picture)
+            # self._printer.print(state.picture)
 
         elif isinstance(state, TeardownState):
             self._conn.send('teardown')
@@ -147,6 +154,14 @@ class PyQt5Gui(Gui):
 
         else:
             raise ValueError('Unknown state')
+
+
+    def postprocessPicture(self, picture):
+
+        for task in self._postprocessList:
+            task.do(self._p, picture)
+        
+        self.sendAck()
 
 
     def showStart(self):

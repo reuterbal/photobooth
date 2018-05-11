@@ -8,51 +8,33 @@ except DistributionNotFound:
     __version__ = 'unknown'
 
 import multiprocessing as mp
-import importlib
 import sys
 
 from . import camera, gui
 from .Config import Config
 from .Photobooth import Photobooth
-
-
-def lookup_and_import(module_list, name, package=None):
-
-    result = next(((mod_name, class_name) 
-                for config_name, mod_name, class_name in module_list
-                if name == config_name), None)
-    
-    if package == None:
-        import_module = importlib.import_module('photobooth.' + result[0])
-    else:
-        import_module = importlib.import_module(
-            'photobooth.' + package + '.' + result[0])
-
-    if result[1] == None:
-        return import_module
-    else:
-        return getattr(import_module, result[1])
-
+from .util import lookup_and_import
 
 class CameraProcess(mp.Process):
 
-    def __init__(self, config, conn):
+    def __init__(self, config, conn, worker_queue):
 
         super().__init__()
         self.daemon = True
 
         self.cfg = config
         self.conn = conn
+        self.worker_queue = worker_queue
 
 
     def run_camera(self):
 
-        # while True:
         try:
             cap = lookup_and_import(
                 camera.modules, self.cfg.get('Camera', 'module'), 'camera')
 
-            photobooth = Photobooth(self.cfg, cap, self.conn)
+            photobooth = Photobooth(
+                self.cfg, cap, self.conn, self.worker_queue)
             return photobooth.run()
 
         except BaseException as e:
@@ -81,21 +63,39 @@ class CameraProcess(mp.Process):
         sys.exit(status_code)
 
 
+class WorkerProcess(mp.Process):
+
+    def __init__(self, config, queue):
+
+        super().__init__()
+        self.daemon = True
+
+        self.cfg = config
+        self.queue = queue
+
+
+    def run(self):
+
+        print('Started Worker')
+        print('Exit Worker')
+
+
 class GuiProcess(mp.Process):
 
-    def __init__(self, argv, config, conn):
+    def __init__(self, argv, config, conn, queue):
 
         super().__init__()
 
         self.argv = argv
         self.cfg = config
         self.conn = conn
+        self.queue = queue
 
 
     def run(self):
 
         Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'), 'gui')
-        sys.exit(Gui(self.argv, self.cfg).run(self.conn))
+        sys.exit(Gui(self.argv, self.cfg).run(self.conn, self.queue))
 
 
 def run(argv):
@@ -105,19 +105,23 @@ def run(argv):
     config = Config('photobooth.cfg')
 
     gui_conn, camera_conn = mp.Pipe()
+    worker_queue = mp.SimpleQueue()
 
-    camera_worker = CameraProcess(config, camera_conn)
-    camera_worker.start()
+    camera_proc = CameraProcess(config, camera_conn, worker_queue)
+    camera_proc.start()
 
-    gui_worker = GuiProcess(argv, config, gui_conn)
-    gui_worker.start()
+    worker_proc = WorkerProcess(config, worker_queue)
+    worker_proc.start()
+
+    gui_proc = GuiProcess(argv, config, gui_conn, worker_queue)
+    gui_proc.start()
 
     gui_conn.close()
     camera_conn.close()
 
-    gui_worker.join()
-    camera_worker.join(5)
-    return gui_worker.exitcode
+    gui_proc.join()
+    camera_proc.join(5)
+    return gui_proc.exitcode
 
 
 def main(argv):

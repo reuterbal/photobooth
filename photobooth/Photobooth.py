@@ -20,9 +20,10 @@ class TeardownException(Exception):
 
 class Photobooth:
 
-    def __init__(self, config, camera, conn):
+    def __init__(self, config, camera, conn, queue):
 
         self._conn = conn
+        self._queue = queue
 
         self.initCamera(config, camera())
         self.initGpio(config)
