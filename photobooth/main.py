@@ -14,6 +14,7 @@ from . import camera, gui
 from .Config import Config
 from .Photobooth import Photobooth
 from .util import lookup_and_import
+from .Worker import Worker
 
 class CameraProcess(mp.Process):
 
@@ -76,8 +77,7 @@ class WorkerProcess(mp.Process):
 
     def run(self):
 
-        print('Started Worker')
-        print('Exit Worker')
+        sys.exit(Worker(self.cfg, self.queue).run())
 
 
 class GuiProcess(mp.Process):
@@ -118,8 +118,10 @@ def run(argv):
 
     gui_conn.close()
     camera_conn.close()
-
     gui_proc.join()
+    
+    worker_queue.put(('teardown', None))
+    worker_proc.join()
     camera_proc.join(5)
     return gui_proc.exitcode
 

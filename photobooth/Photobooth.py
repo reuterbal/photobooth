@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from time import time, sleep, localtime, strftime
+# from time import time, localtime, strftime
 
 from PIL import Image, ImageOps
 
@@ -9,6 +9,8 @@ from .PictureList import PictureList
 from .PictureDimensions import PictureDimensions
 
 from . import gui
+
+from.Worker import PictureSaver
 
 
 class TeardownException(Exception):
@@ -25,6 +27,8 @@ class Photobooth:
         self._conn = conn
         self._queue = queue
 
+        self._worker_list = [PictureSaver(config)]
+
         self.initCamera(config, camera())
         self.initGpio(config)
 
@@ -36,9 +40,9 @@ class Photobooth:
         self._cap = camera
         self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
 
-        picture_basename = strftime(config.get('Picture', 'basename'), localtime())        
-        self._pic_list = PictureList(picture_basename)
-        self._get_next_filename = self._pic_list.getNext
+        # picture_basename = strftime(config.get('Picture', 'basename'), localtime())        
+        # self._pic_list = PictureList(picture_basename)
+        # self._get_next_filename = self._pic_list.getNext
 
         if ( config.getBool('Photobooth', 'show_preview') 
             and self._cap.hasPreview ):
@@ -103,10 +107,10 @@ class Photobooth:
             raise TeardownException()
 
 
-    @property
-    def getNextFilename(self):
+    # @property
+    # def getNextFilename(self):
 
-        return self._get_next_filename
+    #     return self._get_next_filename
 
 
     @property
@@ -202,6 +206,12 @@ class Photobooth:
         return output_image
 
 
+    def enqueueWorkerTasks(self, picture):
+
+        for task in self._worker_list:
+            self._queue.put(( task.do, (picture, ) ))
+
+
     def trigger(self):
 
         self._conn.send(gui.GreeterState())
@@ -214,8 +224,10 @@ class Photobooth:
         self._conn.send(gui.AssembleState())
 
         img = self.assemblePictures(pics)
-        img.save(self.getNextFilename(), 'JPEG')
+        # img.save(self.getNextFilename(), 'JPEG')
         self._conn.send(gui.PictureState(img))
+        
+        self.enqueueWorkerTasks(img)
 
         self.setCameraIdle()
 
