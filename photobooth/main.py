@@ -7,8 +7,9 @@ try:
 except DistributionNotFound:
     __version__ = 'unknown'
 
-from multiprocessing import Pipe, Process
+import multiprocessing as mp
 import importlib
+import sys
 
 from . import camera, gui
 from .Config import Config
@@ -33,40 +34,68 @@ def lookup_and_import(module_list, name, package=None):
         return getattr(import_module, result[1])
 
 
-def start_worker(config, conn):
+class CameraProcess(mp.Process):
 
-    while True:
+    def __init__(self, config, conn):
+
+        super().__init__()
+        self.daemon = True
+
+        self.cfg = config
+        self.conn = conn
+
+
+    def run_camera(self):
+
+        # while True:
         try:
-            Camera = lookup_and_import(
-                camera.modules, config.get('Camera', 'module'), 'camera')
+            cap = lookup_and_import(
+                camera.modules, self.cfg.get('Camera', 'module'), 'camera')
 
-            with Camera() as cap:
-                photobooth = Photobooth(config, cap, conn)
-                return photobooth.run()
+            photobooth = Photobooth(self.cfg, cap, self.conn)
+            return photobooth.run()
 
         except BaseException as e:
-            conn.send( gui.ErrorState('Camera error', str(e)) )
-            event = conn.recv()
+            self.conn.send( gui.ErrorState('Camera error', str(e)) )
+            event = self.conn.recv()
             if str(event) in ('cancel', 'ack'):
-                return -1
+                return 123
             else:
                 print('Unknown event received: ' + str(event))
                 raise RuntimeError('Unknown event received', str(event))
 
 
-def main_worker(config, conn):
+    def run(self):
 
-    while True:
-        event = conn.recv()
+        status_code = 123
 
-        if str(event) != 'start':
-            continue
+        while status_code == 123:
+            event = self.conn.recv()
 
-        status_code = start_worker(config, conn)
-        print('Camera exit')
+            if str(event) != 'start':
+                continue
 
-        if status_code != -1:
-            return status_code
+            status_code = self.run_camera()
+            print('Camera exit')
+
+        sys.exit(status_code)
+
+
+class GuiProcess(mp.Process):
+
+    def __init__(self, argv, config, conn):
+
+        super().__init__()
+
+        self.argv = argv
+        self.cfg = config
+        self.conn = conn
+
+
+    def run(self):
+
+        Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'), 'gui')
+        sys.exit(Gui(self.argv, self.cfg).run(self.conn))
 
 
 def run(argv):
@@ -75,26 +104,30 @@ def run(argv):
 
     config = Config('photobooth.cfg')
 
-    gui_conn, worker_conn = Pipe()
+    gui_conn, camera_conn = mp.Pipe()
 
-    worker = Process(target=main_worker, args=(config, worker_conn), daemon=True)
-    worker.start()
+    camera_worker = CameraProcess(config, camera_conn)
+    camera_worker.start()
 
-    Gui = lookup_and_import(gui.modules, config.get('Gui', 'module'), 'gui')
-    status_code = Gui(argv, config).run(gui_conn)
+    gui_worker = GuiProcess(argv, config, gui_conn)
+    gui_worker.start()
 
-    worker.join(1)
-    return status_code
+    gui_conn.close()
+    camera_conn.close()
+
+    gui_worker.join()
+    camera_worker.join(5)
+    return gui_worker.exitcode
 
 
 def main(argv):
 
     known_status_codes = {
-        -1: 'Initializing photobooth',
-        -2: 'Restarting photobooth and reloading config'
+        999: 'Initializing photobooth',
+        123: 'Restarting photobooth and reloading config'
     }
 
-    status_code = -1
+    status_code = 999
 
     while status_code in known_status_codes:
         print(known_status_codes[status_code])

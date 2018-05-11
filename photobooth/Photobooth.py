@@ -24,7 +24,7 @@ class Photobooth:
 
         self._conn = conn
 
-        self.initCamera(config, camera)
+        self.initCamera(config, camera())
         self.initGpio(config)
 
         self.triggerOff()

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import multiprocessing as mp
+
 from PIL import ImageQt
 
 from PyQt5.QtCore import Qt, QObject, QPoint, QThread, QTimer, pyqtSignal
@@ -35,13 +37,13 @@ class PyQt5Gui(Gui):
                                  cfg.getInt('Printer', 'height')), True)
 
 
-    def run(self, conn):
+    def run(self, camera_conn):
 
-        receiver = PyQt5Receiver(conn)
+        receiver = PyQt5Receiver([camera_conn])
         receiver.notify.connect(self.handleState)
         receiver.start()
 
-        self._conn = conn
+        self._conn = camera_conn
 
         self.showStart()
 
@@ -57,8 +59,8 @@ class PyQt5Gui(Gui):
 
 
     def restart(self):
-        
-        self._app.exit(-2)
+
+        self._app.exit(123)
 
 
     def sendAck(self):
@@ -210,13 +212,14 @@ class PyQt5Receiver(QThread):
 
     def run(self):
 
-        while True:
-            try:
-                state = self._conn.recv()
-            except EOFError:
-                break
-            else:
-                self.handle(state)
+        while self._conn:
+            for c in mp.connection.wait(self._conn):
+                try:
+                    state = c.recv()
+                except EOFError:
+                    break
+                else:
+                    self.handle(state)
 
 
 
