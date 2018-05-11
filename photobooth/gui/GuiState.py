@@ -51,7 +51,6 @@ class IdleState(GuiState):
         super().__init__(**kwargs)
 
 
-
 class PictureState(GuiState):
 
     def __init__(self, picture, **kwargs):
@@ -97,7 +96,6 @@ class MessageState(GuiState):
         self._msg = message
 
 
-
 class TriggerState(GuiState):
 
     def __init__(self, **kwargs):
@@ -139,8 +137,33 @@ class PreviewState(PictureState):
 
         super().__init__(**kwargs)
 
+
 class TeardownState(GuiState):
 
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
+
+
+class PrintState(GuiState):
+
+    def __init__(self, handler, **kwargs):
+
+        super().__init__(**kwargs)
+
+        self.handler = handler
+
+
+    @property
+    def handler(self):
+
+        return self._handler
+
+
+    @handler.setter
+    def handler(self, handler):
+
+        if not callable(handler):
+            raise ValueError('handler must be callable')
+
+        self._handler = handler

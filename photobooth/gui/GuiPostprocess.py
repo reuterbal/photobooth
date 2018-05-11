@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from PyQt5.QtWidgets import QMessageBox
+
 from .. import printer
 from ..util import lookup_and_import
-
-from PyQt5.QtWidgets import QMessageBox
+from .GuiState import PrintState
 
 class GuiPostprocess:
 
@@ -13,7 +14,7 @@ class GuiPostprocess:
         assert not kwargs
 
 
-    def do(self, parent, picture):
+    def get(self, picture):
 
         raise NotImplementedError()
 
@@ -30,11 +31,19 @@ class PrintPostprocess(GuiPostprocess):
         self._printer = Printer(page_size, True)
 
 
-    def do(self, parent, picture):
+    def get(self, picture):
 
-        reply = QMessageBox.question(parent, 'Print?', 
-            'Do you want to print the picture?', 
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        return PrintState(lambda : self.do(picture))
 
-        if reply == QMessageBox.Yes:
-            self._printer.print(picture)
+        # reply = QMessageBox.question(parent, 'Print?', 
+        #     'Do you want to print the picture?', 
+        #     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        # if reply == QMessageBox.Yes:
+        #     self._printer.print(picture)
+
+
+    def do(self, picture):
+
+        print('Printing')
+        self._printer.print(picture)

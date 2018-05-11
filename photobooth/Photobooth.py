@@ -141,7 +141,8 @@ class Photobooth:
                     self.recvAck()
 
         except TeardownException:
-            return -1
+            self.teardown()
+            return 123
         
 
     def setCameraActive(self):

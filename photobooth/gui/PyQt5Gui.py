@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import multiprocessing as mp
+import queue
 
 from PIL import ImageQt
 
@@ -10,7 +11,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QF
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 
 import math
-from PyQt5.QtGui import QBrush, QPen, QColor
+from PyQt5.QtGui import QBrush, QPen, QColor, QFont
 from PyQt5.QtCore import QRect
 
 from .PyQt5GuiHelpers import QRoundProgressBar
@@ -35,6 +36,7 @@ class PyQt5Gui(Gui):
         self._lastState = self.showStart
         
         self._postprocessList = []
+        self._postprocessQueue = queue.Queue()
 
         if cfg.getBool('Printer', 'enable'):
             self._postprocessList.append( PrintPostprocess( cfg.get('Printer', 'module'),
@@ -143,8 +145,6 @@ class PyQt5Gui(Gui):
             QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, 
                 lambda : self.postprocessPicture(state.picture))
 
-            # self._printer.print(state.picture)
-
         elif isinstance(state, TeardownState):
             self._conn.send('teardown')
             self.showStart()
@@ -159,9 +159,28 @@ class PyQt5Gui(Gui):
     def postprocessPicture(self, picture):
 
         for task in self._postprocessList:
-            task.do(self._p, picture)
-        
-        self.sendAck()
+            self._postprocessQueue.put(task.get(picture))
+
+        self.handleQueue()
+
+
+    def handleQueue(self):
+
+        while True:
+            try:
+                task = self._postprocessQueue.get(block = False)
+            except queue.Empty:
+                self.sendAck()
+                break
+            else:
+                if isinstance(task, PrintState):
+                    reply = QMessageBox.question(self._p, 'Print picture?', 
+                        'Do you want to print the picture?', 
+                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                    if reply == QMessageBox.Yes:
+                        task.handler()
+                else:
+                    raise ValueError('Unknown task')
 
 
     def showStart(self):
@@ -625,7 +644,7 @@ class PyQt5WaitMessage(QFrame):
 
     def initFrame(self):
 
-        self.setStyleSheet('background-color: white;')
+        self.setStyleSheet('background-color: black; color: white;')
 
 
     def paintEvent(self, event):
@@ -677,7 +696,7 @@ class PyQt5CountdownMessage(QFrame):
         
         super().__init__()
 
-        self._step_size = 100
+        self._step_size = 50
         self._counter = time * (1000 // self._step_size)
         self._action = action
         self._picture = None
@@ -688,7 +707,7 @@ class PyQt5CountdownMessage(QFrame):
 
     def initFrame(self):
 
-        self.setStyleSheet('background-color: white;')
+        self.setStyleSheet('background-color: black; color: white;')
 
 
     def initProgressBar(self, time):
@@ -744,7 +763,6 @@ class PyQt5CountdownMessage(QFrame):
                        (self.height() - pix.height()) // 2 )
             painter.drawPixmap(QPoint(*origin), pix)
 
-        # painter.drawText(event.rect(), Qt.AlignCenter, str(self.counter))
         painter.end()
 
         offset = ( (self.width() - self._bar.width()) // 2, 
@@ -783,7 +801,7 @@ class PyQt5PictureMessage(QFrame):
 
     def initFrame(self):
 
-        self.setStyleSheet('background-color: white;')
+        self.setStyleSheet('background-color: black; color: white')
 
 
     def paintEvent(self, event):
@@ -803,3 +821,4 @@ class PyQt5PictureMessage(QFrame):
 
         painter.drawText(event.rect(), Qt.AlignCenter, self._message)
         painter.end()
+

@@ -58,7 +58,7 @@ class CameraProcess(mp.Process):
                 continue
 
             status_code = self.run_camera()
-            print('Camera exit')
+            print('Camera exit: ', str(status_code))
 
         sys.exit(status_code)
 
