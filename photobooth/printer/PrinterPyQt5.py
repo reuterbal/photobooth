@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+
 from PIL import ImageQt
 
 from PyQt5.QtCore import Qt, QPoint, QSizeF
@@ -18,8 +20,11 @@ class PrinterPyQt5(Printer):
         self._printer = QPrinter(QPrinter.HighResolution)
         self._printer.setPageSize(QPageSize(QSizeF(*page_size), QPageSize.Millimeter))
 
+        logging.info('Using printer "%s"', self._printer.printerName())
+
         self._print_pdf = print_pdf
         if self._print_pdf:
+            logging.info('Using PDF printer')
             self._counter = 0
             self._printer.setOutputFormat(QPrinter.PdfFormat)
             self._printer.setFullPage(True)
@@ -32,7 +37,8 @@ class PrinterPyQt5(Printer):
             self._counter += 1
 
         img = ImageQt.ImageQt(picture)
-        img = img.scaled(self._printer.pageRect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        img = img.scaled(self._printer.pageRect().size(), Qt.KeepAspectRatio, 
+            Qt.SmoothTransformation)
 
         printable_size = self._printer.pageRect(QPrinter.DevicePixel)
         origin = ( (printable_size.width() - img.width()) // 2,

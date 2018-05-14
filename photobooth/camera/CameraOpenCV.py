@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+
 from PIL import Image
 
 import cv2
@@ -15,6 +17,8 @@ class CameraOpenCV(Camera):
 
         self.hasPreview = True
         self.hasIdle = True
+
+        logging.info('Using OpenCV')
 
         self._cap = cv2.VideoCapture()
 

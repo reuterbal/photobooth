@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PIL import Image
-import os, subprocess
+import os, subprocess, logging
 
 from . import Camera
 
@@ -15,9 +15,13 @@ class CameraGphoto2CommandLine(Camera):
         self.hasPreview = False
         self.hasIdle = False
 
+        logging.info('Using gphoto2 via command line')
+
         if os.access('/dev/shm', os.W_OK):
+            logging.debug('Storing temp files to "/dev/shm/photobooth.jpg"')
             self._tmp_filename = '/dev/shm/photobooth.jpg'
         else:
+            logging.debug('Storing temp files to "/tmp/photobooth.jpg"')
             self._tmp_filename = '/tmp/photobooth.jpg'
 
         self.setActive()

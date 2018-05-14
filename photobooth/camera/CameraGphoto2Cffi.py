@@ -19,10 +19,7 @@ class CameraGphoto2Cffi(Camera):
         self.hasPreview = True
         self.hasIdle = True
 
-        # Avoid output cluttered
-        logging.basicConfig(
-            format='%(levelname)s: %(name)s: %(message)s', 
-            level=logging.CRITICAL)
+        logging.info('Using gphoto2-cffi bindings')
 
         self._setupCamera()
 
@@ -30,7 +27,7 @@ class CameraGphoto2Cffi(Camera):
     def _setupCamera(self):
 
         self._cap = gp.Camera()
-        print(self._cap.supported_operations)
+        logging.info('Supported operations: %s', self._cap.supported_operations)
 
         if 'raw' in self._cap.config['imgsettings']['imageformat'].value.lower():
             raise RuntimeError('Camera file format is set to RAW')

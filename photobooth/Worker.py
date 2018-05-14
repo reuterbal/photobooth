@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+
 from time import localtime, strftime
 
 from .PictureList import PictureList
@@ -13,7 +15,7 @@ class WorkerTask:
         assert not kwargs
 
 
-    def do(self, picture):
+    def get(self, picture):
 
         raise NotImplementedError()
 
@@ -25,21 +27,20 @@ class PictureSaver(WorkerTask):
 
         super().__init__()
 
-        picture_basename = strftime(config.get('Picture', 'basename'), localtime())
-        self._pic_list = PictureList(picture_basename)
-        self._get_next_filename = self._pic_list.getNext
+        basename = strftime(config.get('Picture', 'basename'), localtime())
+        self._pic_list = PictureList(basename)
 
 
-    @property
-    def getNextFilename(self):
+    @staticmethod
+    def do(picture, filename):
 
-        return self._get_next_filename
+        logging.info('Saving picture as %s', filename)
+        picture.save(filename, 'JPEG')
 
 
-    def do(self, picture):
+    def get(self, picture):
 
-        print('saving picture')
-        picture.save(self.getNextFilename(), 'JPEG')
+        return (self.do, (picture, self._pic_list.getNext()))
 
 
 
@@ -52,7 +53,7 @@ class Worker:
 
     def run(self):
 
-        for func, args in iter(self._queue.get, ('teardown', None)):
+        for func, args in iter(self._queue.get, 'teardown'):
             func(*args)
 
         return 0

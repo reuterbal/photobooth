@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+
 from PyQt5.QtWidgets import QMessageBox
 
 from .. import printer
@@ -19,6 +21,11 @@ class GuiPostprocess:
         raise NotImplementedError()
 
 
+    def confirm(self, picture):
+
+        raise NotImplementedError()
+
+
 
 
 class PrintPostprocess(GuiPostprocess):
@@ -33,17 +40,15 @@ class PrintPostprocess(GuiPostprocess):
 
     def get(self, picture):
 
-        return PrintState(lambda : self.do(picture))
+        return PrintState(lambda : self.do(picture), False)
 
-        # reply = QMessageBox.question(parent, 'Print?', 
-        #     'Do you want to print the picture?', 
-        #     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
-        # if reply == QMessageBox.Yes:
-        #     self._printer.print(picture)
+    def confirm(self, picture):
+
+        return PrintState(lambda : None, True)
 
 
     def do(self, picture):
 
-        print('Printing')
+        logging.info('Printing picture')
         self._printer.print(picture)

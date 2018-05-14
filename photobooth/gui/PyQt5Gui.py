@@ -3,6 +3,7 @@
 
 import multiprocessing as mp
 import queue
+import logging
 
 from PIL import ImageQt
 
@@ -141,7 +142,6 @@ class PyQt5Gui(Gui):
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage('', img))
-            # QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, self.sendAck)
             QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, 
                 lambda : self.postprocessPicture(state.picture))
 
@@ -179,6 +179,8 @@ class PyQt5Gui(Gui):
                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
                     if reply == QMessageBox.Yes:
                         task.handler()
+                        QMessageBox.information(self._p, 'Printing',
+                            'Picture sent to printer.', QMessageBox.Ok)
                 else:
                     raise ValueError('Unknown task')
 
@@ -217,9 +219,9 @@ class PyQt5Gui(Gui):
 
     def showError(self, title, message):
 
-        print('ERROR: ' + title + ': ' + message)
-        reply = QMessageBox.warning(self._p, title, message, QMessageBox.Close | QMessageBox.Retry, 
-            QMessageBox.Retry) 
+        logging.error('%s: %s', title, message)
+        reply = QMessageBox.warning(self._p, title, message, 
+            QMessageBox.Close | QMessageBox.Retry, QMessageBox.Retry) 
         if reply == QMessageBox.Retry:
             self.sendAck()
             self._lastState()

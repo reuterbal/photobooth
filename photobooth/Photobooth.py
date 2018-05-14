@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# from time import time, localtime, strftime
+import logging
 
 from PIL import Image, ImageOps
 
-from .PictureList import PictureList
 from .PictureDimensions import PictureDimensions
 
 from . import gui
 
-from.Worker import PictureSaver
+from .Worker import PictureSaver
 
 
 class TeardownException(Exception):
@@ -40,30 +39,35 @@ class Photobooth:
         self._cap = camera
         self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
 
-        # picture_basename = strftime(config.get('Picture', 'basename'), localtime())        
-        # self._pic_list = PictureList(picture_basename)
-        # self._get_next_filename = self._pic_list.getNext
-
         if ( config.getBool('Photobooth', 'show_preview') 
             and self._cap.hasPreview ):
+            logging.info('Countdown with preview activated')
             self._show_counter = self.showCounterPreview
         else:
+            logging.info('Countdown without preview activated')
             self._show_counter = self.showCounterNoPreview
 
 
     def initGpio(self, config):
         
         if config.getBool('Gpio', 'enable'):
+            lamp_pin = config.getInt('Gpio', 'lamp_pin')
+            trigger_pin = config.getInt('Gpio', 'trigger_pin')
+            exit_pin = config.getInt('Gpio', 'exit_pin')
+
+            logging.info('GPIO enabled (lamp_pin=%d, trigger_pin=%d, exit_pin=%d)',
+                lamp_pin, trigger_pin, exit_pin)
+
             from Gpio import Gpio
 
             self._gpio = Gpio()
 
-            lamp = self._gpio.setLamp(config.getInt('Gpio', 'lamp_pin'))
+            lamp = self._gpio.setLamp(lamp_pin)
             self._lampOn = lambda : self._gpio.lampOn(lamp)
             self._lampOff = lambda : self._gpio.lampOff(lamp)
 
-            self._gpio.setButton(config.getInt('Gpio', 'trigger_pin'), self.gpioTrigger)
-            self._gpio.setButton(config.getInt('Gpio', 'exit_pin'), self.gpioExit)
+            self._gpio.setButton(triger_pin, self.gpioTrigger)
+            self._gpio.setButton(exit_pin, self.gpioExit)
         else:
             self._lampOn = lambda : None
             self._lampOff = lambda : None
@@ -71,7 +75,7 @@ class Photobooth:
 
     def teardown(self):
 
-        print('Camera teardown')
+        logging.info('Teardown of camera')
         self.triggerOff()
         self.setCameraIdle()
 
@@ -83,7 +87,7 @@ class Photobooth:
         try:
             event_idx = expected.index(str(event))
         except ValueError:
-            print('Photobooth: Unknown event received: ' + str(event))
+            logging.error('Unknown event received: %s', str(event))
             raise ValueError('Unknown event received', str(event))
 
         return event_idx
@@ -94,7 +98,7 @@ class Photobooth:
         events = ['ack', 'cancel', 'teardown']
 
         if self.recvEvent(events) != 0:
-            print('Teardown of Photobooth requested')
+            logging.info('Teardown of camera requested')
             raise TeardownException()
 
 
@@ -103,14 +107,8 @@ class Photobooth:
         events = ['triggered', 'teardown']
 
         if self.recvEvent(events) != 0:
-            print('Teardown of Photobooth requested')
+            logging.info('Teardown of camera requested')
             raise TeardownException()
-
-
-    # @property
-    # def getNextFilename(self):
-
-    #     return self._get_next_filename
 
 
     @property
@@ -140,7 +138,7 @@ class Photobooth:
                 try:
                     self.trigger()
                 except RuntimeError as e:
-                    print('Camera error: ' + str(e))
+                    logging.error('Camera error: %s', str(e))
                     self._conn.send( gui.ErrorState('Camera error', str(e)) )
                     self.recvAck()
 
@@ -175,7 +173,6 @@ class Photobooth:
 
         self._conn.send(gui.CountdownState())
         self.recvAck()
-        print('ack received')
 
 
     def showPose(self):
@@ -209,10 +206,12 @@ class Photobooth:
     def enqueueWorkerTasks(self, picture):
 
         for task in self._worker_list:
-            self._queue.put(( task.do, (picture, ) ))
+            self._queue.put(task.get(picture))
 
 
     def trigger(self):
+
+        logging.info('Photobooth triggered')
 
         self._conn.send(gui.GreeterState())
         self.triggerOff()
@@ -224,7 +223,6 @@ class Photobooth:
         self._conn.send(gui.AssembleState())
 
         img = self.assemblePictures(pics)
-        # img.save(self.getNextFilename(), 'JPEG')
         self._conn.send(gui.PictureState(img))
         
         self.enqueueWorkerTasks(img)

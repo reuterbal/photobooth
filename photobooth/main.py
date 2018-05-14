@@ -7,8 +7,9 @@ try:
 except DistributionNotFound:
     __version__ = 'unknown'
 
-import multiprocessing as mp
 import sys
+import multiprocessing as mp
+import logging
 
 from . import camera, gui
 from .Config import Config
@@ -44,7 +45,7 @@ class CameraProcess(mp.Process):
             if str(event) in ('cancel', 'ack'):
                 return 123
             else:
-                print('Unknown event received: ' + str(event))
+                logging.error('Unknown event received: %s', str(event))
                 raise RuntimeError('Unknown event received', str(event))
 
 
@@ -56,10 +57,11 @@ class CameraProcess(mp.Process):
             event = self.conn.recv()
 
             if str(event) != 'start':
+                logging.warning('Unknown event received: %s', str(event))
                 continue
 
             status_code = self.run_camera()
-            print('Camera exit: ', str(status_code))
+            logging.info('Camera exited with status code %d', status_code)
 
         sys.exit(status_code)
 
@@ -100,13 +102,16 @@ class GuiProcess(mp.Process):
 
 def run(argv):
 
-    print('Photobooth version:', __version__)
+    logging.info('Photobooth version: %s', __version__)
 
+    # Load configuration
     config = Config('photobooth.cfg')
 
+    # Create communication objects
     gui_conn, camera_conn = mp.Pipe()
     worker_queue = mp.SimpleQueue()
 
+    # Initialize processes
     camera_proc = CameraProcess(config, camera_conn, worker_queue)
     camera_proc.start()
 
@@ -116,17 +121,22 @@ def run(argv):
     gui_proc = GuiProcess(argv, config, gui_conn, worker_queue)
     gui_proc.start()
 
+    # Close endpoints
     gui_conn.close()
     camera_conn.close()
-    gui_proc.join()
     
-    worker_queue.put(('teardown', None))
+    # Wait for processes to finish
+    gui_proc.join()
+    worker_queue.put('teardown')
     worker_proc.join()
     camera_proc.join(5)
     return gui_proc.exitcode
 
 
 def main(argv):
+
+    logging.basicConfig(filename='photobooth.log', level=logging.INFO)
+    logging.getLogger().addHandler(logging.StreamHandler())
 
     known_status_codes = {
         999: 'Initializing photobooth',
@@ -136,8 +146,10 @@ def main(argv):
     status_code = 999
 
     while status_code in known_status_codes:
-        print(known_status_codes[status_code])
+        logging.info(known_status_codes[status_code])
 
         status_code = run(argv)
+
+    logging.info('Exiting photobooth with status code %d', status_code)
 
     return status_code

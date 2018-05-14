@@ -147,11 +147,12 @@ class TeardownState(GuiState):
 
 class PrintState(GuiState):
 
-    def __init__(self, handler, **kwargs):
+    def __init__(self, handler, confirmed, **kwargs):
 
         super().__init__(**kwargs)
 
         self.handler = handler
+        self.confirmed = confirmed
 
 
     @property
@@ -167,3 +168,18 @@ class PrintState(GuiState):
             raise ValueError('handler must be callable')
 
         self._handler = handler
+
+
+    @property
+    def confirmed(self):
+
+        return self._confirmed
+
+    @confirmed.setter
+    def confirmed(self, confirmed):
+
+        if not isinstance(confirmed, bool):
+            raise ValueError('confirmed status must be bool')
+
+        self._confirmed = confirmed
+    

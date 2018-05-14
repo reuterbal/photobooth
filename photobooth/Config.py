@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import configparser, os
+import configparser, os, logging
 
 
 class Config:
@@ -29,16 +29,20 @@ class Config:
 
     def defaults(self):
 
-        self._cfg.read(os.path.join(os.path.dirname(__file__), 'defaults.cfg'))
+        filename = os.path.join(os.path.dirname(__file__), 'defaults.cfg')
+        logging.info('Reading config file "%s"', filename)
+        self._cfg.read(filename)
 
 
     def read(self):
 
+        logging.info('Reading config file "%s"', self._filename)
         self._cfg.read(self._filename)
 
 
     def write(self):
 
+        logging.info('Writing config file "%s"', self._filename)
         with open(self._filename, 'w') as configfile:
             self._cfg.write(configfile)
 

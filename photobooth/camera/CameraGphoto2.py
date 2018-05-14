@@ -20,6 +20,8 @@ class CameraGphoto2(Camera):
         self.hasIdle = False
         self._isActive = False
 
+        logging.info('Using python-gphoto2 bindings')
+
         self._setupLogging()
         self._setupCamera()
 
@@ -27,14 +29,10 @@ class CameraGphoto2(Camera):
     def cleanup(self):
 
         self._cap.exit(self._ctxt)
-        # self.setIdle()
 
 
     def _setupLogging(self):
 
-        logging.basicConfig(
-            format='%(levelname)s: %(name)s: %(message)s', 
-            level=logging.ERROR)
         gp.check_result(gp.use_python_logging())
 
 
@@ -67,9 +65,7 @@ class CameraGphoto2(Camera):
         # self.setActive()
 
         text = self._cap.get_summary(self._ctxt)
-        print('Summary')
-        print('=======')
-        print(str(text))
+        logging.info('Camera summary: %s', str(text))
 
         # self.setIdle()
 

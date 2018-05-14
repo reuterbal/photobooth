@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
+import os, logging
 
 from glob import glob
 
@@ -43,11 +43,13 @@ class PictureList:
         else:
             pictures.sort()
             last_picture = pictures[-1]
-            self.counter = int(last_picture[-(self.count_width+len(self.suffix)):-len(self.suffix)])
+            self.counter = int(last_picture[
+                -(self.count_width+len(self.suffix)):-len(self.suffix)])
 
         # Print initial infos
-        print('Info: Number of last existing file: ' + str(self.counter))
-        print('Info: Saving assembled pictures as: ' + self.basename + (self.count_width * 'X') + '.jpg')
+        logging.info('Number of last existing file: %d', self.counter)
+        logging.info('Saving assembled pictures as "%s%s.%s"', self.basename, 
+            self.count_width * 'X', 'jpg')
 
 
     def getFilename(self, count):
