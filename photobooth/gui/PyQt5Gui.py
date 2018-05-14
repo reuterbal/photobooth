@@ -119,11 +119,8 @@ class PyQt5Gui(Gui):
         elif isinstance(state, GreeterState):
             global cfg
             self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
-            num_pictures = ( 
-                cfg.getInt('Picture', 'num_x') * 
-                cfg.getInt('Picture', 'num_y') )
-            self._p.setCentralWidget(
-                PyQt5PictureMessage('Will capture {} pictures!'.format(num_pictures)))
+            self._p.setCentralWidget( PyQt5GreeterMessage(
+                cfg.getInt('Picture', 'num_x'), cfg.getInt('Picture', 'num_y') ) )
             QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, self.sendAck)
 
         elif isinstance(state, CountdownState):
@@ -134,14 +131,14 @@ class PyQt5Gui(Gui):
             self._p.centralWidget().update()
             
         elif isinstance(state, PoseState):
-            self._p.setCentralWidget(PyQt5PictureMessage('Pose!'))
+            self._p.setCentralWidget(PyQt5PoseMessage())
 
         elif isinstance(state, AssembleState):
             self._p.setCentralWidget(PyQt5WaitMessage('Processing picture...'))
 
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
-            self._p.setCentralWidget(PyQt5PictureMessage('', img))
+            self._p.setCentralWidget(PyQt5PictureMessage(img))
             QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, 
                 lambda : self.postprocessPicture(state.picture))
 
@@ -214,7 +211,7 @@ class PyQt5Gui(Gui):
 
         self._p.handleKeypressEvent = self.handleKeypressEvent
         self._lastState = self.showIdle
-        self._p.setCentralWidget(PyQt5PictureMessage('Hit the button!'))
+        self._p.setCentralWidget(PyQt5IdleMessage())
 
 
     def showError(self, title, message):
@@ -504,7 +501,7 @@ class PyQt5Settings(QFrame):
 
         layout = QFormLayout()
         layout.addRow(self._value_widgets['Photobooth']['show_preview'])
-        layout.addRow(QLabel('Pose time [s]:'), self._value_widgets['Photobooth']['greeter_time'])
+        layout.addRow(QLabel('Greeter time [s]:'), self._value_widgets['Photobooth']['greeter_time'])
         layout.addRow(QLabel('Countdown time [s]:'), self._value_widgets['Photobooth']['countdown_time'])
         layout.addRow(QLabel('Display time [s]:'), self._value_widgets['Photobooth']['display_time'])
 
@@ -684,11 +681,76 @@ class PyQt5WaitMessage(QFrame):
         self.startTimer(100)
         
     
-
     def timerEvent(self, event):
     
         self._counter += 1
         self.update()
+
+
+
+class PyQt5IdleMessage(QFrame):
+
+    def __init__(self):
+
+        super().__init__()
+
+        self.initFrame()
+
+
+    def initFrame(self):
+
+        self.setStyleSheet('background-color: black; color: white;')
+
+
+    def paintEvent(self, event):
+
+        painter = QPainter(self)
+
+        f = self.font()
+        f.setPixelSize(self.height() / 5)
+        painter.setFont(f)
+
+        painter.drawText(event.rect(), Qt.AlignCenter, 'Hit the button!')
+
+        painter.end()
+
+
+
+class PyQt5GreeterMessage(QFrame):
+
+    def __init__(self, num_x, num_y):
+
+        super().__init__()
+
+        self._num_x = num_x
+        self._num_y = num_y
+        self._title = 'Get ready!'
+        self._text = 'We will capture {} pictures!'.format(num_x * num_y)
+
+        self.initFrame()
+
+
+    def initFrame(self):
+
+        self.setStyleSheet('background-color: black; color: white;')
+
+
+    def paintEvent(self, event):
+
+        painter = QPainter(self)
+        f = self.font()
+
+        f.setPixelSize(self.height() / 5)
+        painter.setFont(f)
+        rect = QRect(0, self.height() * 1 / 5, self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, Qt.AlignCenter, self._title)
+
+        f.setPixelSize(self.height() / 8)
+        painter.setFont(f)
+        rect = QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, Qt.AlignCenter, self._text)
+
+        painter.end()
 
 
 
@@ -789,13 +851,41 @@ class PyQt5CountdownMessage(QFrame):
             self.update()
 
 
+
+class PyQt5PoseMessage(QFrame):
+
+    def __init__(self):
+
+        super().__init__()
+
+        self.initFrame()
+
+
+    def initFrame(self):
+
+        self.setStyleSheet('background-color: black; color: white;')
+
+
+    def paintEvent(self, event):
+
+        painter = QPainter(self)
+
+        f = self.font()
+        f.setPixelSize(self.height() / 3)
+        painter.setFont(f)
+
+        painter.drawText(event.rect(), Qt.AlignCenter, 'Pose!')
+
+        painter.end()
+
+
+
 class PyQt5PictureMessage(QFrame):
 
-    def __init__(self, message, picture=None):
+    def __init__(self, picture):
         
         super().__init__()
 
-        self._message = message
         self._picture = picture
 
         self.initFrame()
@@ -810,17 +900,15 @@ class PyQt5PictureMessage(QFrame):
 
         painter = QPainter(self)
 
-        if self._picture != None:
-            if isinstance(self._picture, QImage):
-                pix = QPixmap.fromImage(self._picture)
-            else:
-                pix = QPixmap(self._picture)
-            pix = pix.scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if isinstance(self._picture, QImage):
+            pix = QPixmap.fromImage(self._picture)
+        else:
+            pix = QPixmap(self._picture)
+        pix = pix.scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-            origin = ( (self.rect().width() - pix.width()) // 2,
-                       (self.rect().height() - pix.height()) // 2 )
-            painter.drawPixmap(QPoint(*origin), pix)
+        origin = ( (self.rect().width() - pix.width()) // 2,
+                   (self.rect().height() - pix.height()) // 2 )
+        painter.drawPixmap(QPoint(*origin), pix)
 
-        painter.drawText(event.rect(), Qt.AlignCenter, self._message)
         painter.end()
 

@@ -107,11 +107,16 @@ def run(argv):
     # Load configuration
     config = Config('photobooth.cfg')
 
-    # Create communication objects
+    # Create communication objects: 
+    # 1. We use a pipe to connect GUI and camera process
+    # 2. We use a queue to feed tasks to the postprocessing process
     gui_conn, camera_conn = mp.Pipe()
     worker_queue = mp.SimpleQueue()
 
-    # Initialize processes
+    # Initialize processes: We use three processes here:
+    # 1. Camera processing
+    # 2. Postprocessing
+    # 3. GUI
     camera_proc = CameraProcess(config, camera_conn, worker_queue)
     camera_proc.start()
 
