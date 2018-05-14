@@ -66,7 +66,7 @@ class Photobooth:
             self._lampOn = lambda : self._gpio.lampOn(lamp)
             self._lampOff = lambda : self._gpio.lampOff(lamp)
 
-            self._gpio.setButton(triger_pin, self.gpioTrigger)
+            self._gpio.setButton(trigger_pin, self.gpioTrigger)
             self._gpio.setButton(exit_pin, self.gpioExit)
         else:
             self._lampOn = lambda : None

@@ -62,10 +62,17 @@ pip install gphoto2
 -or-
 pip install gphoto2-cffi
 
+## Additional setup steps for my hardware setup
 
+### Pollin LS-7T touch screen
+
+#### Install required packages
+```bash
 apt install xinput-calibrator xserver-xorg-input-evdev
+```
 
-/usr/share/X11/xorg.conf.d/99-eGalax.conf:
+#### Configure device
+Add the following to `/usr/share/X11/xorg.conf.d/99-eGalax.conf`:
 ```
 Section "InputClass"
     Identifier "evdev tablet catchall"
@@ -80,4 +87,13 @@ Section "InputClass"
     Option  "Calibration"   "19 1988 96 1965"
     Option  "SwapAxes"      "0"
 EndSection
+```
+
+The calibration data can be obtained using `xinput-calibrator`.
+
+### Canon Selphy CP-1000 printer
+
+#### Install Gutenprint printer drivers
+```bash
+apt install printer-driver-gutenprint
 ```

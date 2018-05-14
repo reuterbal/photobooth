@@ -650,6 +650,10 @@ class PyQt5WaitMessage(QFrame):
 
         painter = QPainter(self)
 
+        f = self.font()
+        f.setPixelSize(self.height() / 8)
+        painter.setFont(f)
+
         rect = QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
         painter.drawText(rect, Qt.AlignCenter, self._message)
 
