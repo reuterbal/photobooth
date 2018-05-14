@@ -9,7 +9,7 @@ except DistributionNotFound:
 
 import sys
 import multiprocessing as mp
-import logging
+import logging, logging.handlers
 
 from . import camera, gui
 from .Config import Config
@@ -135,14 +135,30 @@ def run(argv):
 
 def main(argv):
 
-    logging.basicConfig(filename='photobooth.log', level=logging.INFO)
-    logging.getLogger().addHandler(logging.StreamHandler())
+    # Setup log level and format
+    log_level = logging.INFO
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+    # create console handler and set format
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter)
+
+    # create file handler and set format
+    fh = logging.handlers.TimedRotatingFileHandler('photobooth.log', 
+        when='d', interval=1, backupCount=10)
+    fh.setFormatter(formatter)
+
+    # Apply config
+    logging.basicConfig(level=log_level, handlers=(ch,fh))
+
+    # Set of known status codes which trigger a restart of the application
     known_status_codes = {
         999: 'Initializing photobooth',
         123: 'Restarting photobooth and reloading config'
     }
 
+    # Run the application until a status code not in above list is encountered
     status_code = 999
 
     while status_code in known_status_codes:
