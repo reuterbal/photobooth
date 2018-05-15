@@ -19,6 +19,7 @@ class PrinterPyQt5(Printer):
 
         self._printer = QPrinter(QPrinter.HighResolution)
         self._printer.setPageSize(QPageSize(QSizeF(*page_size), QPageSize.Millimeter))
+        self._printer.setColorMode(QPrinter.Color)
 
         logging.info('Using printer "%s"', self._printer.printerName())
 

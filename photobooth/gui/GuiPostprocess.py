@@ -35,7 +35,7 @@ class PrintPostprocess(GuiPostprocess):
         super().__init__(**kwargs)
 
         Printer = lookup_and_import(printer.modules, printer_module, 'printer')
-        self._printer = Printer(page_size, True)
+        self._printer = Printer(page_size)
 
 
     def get(self, picture):
