@@ -10,6 +10,7 @@ import gphoto2 as gp
 from . import Camera
 
 
+
 class CameraGphoto2(Camera):
 
     def __init__(self):
@@ -17,8 +18,7 @@ class CameraGphoto2(Camera):
         super().__init__()
 
         self.hasPreview = True
-        self.hasIdle = False
-        self._isActive = False
+        self.hasIdle = True
 
         logging.info('Using python-gphoto2 bindings')
 
@@ -28,11 +28,13 @@ class CameraGphoto2(Camera):
 
     def cleanup(self):
 
+        self._cap.set_config(self._oldconfig)
         self._cap.exit(self._ctxt)
 
 
     def _setupLogging(self):
 
+        gp.error_severity[gp.GP_ERROR] = logging.WARNING
         gp.check_result(gp.use_python_logging())
 
 
@@ -42,61 +44,78 @@ class CameraGphoto2(Camera):
         self._cap = gp.Camera()
         self._cap.init(self._ctxt)
 
-        self._printSummary()
-
+        logging.info('Camera summary: %s', str(self._cap.get_summary(self._ctxt)))
 
         # get configuration tree
-        config = gp.check_result(gp.gp_camera_get_config(self._cap))
+        self._config = self._cap.get_config()
+        self._oldconfig = self._config
 
-        # find the image format config item
-        OK, image_format = gp.gp_widget_get_child_by_name(config, 'imageformat')
-        if OK >= gp.GP_OK:
-            # get current setting
-            value = gp.check_result(gp.gp_widget_get_value(image_format))
-            # make sure it's not raw
-            if 'raw' in value.lower():
-                raise RuntimeError('Camera file format is set to RAW')
+        # make sure camera format is not set to raw
+        if 'raw' in self._config.get_child_by_name('imageformat').get_value().lower():
+            raise RuntimeError('Camera file format is set to RAW')
 
-        print(config)
+        self._printConfig(self._config)
 
 
-    def _printSummary(self):
+    @staticmethod
+    def _configTreeToText(tree, indent=0):
 
-        # self.setActive()
+        config_txt = ''
 
-        text = self._cap.get_summary(self._ctxt)
-        logging.info('Camera summary: %s', str(text))
+        for child in tree.get_children():
+            config_txt += indent * ' '
+            config_txt += child.get_label() + ' [' + child.get_name() + ']: '
 
-        # self.setIdle()
+            if child.count_children() > 0:
+                config_txt += '\n' 
+                config_txt += CameraGphoto2._configTreeToText(child, indent + 4)
+            else:
+                config_txt += str(child.get_value())
+                try:
+                    choice_txt = ' ('
+
+                    for c in child.get_choices():
+                        choice_txt += c + ', '
+
+                    choice_txt += ')'
+                    config_txt += choice_txt
+                except gp.GPhoto2Error:
+                    pass
+                config_txt += '\n'
+
+        return config_txt
 
 
-    # def setActive(self):
+    @staticmethod
+    def _printConfig(config):
+        config_txt = 'Camera configuration:\n'
+        config_txt += CameraGphoto2._configTreeToText(config)
+        logging.info(config_txt)
 
-        # self._cap.init(self._ctxt)
-        # if not self._isActive:
-        #     self._cap.init(self._ctxt)
-        #     self._isActive = True
+
+    def setActive(self):
+
+        self._config.get_child_by_name('viewfinder').set_value(True)
+        self._cap.set_config(self._config)
 
 
-    # def setIdle(self):
+    def setIdle(self):
 
-        # self._cap.exit(self._ctxt)
-    #     if self._isActive:
-    #         self._cap.exit(self._ctxt)
-    #         self._isActive = False
+        self._config.get_child_by_name('viewfinder').set_value(False)
+        self._cap.set_config(self._config)
 
 
     def getPreview(self):
 
-        # self.setActive()
-        camera_file = self._cap.capture_preview() #gp.check_result(gp.gp_camera_capture_preview(self._cap))
-        file_data = camera_file.get_data_and_size() # gp.check_result(gp.gp_file_get_data_and_size(camera_file))
+        # self._config.get_child_by_name('autofocusdrive').set_value(1)
+        # self._cap.set_config(self._config)
+        camera_file = self._cap.capture_preview()
+        file_data = camera_file.get_data_and_size()
         return Image.open(io.BytesIO(file_data))
 
 
     def getPicture(self):
         
-        # self.setActive()
         file_path = self._cap.capture(gp.GP_CAPTURE_IMAGE)
         camera_file = self._cap.file_get(file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
         file_data = camera_file.get_data_and_size()

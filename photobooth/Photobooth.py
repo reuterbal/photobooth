@@ -69,6 +69,7 @@ class Photobooth:
             self._gpio.setButton(trigger_pin, self.gpioTrigger)
             self._gpio.setButton(exit_pin, self.gpioExit)
         else:
+            logging.info('GPIO disabled')
             self._lampOn = lambda : None
             self._lampOff = lambda : None
 
