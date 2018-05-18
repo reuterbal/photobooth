@@ -47,14 +47,15 @@ class CameraGphoto2(Camera):
         logging.info('Camera summary: %s', str(self._cap.get_summary(self._ctxt)))
 
         # get configuration tree
-        self._config = self._cap.get_config()
-        self._oldconfig = self._config
+        # self._config = self._cap.get_config()
+        # self._oldconfig = self._config
+        config = self._cap.get_config()
 
         # make sure camera format is not set to raw
-        if 'raw' in self._config.get_child_by_name('imageformat').get_value().lower():
+        if 'raw' in config.get_child_by_name('imageformat').get_value().lower():
             raise RuntimeError('Camera file format is set to RAW')
 
-        self._printConfig(self._config)
+        self._printConfig(config)
 
 
     @staticmethod
@@ -95,14 +96,18 @@ class CameraGphoto2(Camera):
 
     def setActive(self):
 
-        self._config.get_child_by_name('viewfinder').set_value(True)
-        self._cap.set_config(self._config)
+        config = self._cap.get_config()
+        # self._config.get_child_by_name('viewfinder').set_value(True)
+        config.get_child_by_name('output').set_value('PC')
+        self._cap.set_config(config)
 
 
     def setIdle(self):
 
-        self._config.get_child_by_name('viewfinder').set_value(False)
-        self._cap.set_config(self._config)
+        config = self._cap.get_config()
+        # self._config.get_child_by_name('viewfinder').set_value(False)
+        config.get_child_by_name('output').set_value('Off')
+        self._cap.set_config(config)
 
 
     def getPreview(self):

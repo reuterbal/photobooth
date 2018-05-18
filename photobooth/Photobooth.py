@@ -184,8 +184,11 @@ class Photobooth:
     def captureSinglePicture(self):
 
         self.showCounter()
+        self.setCameraIdle()
         self.showPose()
-        return self._cap.getPicture()
+        picture = self._cap.getPicture()
+        self.setCameraActive()
+        return picture
 
 
     def capturePictures(self):
@@ -216,8 +219,8 @@ class Photobooth:
 
         self._conn.send(gui.GreeterState())
         self.triggerOff()
-        self.setCameraActive()
 
+        self.setCameraActive()
         self.recvAck()
 
         pics = self.capturePictures()
@@ -229,7 +232,6 @@ class Photobooth:
         self.enqueueWorkerTasks(img)
 
         self.setCameraIdle()
-
         self.recvAck()
 
         self._conn.send(gui.IdleState())

@@ -63,11 +63,13 @@ class CameraGphoto2Cffi(Camera):
     def setActive(self):
 
         self._cap._get_config()['actions']['viewfinder'].set(True)
+        self._cap._get_config()['settings']['output'].set('PC')
 
 
     def setIdle(self):
 
         self._cap._get_config()['actions']['viewfinder'].set(False)
+        self._cap._get_config()['settings']['output'].set('Off')
 
 
     def getPreview(self):

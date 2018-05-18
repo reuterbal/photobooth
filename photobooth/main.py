@@ -134,7 +134,7 @@ def run(argv):
     gui_proc.join()
     worker_queue.put('teardown')
     worker_proc.join()
-    camera_proc.join(5)
+    camera_proc.join(1)
     return gui_proc.exitcode
 
 
