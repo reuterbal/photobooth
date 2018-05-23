@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os.path
 
 from time import localtime, strftime
 
@@ -27,7 +28,9 @@ class PictureSaver(WorkerTask):
 
         super().__init__()
 
-        basename = strftime(config.get('Picture', 'basename'), localtime())
+        path = os.path.join(config.get('Picture', 'basedir'),
+            config.get('Picture', 'basename'))
+        basename = strftime(path, localtime())
         self._pic_list = PictureList(basename)
 
 

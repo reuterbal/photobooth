@@ -4,11 +4,12 @@
 import multiprocessing as mp
 import queue
 import logging
+from os.path import expanduser
 
 from PIL import ImageQt
 
 from PyQt5.QtCore import Qt, QObject, QPoint, QThread, QTimer, pyqtSignal
-from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QFileDialog, QTabWidget, QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget)
 from PyQt5.QtGui import QImage, QPainter, QPixmap
 
 import math
@@ -361,19 +362,49 @@ class PyQt5Settings(QFrame):
 
         self._value_widgets = {}
 
-        grid = QGridLayout()
-        grid.addWidget(self.createGuiSettings(), 0, 0)
-        grid.addWidget(self.createGpioSettings(), 1, 0)
-        grid.addWidget(self.createPrinterSettings(), 2, 0)
-        grid.addWidget(self.createCameraSettings(), 0, 1)
-        grid.addWidget(self.createPhotoboothSettings(), 1, 1)
-        grid.addWidget(self.createPictureSettings(), 2, 1)
-
         layout = QVBoxLayout()
-        layout.addLayout(grid)
+        layout.addWidget(self.createTabs())
         layout.addStretch(1)
         layout.addWidget(self.createButtons())
         self.setLayout(layout)
+
+
+    def createTabs(self):
+
+        tabs = QTabWidget()
+        tabs.addTab(self.createGuiSettings(), 'Interface')
+        tabs.addTab(self.createPhotoboothSettings(), 'Photobooth')
+        tabs.addTab(self.createCameraSettings(), 'Camera')
+        tabs.addTab(self.createPictureSettings(), 'Picture')
+        tabs.addTab(self.createGpioSettings(), 'GPIO')
+        tabs.addTab(self.createPrinterSettings(), 'Printer')
+
+        return tabs
+
+
+    def createButtons(self):
+
+        layout = QHBoxLayout()
+        layout.addStretch(1)
+
+        btnSave = QPushButton('Save and restart')
+        btnSave.resize(btnSave.sizeHint())
+        btnSave.clicked.connect(self.storeConfigAndRestart)
+        layout.addWidget(btnSave)
+
+        btnCancel = QPushButton('Cancel')
+        btnCancel.resize(btnCancel.sizeHint())
+        btnCancel.clicked.connect(self._gui.showStart)
+        layout.addWidget(btnCancel)
+
+        btnRestore = QPushButton('Restore defaults')
+        btnRestore.resize(btnRestore.sizeHint())
+        btnRestore.clicked.connect(self.restoreDefaults)
+        layout.addWidget(btnRestore)
+
+        widget = QGroupBox()
+        widget.setLayout(layout)
+        return widget
 
 
     def createModuleComboBox(self, module_list, current_module):
@@ -416,7 +447,7 @@ class PyQt5Settings(QFrame):
 
         layout.addRow(self._value_widgets['Gui']['hide_cursor'])
 
-        widget = QGroupBox('Interface settings')
+        widget = QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -439,7 +470,8 @@ class PyQt5Settings(QFrame):
         layout.addRow(QLabel('Trigger pin (BCM numbering):'), self._value_widgets['Gpio']['trigger_pin'])
         layout.addRow(QLabel('Lamp pin (BCM numbering):'), self._value_widgets['Gpio']['lamp_pin'])
 
-        widget = QGroupBox('GPIO settings')
+        # widget = QGroupBox('GPIO settings')
+        widget = QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -467,7 +499,8 @@ class PyQt5Settings(QFrame):
         sublayout_size.addWidget(self._value_widgets['Printer']['height'])
         layout.addRow(sublayout_size)
 
-        widget = QGroupBox('Printer settings')
+        # widget = QGroupBox('Printer settings')
+        widget = QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -482,7 +515,8 @@ class PyQt5Settings(QFrame):
         layout = QFormLayout()
         layout.addRow(QLabel('Camera module:'), self._value_widgets['Camera']['module'])
 
-        widget = QGroupBox('Camera settings')
+        # widget = QGroupBox('Camera settings')
+        widget = QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -505,7 +539,8 @@ class PyQt5Settings(QFrame):
         layout.addRow(QLabel('Countdown time [s]:'), self._value_widgets['Photobooth']['countdown_time'])
         layout.addRow(QLabel('Display time [s]:'), self._value_widgets['Photobooth']['display_time'])
 
-        widget = QGroupBox('Photobooth settings')
+        # widget = QGroupBox('Photobooth settings')
+        widget = QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -521,6 +556,7 @@ class PyQt5Settings(QFrame):
         self._value_widgets['Picture']['size_y'] = QLineEdit(cfg.get('Picture', 'size_y'))
         self._value_widgets['Picture']['min_dist_x'] = QLineEdit(cfg.get('Picture', 'min_dist_x'))
         self._value_widgets['Picture']['min_dist_y'] = QLineEdit(cfg.get('Picture', 'min_dist_y'))
+        self._value_widgets['Picture']['basedir'] = QLineEdit(cfg.get('Picture', 'basedir'))
         self._value_widgets['Picture']['basename'] = QLineEdit(cfg.get('Picture', 'basename'))
 
         layout = QFormLayout()
@@ -546,34 +582,22 @@ class PyQt5Settings(QFrame):
         sublayout_dist.addWidget(self._value_widgets['Picture']['min_dist_y'])
         layout.addRow(sublayout_dist)
 
-        layout.addRow(QLabel('Basename of output files:'), self._value_widgets['Picture']['basename'])
+        file_dialog = lambda : self._value_widgets['Picture']['basedir'].setText(
+            QFileDialog.getExistingDirectory(self, 'Select directory', 
+                expanduser('~'), QFileDialog.ShowDirsOnly))
+        file_button = QPushButton('Select directory')
+        file_button.resize(file_button.sizeHint())
+        file_button.clicked.connect(file_dialog)
 
-        widget = QGroupBox('Picture settings')
-        widget.setLayout(layout)
-        return widget
+        sublayout_path = QHBoxLayout()
+        sublayout_path.addWidget(QLabel('Basename of output files:'))
+        sublayout_path.addWidget(self._value_widgets['Picture']['basedir'])
+        sublayout_path.addWidget(QLabel('/'))
+        sublayout_path.addWidget(self._value_widgets['Picture']['basename'])
+        sublayout_path.addWidget(file_button)
+        layout.addRow(sublayout_path)
 
-
-    def createButtons(self):
-
-        layout = QHBoxLayout()
-        layout.addStretch(1)
-
-        btnSave = QPushButton('Save')
-        btnSave.resize(btnSave.sizeHint())
-        btnSave.clicked.connect(self.storeConfigAndRestart)
-        layout.addWidget(btnSave)
-
-        btnCancel = QPushButton('Cancel')
-        btnCancel.resize(btnCancel.sizeHint())
-        btnCancel.clicked.connect(self._gui.showStart)
-        layout.addWidget(btnCancel)
-
-        btnRestore = QPushButton('Restore defaults')
-        btnRestore.resize(btnRestore.sizeHint())
-        btnRestore.clicked.connect(self.restoreDefaults)
-        layout.addWidget(btnRestore)
-
-        widget = QGroupBox()
+        widget = QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -587,7 +611,6 @@ class PyQt5Settings(QFrame):
         cfg.set('Gui', 'width', self._value_widgets['Gui']['width'].text())
         cfg.set('Gui', 'height', self._value_widgets['Gui']['height'].text())
         cfg.set('Gui', 'hide_cursor', str(self._value_widgets['Gui']['hide_cursor'].isChecked()))
-
 
         cfg.set('Gpio', 'enable', str(self._value_widgets['Gpio']['enable'].isChecked()))
         cfg.set('Gpio', 'exit_pin', self._value_widgets['Gpio']['exit_pin'].text())
@@ -610,6 +633,7 @@ class PyQt5Settings(QFrame):
         cfg.set('Picture', 'size_y', self._value_widgets['Picture']['size_y'].text())
         cfg.set('Picture', 'min_dist_x', self._value_widgets['Picture']['min_dist_x'].text())
         cfg.set('Picture', 'min_dist_y', self._value_widgets['Picture']['min_dist_y'].text())
+        cfg.set('Picture', 'basedir', self._value_widgets['Picture']['basedir'].text())
         cfg.set('Picture', 'basename', self._value_widgets['Picture']['basename'].text())
 
         cfg.set('Camera', 'module', camera.modules[self._value_widgets['Camera']['module'].currentIndex()][0])
