@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+import os
+import subprocess
+
 from PIL import Image
-import os, subprocess, logging
 
 from . import Camera
+
 
 class CameraGphoto2CommandLine(Camera):
 
@@ -26,19 +30,17 @@ class CameraGphoto2CommandLine(Camera):
 
         self.setActive()
 
-
     def setActive(self):
 
-        print(self._callGphoto('-a', '/dev/null'))
-
+        self._callGphoto('-a', '/dev/null')
 
     def getPicture(self):
-        
+
         self._callGphoto('--capture-image-and-download', self._tmp_filename)
         return Image.open(self._tmp_filename)
 
-
     def _callGphoto(self, action, filename):
 
-        cmd = 'gphoto2 --force-overwrite --quiet ' + action + ' --filename ' + filename
-        return subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+        cmd = 'gphoto2 --force-overwrite --quiet {} --filename {}'
+        return subprocess.check_output(cmd.format(action, filename),
+                                       shell=True, stderr=subprocess.STDOUT)

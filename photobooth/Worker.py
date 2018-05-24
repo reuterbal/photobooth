@@ -15,11 +15,9 @@ class WorkerTask:
 
         assert not kwargs
 
-
     def get(self, picture):
 
         raise NotImplementedError()
-
 
 
 class PictureSaver(WorkerTask):
@@ -29,10 +27,9 @@ class PictureSaver(WorkerTask):
         super().__init__()
 
         path = os.path.join(config.get('Picture', 'basedir'),
-            config.get('Picture', 'basename'))
+                            config.get('Picture', 'basename'))
         basename = strftime(path, localtime())
         self._pic_list = PictureList(basename)
-
 
     @staticmethod
     def do(picture, filename):
@@ -40,11 +37,9 @@ class PictureSaver(WorkerTask):
         logging.info('Saving picture as %s', filename)
         picture.save(filename, 'JPEG')
 
-
     def get(self, picture):
 
         return (self.do, (picture, self._pic_list.getNext()))
-
 
 
 class Worker:
@@ -52,7 +47,6 @@ class Worker:
     def __init__(self, config, queue):
 
         self._queue = queue
-
 
     def run(self):
 

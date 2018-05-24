@@ -13,12 +13,10 @@ class Printer:
 
         self.pageSize = page_size
 
-
     @property
     def pageSize(self):
 
         return self._page_size
-
 
     @pageSize.setter
     def pageSize(self, page_size):
@@ -28,8 +26,6 @@ class Printer:
 
         self._page_size = page_size
 
-
     def print(self, picture):
 
         raise NotImplementedError('print function not implemented!')
-        

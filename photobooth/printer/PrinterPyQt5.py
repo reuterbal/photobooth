@@ -5,11 +5,11 @@ import logging
 
 from PIL import ImageQt
 
-from PyQt5.QtCore import Qt, QPoint, QSizeF
-from PyQt5.QtGui import QPageSize, QPainter, QPixmap
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtPrintSupport import QPrinter
 
 from . import Printer
+
 
 class PrinterPyQt5(Printer):
 
@@ -18,7 +18,8 @@ class PrinterPyQt5(Printer):
         super().__init__(page_size)
 
         self._printer = QPrinter(QPrinter.HighResolution)
-        self._printer.setPageSize(QPageSize(QSizeF(*page_size), QPageSize.Millimeter))
+        self._printer.setPageSize(QtGui.QPageSize(QtCore.QSizeF(*page_size),
+                                                  QtGui.QPageSize.Millimeter))
         self._printer.setColorMode(QPrinter.Color)
 
         logging.info('Using printer "%s"', self._printer.printerName())
@@ -30,21 +31,21 @@ class PrinterPyQt5(Printer):
             self._printer.setOutputFormat(QPrinter.PdfFormat)
             self._printer.setFullPage(True)
 
-
     def print(self, picture):
-        
+
         if self._print_pdf:
-            self._printer.setOutputFileName('print_' + str(self._counter) + '.pdf')
+            self._printer.setOutputFileName('print_%d.pdf' % self._counter)
             self._counter += 1
 
         img = ImageQt.ImageQt(picture)
-        img = img.scaled(self._printer.pageRect().size(), Qt.KeepAspectRatio, 
-            Qt.SmoothTransformation)
+        img = img.scaled(self._printer.pageRect().size(),
+                         QtCore.Qt.KeepAspectRatio,
+                         QtCore.Qt.SmoothTransformation)
 
         printable_size = self._printer.pageRect(QPrinter.DevicePixel)
-        origin = ( (printable_size.width() - img.width()) // 2,
-                   (printable_size.height() - img.height()) // 2 )
-        
-        painter = QPainter(self._printer)
-        painter.drawImage(QPoint(*origin), img)
+        origin = ((printable_size.width() - img.width()) // 2,
+                  (printable_size.height() - img.height()) // 2)
+
+        painter = QtGui.QPainter(self._printer)
+        painter.drawImage(QtCore.QPoint(*origin), img)
         painter.end()

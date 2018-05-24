@@ -9,7 +9,6 @@ class GuiState:
         assert not kwargs
 
 
-
 class ErrorState(GuiState):
 
     def __init__(self, title, message, **kwargs):
@@ -18,25 +17,21 @@ class ErrorState(GuiState):
 
         self.title = title
         self.message = message
-        
 
     @property
     def title(self):
 
         return self._title
 
-
     @title.setter
     def title(self, title):
 
         self._title = title
 
-
     @property
     def message(self):
 
         return self._message
-
 
     @message.setter
     def message(self, message):
@@ -59,12 +54,10 @@ class PictureState(GuiState):
 
         self.picture = picture
 
-
     @property
     def picture(self):
 
         return self._pic
-
 
     @picture.setter
     def picture(self, picture):
@@ -80,12 +73,10 @@ class MessageState(GuiState):
 
         self.message = message
 
-
     @property
     def message(self):
 
         return self._msg
-
 
     @message.setter
     def message(self, message):
@@ -154,12 +145,10 @@ class PrintState(GuiState):
         self.handler = handler
         self.confirmed = confirmed
 
-
     @property
     def handler(self):
 
         return self._handler
-
 
     @handler.setter
     def handler(self, handler):
@@ -168,7 +157,6 @@ class PrintState(GuiState):
             raise ValueError('handler must be callable')
 
         self._handler = handler
-
 
     @property
     def confirmed(self):
@@ -182,4 +170,3 @@ class PrintState(GuiState):
             raise ValueError('confirmed status must be bool')
 
         self._confirmed = confirmed
-    

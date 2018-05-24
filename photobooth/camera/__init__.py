@@ -6,8 +6,9 @@
 modules = (
     ('python-gphoto2', 'CameraGphoto2', 'CameraGphoto2'),
     ('gphoto2-cffi', 'CameraGphoto2Cffi', 'CameraGphoto2Cffi'),
-    ('gphoto2-commandline', 'CameraGphoto2CommandLine', 'CameraGphoto2CommandLine'),
-    ('opencv', 'CameraOpenCV', 'CameraOpenCV') )
+    ('gphoto2-commandline', 'CameraGphoto2CommandLine',
+     'CameraGphoto2CommandLine'),
+    ('opencv', 'CameraOpenCV', 'CameraOpenCV'))
 
 
 class Camera:
@@ -17,27 +18,22 @@ class Camera:
         self.hasPreview = False
         self.hasIdle = False
 
-
     def __enter__(self):
 
         return self
-
 
     def __exit__(self, exc_type, exc_value, traceback):
 
         self.cleanup()
 
-
     def cleanup(self):
 
         pass
-        
 
     @property
     def hasPreview(self):
 
         return self._has_preview
-
 
     @hasPreview.setter
     def hasPreview(self, value):
@@ -51,7 +47,6 @@ class Camera:
     def hasIdle(self):
 
         return self._has_idle
-        
 
     @hasIdle.setter
     def hasIdle(self, value):
@@ -61,14 +56,12 @@ class Camera:
 
         self._has_idle = value
 
-
     def setActive(self):
 
         if not self.hasIdle:
             pass
         else:
             raise NotImplementedError()
-
 
     def setIdle(self):
 
@@ -77,7 +70,6 @@ class Camera:
 
         raise NotImplementedError()
 
-
     def getPreview(self):
 
         if not self.hasPreview:
@@ -85,15 +77,6 @@ class Camera:
 
         raise NotImplementedError()
 
-
     def getPicture(self):
-
-        raise NotImplementedError()
-
-
-    def setIdle(self):
-
-        if not self.hasIdle:
-            raise RuntimeError('Camera does not support idle state')
 
         raise NotImplementedError()

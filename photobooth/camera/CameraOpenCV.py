@@ -9,6 +9,7 @@ import cv2
 
 from . import Camera
 
+
 class CameraOpenCV(Camera):
 
     def __init__(self):
@@ -22,7 +23,6 @@ class CameraOpenCV(Camera):
 
         self._cap = cv2.VideoCapture()
 
-
     def setActive(self):
 
         if not self._cap.isOpened():
@@ -30,20 +30,17 @@ class CameraOpenCV(Camera):
             if not self._cap.isOpened():
                 raise RuntimeError('Camera could not be opened')
 
-
     def setIdle(self):
 
         if self._cap.isOpened():
             self._cap.release()
 
-
     def getPreview(self):
 
         return self.getPicture()
 
-
     def getPicture(self):
-        
+
         self.setActive()
         status, frame = self._cap.read()
         if not status:
@@ -52,4 +49,3 @@ class CameraOpenCV(Camera):
         # OpenCV yields frames in BGR format, conversion to RGB necessary.
         # (See https://stackoverflow.com/a/32270308)
         return Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-

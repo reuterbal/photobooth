@@ -7,15 +7,17 @@ try:
 except DistributionNotFound:
     __version__ = 'unknown'
 
-import sys
+import logging
+import logging.handlers
 import multiprocessing as mp
-import logging, logging.handlers
+import sys
 
 from . import camera, gui
 from .Config import Config
 from .Photobooth import Photobooth
 from .util import lookup_and_import
 from .Worker import Worker
+
 
 class CameraProcess(mp.Process):
 
@@ -28,7 +30,6 @@ class CameraProcess(mp.Process):
         self.conn = conn
         self.worker_queue = worker_queue
 
-
     def run_camera(self):
 
         try:
@@ -40,14 +41,13 @@ class CameraProcess(mp.Process):
             return photobooth.run()
 
         except BaseException as e:
-            self.conn.send( gui.ErrorState('Camera error', str(e)) )
+            self.conn.send(gui.ErrorState('Camera error', str(e)))
             event = self.conn.recv()
             if str(event) in ('cancel', 'ack'):
                 return 123
             else:
                 logging.error('Unknown event received: %s', str(event))
                 raise RuntimeError('Unknown event received', str(event))
-
 
     def run(self):
 
@@ -76,7 +76,6 @@ class WorkerProcess(mp.Process):
         self.cfg = config
         self.queue = queue
 
-
     def run(self):
 
         sys.exit(Worker(self.cfg, self.queue).run())
@@ -93,10 +92,10 @@ class GuiProcess(mp.Process):
         self.conn = conn
         self.queue = queue
 
-
     def run(self):
 
-        Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'), 'gui')
+        Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'),
+                                'gui')
         sys.exit(Gui(self.argv, self.cfg).run(self.conn, self.queue))
 
 
@@ -107,7 +106,7 @@ def run(argv):
     # Load configuration
     config = Config('photobooth.cfg')
 
-    # Create communication objects: 
+    # Create communication objects:
     # 1. We use a pipe to connect GUI and camera process
     # 2. We use a queue to feed tasks to the postprocessing process
     gui_conn, camera_conn = mp.Pipe()
@@ -129,7 +128,7 @@ def run(argv):
     # Close endpoints
     gui_conn.close()
     camera_conn.close()
-    
+
     # Wait for processes to finish
     gui_proc.join()
     worker_queue.put('teardown')
@@ -150,12 +149,12 @@ def main(argv):
     ch.setFormatter(formatter)
 
     # create file handler and set format
-    fh = logging.handlers.TimedRotatingFileHandler('photobooth.log', 
-        when='d', interval=1, backupCount=10)
+    fh = logging.handlers.TimedRotatingFileHandler('photobooth.log', when='d',
+                                                   interval=1, backupCount=10)
     fh.setFormatter(formatter)
 
     # Apply config
-    logging.basicConfig(level=log_level, handlers=(ch,fh))
+    logging.basicConfig(level=log_level, handlers=(ch, fh))
 
     # Set of known status codes which trigger a restart of the application
     known_status_codes = {

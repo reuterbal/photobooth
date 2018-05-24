@@ -8,20 +8,14 @@ from os.path import expanduser
 
 from PIL import ImageQt
 
-from PyQt5.QtCore import Qt, QObject, QPoint, QThread, QTimer, pyqtSignal
-from PyQt5.QtWidgets import (QFileDialog, QTabWidget, QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget)
-from PyQt5.QtGui import QImage, QPainter, QPixmap
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 import math
-from PyQt5.QtGui import QBrush, QPen, QColor, QFont
-from PyQt5.QtCore import QRect
 
 from .PyQt5GuiHelpers import QRoundProgressBar
 
 from . import *
 from .. import camera, printer
-
-from ..printer.PrinterPyQt5 import PrinterPyQt5 as Printer
 
 
 class PyQt5Gui(Gui):
@@ -33,7 +27,7 @@ class PyQt5Gui(Gui):
         global cfg
         cfg = config
 
-        self._app = QApplication(argv)
+        self._app = QtWidgets.QApplication(argv)
         self._p = PyQt5MainWindow()
         self._lastState = self.showStart
         
@@ -94,15 +88,15 @@ class PyQt5Gui(Gui):
 
     def handleKeypressEvent(self, event):
 
-        if event.key() == Qt.Key_Escape:
+        if event.key() == QtCore.Qt.Key_Escape:
             self.handleState(TeardownState())
-        elif event.key() == Qt.Key_Space:
+        elif event.key() == QtCore.Qt.Key_Space:
             self.handleState(TriggerState())
 
 
     def handleKeypressEventNoTrigger(self, event):
 
-        if event.key() == Qt.Key_Escape:
+        if event.key() == QtCore.Qt.Key_Escape:
             self.handleState(TeardownState())
 
 
@@ -122,7 +116,7 @@ class PyQt5Gui(Gui):
             self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
             self._p.setCentralWidget( PyQt5GreeterMessage(
                 cfg.getInt('Picture', 'num_x'), cfg.getInt('Picture', 'num_y') ) )
-            QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, self.sendAck)
+            QtCore.QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, self.sendAck)
 
         elif isinstance(state, CountdownState):
             self._p.setCentralWidget(PyQt5CountdownMessage(cfg.getInt('Photobooth', 'countdown_time'), self.sendAck))
@@ -140,7 +134,7 @@ class PyQt5Gui(Gui):
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
             self._p.setCentralWidget(PyQt5PictureMessage(img))
-            QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, 
+            QtCore.QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, 
                 lambda : self.postprocessPicture(state.picture))
 
         elif isinstance(state, TeardownState):
@@ -172,13 +166,13 @@ class PyQt5Gui(Gui):
                 break
             else:
                 if isinstance(task, PrintState):
-                    reply = QMessageBox.question(self._p, 'Print picture?', 
+                    reply = QtWidgets.QMessageBox.question(self._p, 'Print picture?', 
                         'Do you want to print the picture?', 
-                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-                    if reply == QMessageBox.Yes:
+                        QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+                    if reply == QtWidgets.QMessageBox.Yes:
                         task.handler()
-                        QMessageBox.information(self._p, 'Printing',
-                            'Picture sent to printer.', QMessageBox.Ok)
+                        QtWidgets.QMessageBox.information(self._p, 'Printing',
+                            'Picture sent to printer.', QtWidgets.QMessageBox.Ok)
                 else:
                     raise ValueError('Unknown task')
 
@@ -188,8 +182,8 @@ class PyQt5Gui(Gui):
         self._p.handleKeypressEvent = lambda event : None
         self._lastState = self.showStart
         self._p.setCentralWidget(PyQt5Start(self))
-        if QApplication.overrideCursor() != 0:
-            QApplication.restoreOverrideCursor()
+        if QtWidgets.QApplication.overrideCursor() != 0:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
 
     def showSettings(self):
@@ -205,7 +199,7 @@ class PyQt5Gui(Gui):
         self._conn.send('start')
         self._p.setCentralWidget(PyQt5WaitMessage('Starting the photobooth...'))
         if cfg.getBool('Gui', 'hide_cursor'):
-            QApplication.setOverrideCursor(Qt.BlankCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.BlankCursor)
 
 
     def showIdle(self):
@@ -218,9 +212,9 @@ class PyQt5Gui(Gui):
     def showError(self, title, message):
 
         logging.error('%s: %s', title, message)
-        reply = QMessageBox.warning(self._p, title, message, 
-            QMessageBox.Close | QMessageBox.Retry, QMessageBox.Retry) 
-        if reply == QMessageBox.Retry:
+        reply = QtWidgets.QMessageBox.warning(self._p, title, message, 
+            QtWidgets.QMessageBox.Close | QtWidgets.QMessageBox.Retry, QtWidgets.QMessageBox.Retry) 
+        if reply == QtWidgets.QMessageBox.Retry:
             self.sendAck()
             self._lastState()
         else:
@@ -228,9 +222,9 @@ class PyQt5Gui(Gui):
             self.showStart()
 
 
-class PyQt5Receiver(QThread):
+class PyQt5Receiver(QtCore.QThread):
 
-    notify = pyqtSignal(object)
+    notify = QtCore.pyqtSignal(object)
 
     def __init__(self, conn):
 
@@ -257,7 +251,7 @@ class PyQt5Receiver(QThread):
 
 
 
-class PyQt5MainWindow(QMainWindow):
+class PyQt5MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
 
@@ -299,10 +293,10 @@ class PyQt5MainWindow(QMainWindow):
 
     def closeEvent(self, e):
 
-        reply = QMessageBox.question(self, 'Confirmation', "Quit Photobooth?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QtWidgets.QMessageBox.question(self, 'Confirmation', "Quit Photobooth?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
-        if reply == QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.Yes:
             e.accept()
         else:
             e.ignore()
@@ -315,7 +309,7 @@ class PyQt5MainWindow(QMainWindow):
 
 
 
-class PyQt5Start(QFrame):
+class PyQt5Start(QtWidgets.QFrame):
 
     def __init__(self, gui):
         
@@ -326,28 +320,28 @@ class PyQt5Start(QFrame):
 
     def initFrame(self, gui):
 
-        grid = QGridLayout()
+        grid = QtWidgets.QGridLayout()
         grid.setSpacing(100)
         self.setLayout(grid)
 
-        btnStart = QPushButton('Start Photobooth')
+        btnStart = QtWidgets.QPushButton('Start Photobooth')
         btnStart.resize(btnStart.sizeHint())
         btnStart.clicked.connect(gui.showStartPhotobooth)
         grid.addWidget(btnStart, 0, 0)
 
-        btnSettings = QPushButton('Settings')
+        btnSettings = QtWidgets.QPushButton('Settings')
         btnSettings.resize(btnSettings.sizeHint())
         btnSettings.clicked.connect(gui.showSettings)
         grid.addWidget(btnSettings, 0, 1)
 
-        btnQuit = QPushButton('Quit')
+        btnQuit = QtWidgets.QPushButton('Quit')
         btnQuit.resize(btnQuit.sizeHint())
         btnQuit.clicked.connect(gui.close)
         grid.addWidget(btnQuit, 0, 2)
 
 
 
-class PyQt5Settings(QFrame):
+class PyQt5Settings(QtWidgets.QFrame):
 
     def __init__(self, gui):
         
@@ -362,7 +356,7 @@ class PyQt5Settings(QFrame):
 
         self._value_widgets = {}
 
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.createTabs())
         layout.addStretch(1)
         layout.addWidget(self.createButtons())
@@ -371,7 +365,7 @@ class PyQt5Settings(QFrame):
 
     def createTabs(self):
 
-        tabs = QTabWidget()
+        tabs = QtWidgets.QTabWidget()
         tabs.addTab(self.createGuiSettings(), 'Interface')
         tabs.addTab(self.createPhotoboothSettings(), 'Photobooth')
         tabs.addTab(self.createCameraSettings(), 'Camera')
@@ -384,32 +378,32 @@ class PyQt5Settings(QFrame):
 
     def createButtons(self):
 
-        layout = QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         layout.addStretch(1)
 
-        btnSave = QPushButton('Save and restart')
+        btnSave = QtWidgets.QPushButton('Save and restart')
         btnSave.resize(btnSave.sizeHint())
         btnSave.clicked.connect(self.storeConfigAndRestart)
         layout.addWidget(btnSave)
 
-        btnCancel = QPushButton('Cancel')
+        btnCancel = QtWidgets.QPushButton('Cancel')
         btnCancel.resize(btnCancel.sizeHint())
         btnCancel.clicked.connect(self._gui.showStart)
         layout.addWidget(btnCancel)
 
-        btnRestore = QPushButton('Restore defaults')
+        btnRestore = QtWidgets.QPushButton('Restore defaults')
         btnRestore.resize(btnRestore.sizeHint())
         btnRestore.clicked.connect(self.restoreDefaults)
         layout.addWidget(btnRestore)
 
-        widget = QGroupBox()
+        widget = QtWidgets.QGroupBox()
         widget.setLayout(layout)
         return widget
 
 
     def createModuleComboBox(self, module_list, current_module):
 
-        cb = QComboBox()
+        cb = QtWidgets.QComboBox()
         for m in module_list:
             cb.addItem(m[0])
 
@@ -424,30 +418,30 @@ class PyQt5Settings(QFrame):
         global cfg
 
         self._value_widgets['Gui'] = {}
-        self._value_widgets['Gui']['fullscreen'] = QCheckBox('Enable fullscreen')
+        self._value_widgets['Gui']['fullscreen'] = QtWidgets.QCheckBox('Enable fullscreen')
         if cfg.getBool('Gui', 'fullscreen'):
             self._value_widgets['Gui']['fullscreen'].toggle()
         self._value_widgets['Gui']['module'] = self.createModuleComboBox(modules, cfg.get('Gui', 'module'))
-        self._value_widgets['Gui']['width'] = QLineEdit(cfg.get('Gui', 'width'))
-        self._value_widgets['Gui']['height'] = QLineEdit(cfg.get('Gui', 'height'))
-        self._value_widgets['Gui']['hide_cursor'] = QCheckBox('Hide cursor')
+        self._value_widgets['Gui']['width'] = QtWidgets.QLineEdit(cfg.get('Gui', 'width'))
+        self._value_widgets['Gui']['height'] = QtWidgets.QLineEdit(cfg.get('Gui', 'height'))
+        self._value_widgets['Gui']['hide_cursor'] = QtWidgets.QCheckBox('Hide cursor')
         if cfg.getBool('Gui', 'hide_cursor'):
             self._value_widgets['Gui']['hide_cursor'].toggle()
 
-        layout = QFormLayout()
+        layout = QtWidgets.QFormLayout()
         layout.addRow(self._value_widgets['Gui']['fullscreen'])
-        layout.addRow(QLabel('Gui module:'), self._value_widgets['Gui']['module'])
+        layout.addRow(QtWidgets.QLabel('Gui module:'), self._value_widgets['Gui']['module'])
 
-        sublayout_size = QHBoxLayout()
-        sublayout_size.addWidget(QLabel('Window size [px]:'))
+        sublayout_size = QtWidgets.QHBoxLayout()
+        sublayout_size.addWidget(QtWidgets.QLabel('Window size [px]:'))
         sublayout_size.addWidget(self._value_widgets['Gui']['width'])
-        sublayout_size.addWidget(QLabel('x'))
+        sublayout_size.addWidget(QtWidgets.QLabel('x'))
         sublayout_size.addWidget(self._value_widgets['Gui']['height'])
         layout.addRow(sublayout_size)
 
         layout.addRow(self._value_widgets['Gui']['hide_cursor'])
 
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -457,21 +451,20 @@ class PyQt5Settings(QFrame):
         global cfg
 
         self._value_widgets['Gpio'] = {}
-        self._value_widgets['Gpio']['enable'] = QCheckBox('Enable GPIO')
+        self._value_widgets['Gpio']['enable'] = QtWidgets.QCheckBox('Enable GPIO')
         if cfg.getBool('Gpio', 'enable'):
             self._value_widgets['Gpio']['enable'].toggle()
-        self._value_widgets['Gpio']['exit_pin'] = QLineEdit(cfg.get('Gpio', 'exit_pin'))
-        self._value_widgets['Gpio']['trigger_pin'] = QLineEdit(cfg.get('Gpio', 'trigger_pin'))
-        self._value_widgets['Gpio']['lamp_pin'] = QLineEdit(cfg.get('Gpio', 'lamp_pin'))
+        self._value_widgets['Gpio']['exit_pin'] = QtWidgets.QLineEdit(cfg.get('Gpio', 'exit_pin'))
+        self._value_widgets['Gpio']['trigger_pin'] = QtWidgets.QLineEdit(cfg.get('Gpio', 'trigger_pin'))
+        self._value_widgets['Gpio']['lamp_pin'] = QtWidgets.QLineEdit(cfg.get('Gpio', 'lamp_pin'))
 
-        layout = QFormLayout()
+        layout = QtWidgets.QFormLayout()
         layout.addRow(self._value_widgets['Gpio']['enable'])
-        layout.addRow(QLabel('Exit pin (BCM numbering):'), self._value_widgets['Gpio']['exit_pin'])
-        layout.addRow(QLabel('Trigger pin (BCM numbering):'), self._value_widgets['Gpio']['trigger_pin'])
-        layout.addRow(QLabel('Lamp pin (BCM numbering):'), self._value_widgets['Gpio']['lamp_pin'])
+        layout.addRow(QtWidgets.QLabel('Exit pin (BCM numbering):'), self._value_widgets['Gpio']['exit_pin'])
+        layout.addRow(QtWidgets.QLabel('Trigger pin (BCM numbering):'), self._value_widgets['Gpio']['trigger_pin'])
+        layout.addRow(QtWidgets.QLabel('Lamp pin (BCM numbering):'), self._value_widgets['Gpio']['lamp_pin'])
 
-        # widget = QGroupBox('GPIO settings')
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -481,26 +474,25 @@ class PyQt5Settings(QFrame):
         global cfg
 
         self._value_widgets['Printer'] = {}
-        self._value_widgets['Printer']['enable'] = QCheckBox('Enable Printing')
+        self._value_widgets['Printer']['enable'] = QtWidgets.QCheckBox('Enable Printing')
         if cfg.getBool('Printer', 'enable'):
             self._value_widgets['Printer']['enable'].toggle()
         self._value_widgets['Printer']['module'] = self.createModuleComboBox(printer.modules, cfg.get('Printer', 'module'))
-        self._value_widgets['Printer']['width'] = QLineEdit(cfg.get('Printer', 'width'))
-        self._value_widgets['Printer']['height'] = QLineEdit(cfg.get('Printer', 'height'))
+        self._value_widgets['Printer']['width'] = QtWidgets.QLineEdit(cfg.get('Printer', 'width'))
+        self._value_widgets['Printer']['height'] = QtWidgets.QLineEdit(cfg.get('Printer', 'height'))
 
-        layout = QFormLayout()
+        layout = QtWidgets.QFormLayout()
         layout.addRow(self._value_widgets['Printer']['enable'])
-        layout.addRow(QLabel('Printer module:'), self._value_widgets['Printer']['module'])
+        layout.addRow(QtWidgets.QLabel('Printer module:'), self._value_widgets['Printer']['module'])
         
-        sublayout_size = QHBoxLayout()
-        sublayout_size.addWidget(QLabel('Paper size [mm]:'))
+        sublayout_size = QtWidgets.QHBoxLayout()
+        sublayout_size.addWidget(QtWidgets.QLabel('Paper size [mm]:'))
         sublayout_size.addWidget(self._value_widgets['Printer']['width'])
-        sublayout_size.addWidget(QLabel('x'))
+        sublayout_size.addWidget(QtWidgets.QLabel('x'))
         sublayout_size.addWidget(self._value_widgets['Printer']['height'])
         layout.addRow(sublayout_size)
 
-        # widget = QGroupBox('Printer settings')
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -512,11 +504,10 @@ class PyQt5Settings(QFrame):
         self._value_widgets['Camera'] = {}
         self._value_widgets['Camera']['module'] = self.createModuleComboBox(camera.modules, cfg.get('Camera', 'module'))
 
-        layout = QFormLayout()
-        layout.addRow(QLabel('Camera module:'), self._value_widgets['Camera']['module'])
+        layout = QtWidgets.QFormLayout()
+        layout.addRow(QtWidgets.QLabel('Camera module:'), self._value_widgets['Camera']['module'])
 
-        # widget = QGroupBox('Camera settings')
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -526,21 +517,20 @@ class PyQt5Settings(QFrame):
         global cfg
 
         self._value_widgets['Photobooth'] = {}
-        self._value_widgets['Photobooth']['show_preview'] = QCheckBox('Show preview while countdown')
+        self._value_widgets['Photobooth']['show_preview'] = QtWidgets.QCheckBox('Show preview while countdown')
         if cfg.getBool('Photobooth', 'show_preview'):
             self._value_widgets['Photobooth']['show_preview'].toggle()
-        self._value_widgets['Photobooth']['greeter_time'] = QLineEdit(cfg.get('Photobooth', 'greeter_time'))
-        self._value_widgets['Photobooth']['countdown_time'] = QLineEdit(cfg.get('Photobooth', 'countdown_time'))
-        self._value_widgets['Photobooth']['display_time'] = QLineEdit(cfg.get('Photobooth', 'display_time'))
+        self._value_widgets['Photobooth']['greeter_time'] = QtWidgets.QLineEdit(cfg.get('Photobooth', 'greeter_time'))
+        self._value_widgets['Photobooth']['countdown_time'] = QtWidgets.QLineEdit(cfg.get('Photobooth', 'countdown_time'))
+        self._value_widgets['Photobooth']['display_time'] = QtWidgets.QLineEdit(cfg.get('Photobooth', 'display_time'))
 
-        layout = QFormLayout()
+        layout = QtWidgets.QFormLayout()
         layout.addRow(self._value_widgets['Photobooth']['show_preview'])
-        layout.addRow(QLabel('Greeter time [s]:'), self._value_widgets['Photobooth']['greeter_time'])
-        layout.addRow(QLabel('Countdown time [s]:'), self._value_widgets['Photobooth']['countdown_time'])
-        layout.addRow(QLabel('Display time [s]:'), self._value_widgets['Photobooth']['display_time'])
+        layout.addRow(QtWidgets.QLabel('Greeter time [s]:'), self._value_widgets['Photobooth']['greeter_time'])
+        layout.addRow(QtWidgets.QLabel('Countdown time [s]:'), self._value_widgets['Photobooth']['countdown_time'])
+        layout.addRow(QtWidgets.QLabel('Display time [s]:'), self._value_widgets['Photobooth']['display_time'])
 
-        # widget = QGroupBox('Photobooth settings')
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -550,54 +540,54 @@ class PyQt5Settings(QFrame):
         global cfg
 
         self._value_widgets['Picture'] = {}
-        self._value_widgets['Picture']['num_x'] = QLineEdit(cfg.get('Picture', 'num_x'))
-        self._value_widgets['Picture']['num_y'] = QLineEdit(cfg.get('Picture', 'num_y'))
-        self._value_widgets['Picture']['size_x'] = QLineEdit(cfg.get('Picture', 'size_x'))
-        self._value_widgets['Picture']['size_y'] = QLineEdit(cfg.get('Picture', 'size_y'))
-        self._value_widgets['Picture']['min_dist_x'] = QLineEdit(cfg.get('Picture', 'min_dist_x'))
-        self._value_widgets['Picture']['min_dist_y'] = QLineEdit(cfg.get('Picture', 'min_dist_y'))
-        self._value_widgets['Picture']['basedir'] = QLineEdit(cfg.get('Picture', 'basedir'))
-        self._value_widgets['Picture']['basename'] = QLineEdit(cfg.get('Picture', 'basename'))
+        self._value_widgets['Picture']['num_x'] = QtWidgets.QLineEdit(cfg.get('Picture', 'num_x'))
+        self._value_widgets['Picture']['num_y'] = QtWidgets.QLineEdit(cfg.get('Picture', 'num_y'))
+        self._value_widgets['Picture']['size_x'] = QtWidgets.QLineEdit(cfg.get('Picture', 'size_x'))
+        self._value_widgets['Picture']['size_y'] = QtWidgets.QLineEdit(cfg.get('Picture', 'size_y'))
+        self._value_widgets['Picture']['min_dist_x'] = QtWidgets.QLineEdit(cfg.get('Picture', 'min_dist_x'))
+        self._value_widgets['Picture']['min_dist_y'] = QtWidgets.QLineEdit(cfg.get('Picture', 'min_dist_y'))
+        self._value_widgets['Picture']['basedir'] = QtWidgets.QLineEdit(cfg.get('Picture', 'basedir'))
+        self._value_widgets['Picture']['basename'] = QtWidgets.QLineEdit(cfg.get('Picture', 'basename'))
 
-        layout = QFormLayout()
+        layout = QtWidgets.QFormLayout()
 
-        sublayout_num = QHBoxLayout()
-        sublayout_num.addWidget(QLabel('Number of shots per picture:'))
+        sublayout_num = QtWidgets.QHBoxLayout()
+        sublayout_num.addWidget(QtWidgets.QLabel('Number of shots per picture:'))
         sublayout_num.addWidget(self._value_widgets['Picture']['num_x'])
-        sublayout_num.addWidget(QLabel('x'))
+        sublayout_num.addWidget(QtWidgets.QLabel('x'))
         sublayout_num.addWidget(self._value_widgets['Picture']['num_y'])
         layout.addRow(sublayout_num)
 
-        sublayout_size = QHBoxLayout()
-        sublayout_size.addWidget(QLabel('Size of assembled picture:'))
+        sublayout_size = QtWidgets.QHBoxLayout()
+        sublayout_size.addWidget(QtWidgets.QLabel('Size of assembled picture:'))
         sublayout_size.addWidget(self._value_widgets['Picture']['size_x'])
-        sublayout_size.addWidget(QLabel('x'))
+        sublayout_size.addWidget(QtWidgets.QLabel('x'))
         sublayout_size.addWidget(self._value_widgets['Picture']['size_y'])
         layout.addRow(sublayout_size)
 
-        sublayout_dist = QHBoxLayout()
-        sublayout_dist.addWidget(QLabel('Min. distance between shots in picture:'))
+        sublayout_dist = QtWidgets.QHBoxLayout()
+        sublayout_dist.addWidget(QtWidgets.QLabel('Min. distance between shots in picture:'))
         sublayout_dist.addWidget(self._value_widgets['Picture']['min_dist_x'])
-        sublayout_dist.addWidget(QLabel('x'))
+        sublayout_dist.addWidget(QtWidgets.QLabel('x'))
         sublayout_dist.addWidget(self._value_widgets['Picture']['min_dist_y'])
         layout.addRow(sublayout_dist)
 
         file_dialog = lambda : self._value_widgets['Picture']['basedir'].setText(
-            QFileDialog.getExistingDirectory(self, 'Select directory', 
-                expanduser('~'), QFileDialog.ShowDirsOnly))
-        file_button = QPushButton('Select directory')
+            QtWidgets.QFileDialog.getExistingDirectory(self, 'Select directory', 
+                expanduser('~'), QtWidgets.QFileDialog.ShowDirsOnly))
+        file_button = QtWidgets.QPushButton('Select directory')
         file_button.resize(file_button.sizeHint())
         file_button.clicked.connect(file_dialog)
 
-        sublayout_path = QHBoxLayout()
-        sublayout_path.addWidget(QLabel('Basename of output files:'))
+        sublayout_path = QtWidgets.QHBoxLayout()
+        sublayout_path.addWidget(QtWidgets.QLabel('Basename of output files:'))
         sublayout_path.addWidget(self._value_widgets['Picture']['basedir'])
-        sublayout_path.addWidget(QLabel('/'))
+        sublayout_path.addWidget(QtWidgets.QLabel('/'))
         sublayout_path.addWidget(self._value_widgets['Picture']['basename'])
         sublayout_path.addWidget(file_button)
         layout.addRow(sublayout_path)
 
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
 
@@ -652,7 +642,7 @@ class PyQt5Settings(QFrame):
 
 
 
-class PyQt5WaitMessage(QFrame):
+class PyQt5WaitMessage(QtWidgets.QFrame):
     # With spinning wait clock, inspired by 
     # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator
 
@@ -672,17 +662,17 @@ class PyQt5WaitMessage(QFrame):
 
     def paintEvent(self, event):
 
-        painter = QPainter(self)
+        painter = QtGui.QPainter(self)
 
         f = self.font()
         f.setPixelSize(self.height() / 8)
         painter.setFont(f)
 
-        rect = QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, Qt.AlignCenter, self._message)
+        rect = QtCore.QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._message)
 
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setPen(QPen(Qt.NoPen))
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setPen(QtGui.QPen(QtCore.Qt.NoPen))
 
         center = (self.width() / 2, self.height() / 2)
 
@@ -693,7 +683,7 @@ class PyQt5WaitMessage(QFrame):
 
             distance = (pos - i) % dots
             color = (distance + 1) / (dots + 1) * 255
-            painter.setBrush(QBrush(QColor(color, color, color)))
+            painter.setBrush(QtGui.QBrush(QtGui.QColor(color, color, color)))
 
             painter.drawEllipse(
                 center[0] + 180 / dots * math.cos(2 * math.pi * i / dots) - 20,
@@ -716,7 +706,7 @@ class PyQt5WaitMessage(QFrame):
 
 
 
-class PyQt5IdleMessage(QFrame):
+class PyQt5IdleMessage(QtWidgets.QFrame):
 
     def __init__(self):
 
@@ -732,19 +722,19 @@ class PyQt5IdleMessage(QFrame):
 
     def paintEvent(self, event):
 
-        painter = QPainter(self)
+        painter = QtGui.QPainter(self)
 
         f = self.font()
         f.setPixelSize(self.height() / 5)
         painter.setFont(f)
 
-        painter.drawText(event.rect(), Qt.AlignCenter, 'Hit the button!')
+        painter.drawText(event.rect(), QtCore.Qt.AlignCenter, 'Hit the button!')
 
         painter.end()
 
 
 
-class PyQt5GreeterMessage(QFrame):
+class PyQt5GreeterMessage(QtWidgets.QFrame):
 
     def __init__(self, num_x, num_y):
 
@@ -765,24 +755,24 @@ class PyQt5GreeterMessage(QFrame):
 
     def paintEvent(self, event):
 
-        painter = QPainter(self)
+        painter = QtGui.QPainter(self)
         f = self.font()
 
         f.setPixelSize(self.height() / 5)
         painter.setFont(f)
-        rect = QRect(0, self.height() * 1 / 5, self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, Qt.AlignCenter, self._title)
+        rect = QtCore.QRect(0, self.height() * 1 / 5, self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._title)
 
         f.setPixelSize(self.height() / 8)
         painter.setFont(f)
-        rect = QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, Qt.AlignCenter, self._text)
+        rect = QtCore.QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._text)
 
         painter.end()
 
 
 
-class PyQt5CountdownMessage(QFrame):
+class PyQt5CountdownMessage(QtWidgets.QFrame):
 
     def __init__(self, time, action):
         
@@ -838,28 +828,28 @@ class PyQt5CountdownMessage(QFrame):
     @picture.setter
     def picture(self, pic):
 
-        if not isinstance(pic, QImage):
-            raise ValueError('picture must be a QImage')
+        if not isinstance(pic, QtGui.QImage):
+            raise ValueError('picture must be a QtGui.QImage')
 
         self._picture = pic
 
 
     def paintEvent(self, event):
 
-        painter = QPainter(self)
+        painter = QtGui.QPainter(self)
 
         if self._picture != None:
-            pix = QPixmap.fromImage(self._picture)
-            pix = pix.scaled(self.size(), Qt.KeepAspectRatio, Qt.FastTransformation)
+            pix = QtGui.QPixmap.fromImage(self._picture)
+            pix = pix.scaled(self.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
             origin = ( (self.width() - pix.width()) // 2,
                        (self.height() - pix.height()) // 2 )
-            painter.drawPixmap(QPoint(*origin), pix)
+            painter.drawPixmap(QtCore.QPoint(*origin), pix)
 
         painter.end()
 
         offset = ( (self.width() - self._bar.width()) // 2, 
                    (self.height() - self._bar.height()) // 2 )
-        self._bar.render(self, QPoint(*offset), self._bar.visibleRegion(), QWidget.DrawChildren)
+        self._bar.render(self, QtCore.QPoint(*offset), self._bar.visibleRegion(), QtWidgets.QWidget.DrawChildren)
 
 
     def showEvent(self, event):
@@ -880,7 +870,7 @@ class PyQt5CountdownMessage(QFrame):
 
 
 
-class PyQt5PoseMessage(QFrame):
+class PyQt5PoseMessage(QtWidgets.QFrame):
 
     def __init__(self):
 
@@ -896,19 +886,19 @@ class PyQt5PoseMessage(QFrame):
 
     def paintEvent(self, event):
 
-        painter = QPainter(self)
+        painter = QtGui.QPainter(self)
 
         f = self.font()
         f.setPixelSize(self.height() / 3)
         painter.setFont(f)
 
-        painter.drawText(event.rect(), Qt.AlignCenter, 'Pose!')
+        painter.drawText(event.rect(), QtCore.Qt.AlignCenter, 'Pose!')
 
         painter.end()
 
 
 
-class PyQt5PictureMessage(QFrame):
+class PyQt5PictureMessage(QtWidgets.QFrame):
 
     def __init__(self, picture):
         
@@ -926,17 +916,17 @@ class PyQt5PictureMessage(QFrame):
 
     def paintEvent(self, event):
 
-        painter = QPainter(self)
+        painter = QtGui.QPainter(self)
 
-        if isinstance(self._picture, QImage):
-            pix = QPixmap.fromImage(self._picture)
+        if isinstance(self._picture, QtGui.QImage):
+            pix = QtGui.QPixmap.fromImage(self._picture)
         else:
-            pix = QPixmap(self._picture)
-        pix = pix.scaled(self.rect().size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            pix = QtGui.QPixmap(self._picture)
+        pix = pix.scaled(self.rect().size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
 
         origin = ( (self.rect().width() - pix.width()) // 2,
                    (self.rect().height() - pix.height()) // 2 )
-        painter.drawPixmap(QPoint(*origin), pix)
+        painter.drawPixmap(QtCore.QPoint(*origin), pix)
 
         painter.end()
 

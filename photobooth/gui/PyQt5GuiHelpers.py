@@ -10,6 +10,7 @@ from math import ceil
 
 from PyQt5 import QtCore, QtGui, Qt, QtWidgets
 
+
 class QRoundProgressBar(QtWidgets.QWidget):
 
     StyleDonut = 1
@@ -33,7 +34,7 @@ class QRoundProgressBar(QtWidgets.QWidget):
 
         self.nullPosition = self.PositionTop
         self.barStyle = self.StyleDonut
-        self.outlinePenWidth =1
+        self.outlinePenWidth = 1
         self.dataPenWidth = 1
         self.rebuildBrush = False
         self.format = "%p%"
@@ -124,7 +125,8 @@ class QRoundProgressBar(QtWidgets.QWidget):
         outerRadius = min(self.width(), self.height())
         baseRect = QtCore.QRectF(1, 1, outerRadius-2, outerRadius-2)
 
-        buffer = QtGui.QImage(outerRadius, outerRadius, QtGui.QImage.Format_ARGB32)
+        buffer = QtGui.QImage(outerRadius, outerRadius,
+                              QtGui.QImage.Format_ARGB32)
         buffer.fill(0)
 
         p = QtGui.QPainter(buffer)
@@ -162,11 +164,13 @@ class QRoundProgressBar(QtWidgets.QWidget):
     def drawBase(self, p, baseRect):
         bs = self.barStyle
         if bs == self.StyleDonut:
-            p.setPen(QtGui.QPen(self.palette().shadow().color(), self.outlinePenWidth))
+            p.setPen(QtGui.QPen(self.palette().shadow().color(),
+                     self.outlinePenWidth))
             p.setBrush(self.palette().base())
             p.drawEllipse(baseRect)
         elif bs == self.StylePie:
-            p.setPen(QtGui.QPen(self.palette().base().color(), self.outlinePenWidth))
+            p.setPen(QtGui.QPen(self.palette().base().color(),
+                     self.outlinePenWidth))
             p.setBrush(self.palette().base())
             p.drawEllipse(baseRect)
         elif bs == self.StyleLine:
@@ -174,13 +178,17 @@ class QRoundProgressBar(QtWidgets.QWidget):
             color.setAlpha(100)
             brush = self.palette().base()
             brush.setColor(color)
-            p.setPen(QtGui.QPen(self.palette().base().color(), self.outlinePenWidth))
+            p.setPen(QtGui.QPen(self.palette().base().color(),
+                     self.outlinePenWidth))
             p.setBrush(brush)
             # p.drawEllipse(baseRect)
-            # p.setPen(QtGui.QPen(self.palette().base().color(), self.outlinePenWidth))
+            # p.setPen(QtGui.QPen(self.palette().base().color(),
+            #                     self.outlinePenWidth))
             # p.setBrush(Qt.Qt.NoBrush)
-            p.drawEllipse(baseRect.adjusted(self.outlinePenWidth/2, self.outlinePenWidth/2, -self.outlinePenWidth/2, -self.outlinePenWidth/2))
-
+            p.drawEllipse(baseRect.adjusted(self.outlinePenWidth/2,
+                                            self.outlinePenWidth/2,
+                                            -self.outlinePenWidth/2,
+                                            -self.outlinePenWidth/2))
 
     def drawValue(self, p, baseRect, value, arcLength):
         # nothing to draw
@@ -189,9 +197,13 @@ class QRoundProgressBar(QtWidgets.QWidget):
 
         # for Line style
         if self.barStyle == self.StyleLine:
-            p.setPen(QtGui.QPen(self.palette().highlight().color(), self.dataPenWidth))
+            p.setPen(QtGui.QPen(self.palette().highlight().color(),
+                                self.dataPenWidth))
             p.setBrush(Qt.Qt.NoBrush)
-            p.drawArc(baseRect.adjusted(self.outlinePenWidth/2, self.outlinePenWidth/2, -self.outlinePenWidth/2, -self.outlinePenWidth/2),
+            p.drawArc(baseRect.adjusted(self.outlinePenWidth/2,
+                                        self.outlinePenWidth/2,
+                                        -self.outlinePenWidth/2,
+                                        -self.outlinePenWidth/2),
                       self.nullPosition * 16,
                       -arcLength * 16)
             return
@@ -206,7 +218,8 @@ class QRoundProgressBar(QtWidgets.QWidget):
         dataPath.lineTo(baseRect.center())
 
         p.setBrush(self.palette().highlight())
-        p.setPen(QtGui.QPen(self.palette().shadow().color(), self.dataPenWidth))
+        p.setPen(QtGui.QPen(self.palette().shadow().color(),
+                            self.dataPenWidth))
         p.drawPath(dataPath)
 
     def calculateInnerRect(self, baseRect, outerRadius):
@@ -239,8 +252,6 @@ class QRoundProgressBar(QtWidgets.QWidget):
 
         # !!! to revise
         f = self.font()
-        # f.setPixelSize(innerRadius * max(0.05, (0.35 - self.decimals * 0.08)))
-        # f.setPixelSize(innerRadius * 1.8 / len(text))
         f.setPixelSize(innerRadius * 0.8 / len(text))
         p.setFont(f)
 
@@ -257,8 +268,8 @@ class QRoundProgressBar(QtWidgets.QWidget):
             textToDraw = textToDraw.replace("%v", format_string.format(value))
 
         if self.updateFlags & self.UF_PERCENT:
-            percent = (value - self.min) / (self.max - self.min) * 100.0
-            textToDraw = textToDraw.replace("%p", format_string.format(percent))
+            perc = (value - self.min) / (self.max - self.min) * 100.0
+            textToDraw = textToDraw.replace("%p", format_string.format(perc))
 
         if self.updateFlags & self.UF_MAX:
             m = self.max - self.min + 1
@@ -267,7 +278,7 @@ class QRoundProgressBar(QtWidgets.QWidget):
         return textToDraw
 
     def valueFormatChanged(self):
-        self.updateFlags = 0;
+        self.updateFlags = 0
 
         if "%v" in self.format:
             self.updateFlags |= self.UF_VALUE
@@ -285,7 +296,7 @@ class QRoundProgressBar(QtWidgets.QWidget):
             self.rebuildBrush = False
 
             dataBrush = QtGui.QConicalGradient()
-            dataBrush.setCenter(0.5,0.5)
+            dataBrush.setCenter(0.5, 0.5)
             dataBrush.setCoordinateMode(QtGui.QGradient.StretchToDeviceMode)
 
             for pos, color in self.gradientData:

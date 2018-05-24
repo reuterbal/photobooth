@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, logging
+import logging
+import os
 
 from glob import glob
 
@@ -30,10 +31,10 @@ class PictureList:
 
         self.findExistingFiles()
 
-
     def findExistingFiles(self):
-
-    	# Find existing files
+        """Count number of existing files matchin the given basename
+        """
+        # Find existing files
         count_pattern = '[0-9]' * self.count_width
         pictures = glob(self.basename + count_pattern + self.suffix)
 
@@ -48,21 +49,18 @@ class PictureList:
 
         # Print initial infos
         logging.info('Number of last existing file: %d', self.counter)
-        logging.info('Saving assembled pictures as "%s%s.%s"', self.basename, 
-            self.count_width * 'X', 'jpg')
-
+        logging.info('Saving assembled pictures as "%s%s.%s"', self.basename,
+                     self.count_width * 'X', 'jpg')
 
     def getFilename(self, count):
-
+        """Return the file name for a given file number"""
         return self.basename + str(count).zfill(self.count_width) + self.suffix
 
-
     def getLast(self):
-
+        """Return the current filename"""
         return self.getFilename(self.counter)
 
-
     def getNext(self):
-
+        """Update counter and return the next filename"""
         self.counter += 1
         return self.getFilename(self.counter)

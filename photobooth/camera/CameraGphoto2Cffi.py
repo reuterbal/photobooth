@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import io, logging
+import io
+import logging
 
 from PIL import Image
 
@@ -23,17 +24,17 @@ class CameraGphoto2Cffi(Camera):
 
         self._setupCamera()
 
-
     def _setupCamera(self):
 
         self._cap = gp.Camera()
-        logging.info('Supported operations: %s', self._cap.supported_operations)
+        logging.info('Supported operations: %s',
+                     self._cap.supported_operations)
 
-        if 'raw' in self._cap.config['imgsettings']['imageformat'].value.lower():
+        imageformat = self._cap.config['imgsettings']['imageformat'].value
+        if 'raw' in imageformat.lower():
             raise RuntimeError('Camera file format is set to RAW')
 
         self._printConfig(self._cap.config)
-
 
     @staticmethod
     def _configTreeToText(config, indent=0):
@@ -46,12 +47,12 @@ class CameraGphoto2Cffi(Camera):
 
             if hasattr(v, '__len__') and len(v) > 1:
                 config_txt += '\n'
-                config_txt += CameraGphoto2Cffi._configTreeToText(v, indent + 4)
+                config_txt += CameraGphoto2Cffi._configTreeToText(v,
+                                                                  indent + 4)
             else:
                 config_txt += str(v) + '\n'
 
         return config_txt
-
 
     @staticmethod
     def _printConfig(config):
@@ -59,25 +60,20 @@ class CameraGphoto2Cffi(Camera):
         config_txt += CameraGphoto2Cffi._configTreeToText(config)
         logging.info(config_txt)
 
-
     def setActive(self):
 
         self._cap._get_config()['actions']['viewfinder'].set(True)
         self._cap._get_config()['settings']['output'].set('PC')
-
 
     def setIdle(self):
 
         self._cap._get_config()['actions']['viewfinder'].set(False)
         self._cap._get_config()['settings']['output'].set('Off')
 
-
     def getPreview(self):
 
         return Image.open(io.BytesIO(self._cap.get_preview()))
 
-
     def getPicture(self):
-        
-        return Image.open(io.BytesIO(self._cap.capture()))
 
+        return Image.open(io.BytesIO(self._cap.capture()))

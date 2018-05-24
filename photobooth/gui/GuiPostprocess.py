@@ -3,11 +3,10 @@
 
 import logging
 
-from PyQt5.QtWidgets import QMessageBox
-
 from .. import printer
 from ..util import lookup_and_import
 from .GuiState import PrintState
+
 
 class GuiPostprocess:
 
@@ -15,17 +14,13 @@ class GuiPostprocess:
 
         assert not kwargs
 
-
     def get(self, picture):
 
         raise NotImplementedError()
 
-
     def confirm(self, picture):
 
         raise NotImplementedError()
-
-
 
 
 class PrintPostprocess(GuiPostprocess):
@@ -37,16 +32,13 @@ class PrintPostprocess(GuiPostprocess):
         Printer = lookup_and_import(printer.modules, printer_module, 'printer')
         self._printer = Printer(page_size)
 
-
     def get(self, picture):
 
-        return PrintState(lambda : self.do(picture), False)
-
+        return PrintState(lambda: self.do(picture), False)
 
     def confirm(self, picture):
 
-        return PrintState(lambda : None, True)
-
+        return PrintState(lambda: None, True)
 
     def do(self, picture):
 
