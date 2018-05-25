@@ -5,7 +5,7 @@ from .GuiState import *  # noqa
 from .GuiPostprocess import *  # noqa
 
 # Available gui modules as tuples of (config name, module name, class name)
-modules = (('qt5', 'PyQt5Gui', 'PyQt5Gui'), )
+modules = (('PyQt5', 'PyQt5Gui', 'PyQt5Gui'), )
 
 
 class Gui:
