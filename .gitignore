@@ -1,2 +1,8 @@
 photobooth.cfg
 photobooth/__pycache__
+photobooth/*/__pycache__
+.eggs
+.venv
+photobooth.egg-info
+*.log
+*.log.*

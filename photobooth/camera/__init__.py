@@ -8,7 +8,8 @@ modules = (
     ('gphoto2-cffi', 'CameraGphoto2Cffi', 'CameraGphoto2Cffi'),
     ('gphoto2-commandline', 'CameraGphoto2CommandLine',
      'CameraGphoto2CommandLine'),
-    ('opencv', 'CameraOpenCV', 'CameraOpenCV'))
+    ('opencv', 'CameraOpenCV', 'CameraOpenCV'),
+    ('dummy', 'CameraDummy', 'CameraDummy'))
 
 
 class Camera:
