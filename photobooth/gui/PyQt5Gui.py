@@ -181,7 +181,7 @@ class PyQt5Gui(Gui):
 
         self._p.handleKeypressEvent = lambda event : None
         self._lastState = self.showStart
-        self._p.setCentralWidget(PyQt5Start(self))
+        self._p.setCentralWidget(Frames.Start(self.showStartPhotobooth, self.showSettings, self.close))
         if QtWidgets.QApplication.overrideCursor() != 0:
             QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -191,7 +191,6 @@ class PyQt5Gui(Gui):
         global cfg
         self._p.handleKeypressEvent = lambda event : None
         self._lastState = self.showSettings
-        # self._p.setCentralWidget(PyQt5Settings(self))
         self._p.setCentralWidget(Frames.Settings(cfg, self.showSettings, self.showStart, self.restart))
 
 
@@ -309,37 +308,6 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
         self.handleKeypressEvent(event)
 
 
-
-
-class PyQt5Start(QtWidgets.QFrame):
-
-    def __init__(self, gui):
-        
-        super().__init__()
-
-        self.initFrame(gui)
-
-
-    def initFrame(self, gui):
-
-        grid = QtWidgets.QGridLayout()
-        grid.setSpacing(100)
-        self.setLayout(grid)
-
-        btnStart = QtWidgets.QPushButton('Start Photobooth')
-        btnStart.resize(btnStart.sizeHint())
-        btnStart.clicked.connect(gui.showStartPhotobooth)
-        grid.addWidget(btnStart, 0, 0)
-
-        btnSettings = QtWidgets.QPushButton('Settings')
-        btnSettings.resize(btnSettings.sizeHint())
-        btnSettings.clicked.connect(gui.showSettings)
-        grid.addWidget(btnSettings, 0, 1)
-
-        btnQuit = QtWidgets.QPushButton('Quit')
-        btnQuit.resize(btnQuit.sizeHint())
-        btnQuit.clicked.connect(gui.close)
-        grid.addWidget(btnQuit, 0, 2)
 
 
 

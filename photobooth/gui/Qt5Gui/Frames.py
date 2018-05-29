@@ -10,6 +10,32 @@ from ... import camera
 from ... import printer
 
 
+class Start(QtWidgets.QFrame):
+
+    def __init__(self, start_action, settings_action, exit_action):
+
+        super().__init__()
+
+        self.initFrame(start_action, settings_action, exit_action)
+
+    def initFrame(self, start_action, settings_action, exit_action):
+
+        btnStart = QtWidgets.QPushButton('Start Photobooth')
+        btnStart.clicked.connect(start_action)
+
+        btnSettings = QtWidgets.QPushButton('Settings')
+        btnSettings.clicked.connect(settings_action)
+
+        btnQuit = QtWidgets.QPushButton('Quit')
+        btnQuit.clicked.connect(exit_action)
+
+        lay = QtWidgets.QHBoxLayout()
+        lay.addWidget(btnStart)
+        lay.addWidget(btnSettings)
+        lay.addWidget(btnQuit)
+        self.setLayout(lay)
+
+
 class Settings(QtWidgets.QFrame):
 
     def __init__(self, config, reload_action, cancel_action, restart_action):
