@@ -41,10 +41,10 @@ class Photobooth:
         if (config.getBool('Photobooth', 'show_preview')
            and self._cap.hasPreview):
             logging.info('Countdown with preview activated')
-            self._show_counter = self.showCounterPreview
+            self._show_counter = self.showCountdownPreview
         else:
             logging.info('Countdown without preview activated')
-            self._show_counter = self.showCounterNoPreview
+            self._show_counter = self.showCountdownNoPreview
 
     def initGpio(self, config):
 
@@ -106,7 +106,7 @@ class Photobooth:
             raise TeardownException()
 
     @property
-    def showCounter(self):
+    def showCountdown(self):
 
         return self._show_counter
 
@@ -147,7 +147,7 @@ class Photobooth:
         if self._cap.hasIdle:
             self._cap.setIdle()
 
-    def showCounterPreview(self):
+    def showCountdownPreview(self):
 
         self._conn.send(gui.CountdownState())
 
@@ -157,28 +157,28 @@ class Photobooth:
 
         self.recvAck()
 
-    def showCounterNoPreview(self):
+    def showCountdownNoPreview(self):
 
         self._conn.send(gui.CountdownState())
         self.recvAck()
 
-    def showPose(self):
+    def showPose(self, num_picture):
 
-        self._conn.send(gui.PoseState())
+        self._conn.send(gui.PoseState(num_picture))
 
-    def captureSinglePicture(self):
+    def captureSinglePicture(self, num_picture):
 
-        self.showCounter()
+        self.showCountdown()
         self.setCameraIdle()
-        self.showPose()
+        self.showPose(num_picture)
         picture = self._cap.getPicture()
         self.setCameraActive()
         return picture
 
     def capturePictures(self):
 
-        return [self.captureSinglePicture()
-                for _ in range(self._pic_dims.totalNumPictures)]
+        return [self.captureSinglePicture(i+1)
+                for i in range(self._pic_dims.totalNumPictures)]
 
     def assemblePictures(self, pictures):
 

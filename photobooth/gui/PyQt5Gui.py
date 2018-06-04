@@ -114,7 +114,8 @@ class PyQt5Gui(Gui):
         elif isinstance(state, GreeterState):
             global cfg
             self._p.handleKeypressEvent = self.handleKeypressEventNoTrigger
-            self._p.setCentralWidget( PyQt5GreeterMessage(
+            # self._p.setCentralWidget( PyQt5GreeterMessage(
+            self._p.setCentralWidget( Frames.GreeterMessage(
                 cfg.getInt('Picture', 'num_x'), cfg.getInt('Picture', 'num_y') ) )
             QtCore.QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, self.sendAck)
 
@@ -126,7 +127,9 @@ class PyQt5Gui(Gui):
             self._p.centralWidget().update()
             
         elif isinstance(state, PoseState):
-            self._p.setCentralWidget(PyQt5PoseMessage())
+            # self._p.setCentralWidget(PyQt5PoseMessage())
+            self._p.setCentralWidget(Frames.PoseMessage(state.num_picture, 
+                cfg.getInt('Picture', 'num_x'), cfg.getInt('Picture', 'num_y')))
 
         elif isinstance(state, AssembleState):
             self._p.setCentralWidget(Frames.WaitMessage('Processing picture...'))
@@ -312,45 +315,6 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
 
 
 
-
-class PyQt5GreeterMessage(QtWidgets.QFrame):
-
-    def __init__(self, num_x, num_y):
-
-        super().__init__()
-
-        self._num_x = num_x
-        self._num_y = num_y
-        self._title = 'Get ready!'
-        self._text = 'We will capture {} pictures!'.format(num_x * num_y)
-
-        self.initFrame()
-
-
-    def initFrame(self):
-
-        self.setStyleSheet('background-color: black; color: white;')
-
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-        f = self.font()
-
-        f.setPixelSize(self.height() / 5)
-        painter.setFont(f)
-        rect = QtCore.QRect(0, self.height() * 1 / 5, self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._title)
-
-        f.setPixelSize(self.height() / 8)
-        painter.setFont(f)
-        rect = QtCore.QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._text)
-
-        painter.end()
-
-
-
 class PyQt5CountdownMessage(QtWidgets.QFrame):
 
     def __init__(self, time, action):
@@ -446,35 +410,6 @@ class PyQt5CountdownMessage(QtWidgets.QFrame):
         else:
             self.updateProgressBar()
             self.update()
-
-
-
-class PyQt5PoseMessage(QtWidgets.QFrame):
-
-    def __init__(self):
-
-        super().__init__()
-
-        self.initFrame()
-
-
-    def initFrame(self):
-
-        self.setStyleSheet('background-color: black; color: white;')
-
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-
-        f = self.font()
-        f.setPixelSize(self.height() / 3)
-        painter.setFont(f)
-
-        painter.drawText(event.rect(), QtCore.Qt.AlignCenter, 'Pose!')
-
-        painter.end()
-
 
 
 class PyQt5PictureMessage(QtWidgets.QFrame):

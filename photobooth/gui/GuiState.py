@@ -103,9 +103,24 @@ class GreeterState(GuiState):
 
 class PoseState(GuiState):
 
-    def __init__(self, **kwargs):
+    def __init__(self, num_picture, **kwargs):
 
         super().__init__(**kwargs)
+
+        self.num_picture = num_picture
+
+    @property
+    def num_picture(self):
+
+        return self._num_picture
+
+    @num_picture.setter
+    def num_picture(self, num_picture):
+
+        if not isinstance(num_picture, int):
+            raise ValueError('Picture number must be an integer')
+
+        self._num_picture = num_picture
 
 
 class AssembleState(GuiState):

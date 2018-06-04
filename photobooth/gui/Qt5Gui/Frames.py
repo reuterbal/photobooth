@@ -64,6 +64,77 @@ class IdleMessage(QtWidgets.QFrame):
         painter.end()
 
 
+class GreeterMessage(QtWidgets.QFrame):
+
+    def __init__(self, num_x, num_y):
+
+        super().__init__()
+
+        self._title = 'Get ready!'
+        if num_x * num_y > 1:
+            self._text = ('Capturing {} pictures...'.format(num_x * num_y))
+        else:
+            self._text = 'Starting the countdown...'
+
+    def _paintMessage(self, painter):
+
+        f = self.font()
+
+        f.setPixelSize(self.height() / 5)
+        painter.setFont(f)
+        rect = QtCore.QRect(0, self.height() * 1 / 5,
+                            self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._title)
+
+        f.setPixelSize(self.height() / 8)
+        painter.setFont(f)
+        rect = QtCore.QRect(0, self.height() * 3 / 5,
+                            self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._text)
+
+    def paintEvent(self, event):
+
+        painter = QtGui.QPainter(self)
+        self._paintMessage(painter)
+        painter.end()
+
+
+class PoseMessage(QtWidgets.QFrame):
+
+    def __init__(self, num_picture, num_x, num_y):
+
+        super().__init__()
+
+        self._title = 'Pose!'
+        if num_x * num_y > 1:
+            self._text = 'Picture {} of {}...'.format(num_picture,
+                                                      num_x * num_y)
+        else:
+            self._text = 'Taking a photo...'
+
+    def _paintMessage(self, painter):
+
+        f = self.font()
+
+        f.setPixelSize(self.height() / 5)
+        painter.setFont(f)
+        rect = QtCore.QRect(0, self.height() * 1 / 5,
+                            self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._title)
+
+        f.setPixelSize(self.height() / 8)
+        painter.setFont(f)
+        rect = QtCore.QRect(0, self.height() * 3 / 5,
+                            self.width(), self.height() * 3 / 10)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._text)
+
+    def paintEvent(self, event):
+
+        painter = QtGui.QPainter(self)
+        self._paintMessage(painter)
+        painter.end()
+
+
 class WaitMessage(QtWidgets.QFrame):
     # With spinning wait clock, inspired by
     # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator
