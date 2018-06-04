@@ -40,6 +40,30 @@ class Start(QtWidgets.QFrame):
         self.setLayout(lay)
 
 
+class IdleMessage(QtWidgets.QFrame):
+
+    def __init__(self):
+
+        super().__init__()
+
+        self._message = 'Hit the button!'
+
+    def _paintMessage(self, painter):
+
+        f = self.font()
+        f.setPixelSize(self.height() / 5)
+        painter.setFont(f)
+
+        rect = self.rect()
+        painter.drawText(rect, QtCore.Qt.AlignCenter, self._message)
+
+    def paintEvent(self, event):
+
+        painter = QtGui.QPainter(self)
+        self._paintMessage(painter)
+        painter.end()
+
+
 class WaitMessage(QtWidgets.QFrame):
     # With spinning wait clock, inspired by
     # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator

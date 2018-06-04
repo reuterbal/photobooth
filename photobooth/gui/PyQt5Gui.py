@@ -209,7 +209,8 @@ class PyQt5Gui(Gui):
 
         self._p.handleKeypressEvent = self.handleKeypressEvent
         self._lastState = self.showIdle
-        self._p.setCentralWidget(PyQt5IdleMessage())
+        self._p.setCentralWidget(Frames.IdleMessage())
+        # self._p.setCentralWidget(PyQt5IdleMessage())
 
 
     def showError(self, title, message):
@@ -309,35 +310,6 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
 
         self.handleKeypressEvent(event)
 
-
-
-
-
-class PyQt5IdleMessage(QtWidgets.QFrame):
-
-    def __init__(self):
-
-        super().__init__()
-
-        self.initFrame()
-
-
-    def initFrame(self):
-
-        self.setStyleSheet('background-color: black; color: white;')
-
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-
-        f = self.font()
-        f.setPixelSize(self.height() / 5)
-        painter.setFont(f)
-
-        painter.drawText(event.rect(), QtCore.Qt.AlignCenter, 'Hit the button!')
-
-        painter.end()
 
 
 
