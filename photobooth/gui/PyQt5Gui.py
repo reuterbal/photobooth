@@ -129,7 +129,8 @@ class PyQt5Gui(Gui):
             self._p.setCentralWidget(PyQt5PoseMessage())
 
         elif isinstance(state, AssembleState):
-            self._p.setCentralWidget(PyQt5WaitMessage('Processing picture...'))
+            self._p.setCentralWidget(Frames.WaitMessage('Processing picture...'))
+            # self._p.setCentralWidget(PyQt5WaitMessage('Processing picture...'))
 
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
@@ -198,7 +199,8 @@ class PyQt5Gui(Gui):
 
         self._lastState = self.showStartPhotobooth
         self._conn.send('start')
-        self._p.setCentralWidget(PyQt5WaitMessage('Starting the photobooth...'))
+        # self._p.setCentralWidget(PyQt5WaitMessage('Starting the photobooth...'))
+        self._p.setCentralWidget(Frames.WaitMessage('Starting the photobooth...'))
         if cfg.getBool('Gui', 'hide_cursor'):
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.BlankCursor)
 
@@ -308,70 +310,6 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
         self.handleKeypressEvent(event)
 
 
-
-
-
-class PyQt5WaitMessage(QtWidgets.QFrame):
-    # With spinning wait clock, inspired by 
-    # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator
-
-    def __init__(self, message):
-        
-        super().__init__()
-
-        self._message = message
-
-        self.initFrame()
-
-
-    def initFrame(self):
-
-        self.setStyleSheet('background-color: black; color: white;')
-
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-
-        f = self.font()
-        f.setPixelSize(self.height() / 8)
-        painter.setFont(f)
-
-        rect = QtCore.QRect(0, self.height() * 3 / 5, self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._message)
-
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-
-        center = (self.width() / 2, self.height() / 2)
-
-        dots = 8
-        pos = self._counter % dots
-
-        for i in range(dots):
-
-            distance = (pos - i) % dots
-            color = (distance + 1) / (dots + 1) * 255
-            painter.setBrush(QtGui.QBrush(QtGui.QColor(color, color, color)))
-
-            painter.drawEllipse(
-                center[0] + 180 / dots * math.cos(2 * math.pi * i / dots) - 20,
-                center[1] + 180 / dots * math.sin(2 * math.pi * i / dots) - 20,
-                15, 15)
-
-        painter.end()
-
-
-    def showEvent(self, event):
-    
-        self._counter = 0
-        self.startTimer(100)
-        
-    
-    def timerEvent(self, event):
-    
-        self._counter += 1
-        self.update()
 
 
 
