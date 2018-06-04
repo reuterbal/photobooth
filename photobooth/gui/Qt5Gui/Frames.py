@@ -135,6 +135,34 @@ class PoseMessage(QtWidgets.QFrame):
         painter.end()
 
 
+class PictureMessage(QtWidgets.QFrame):
+
+    def __init__(self, picture):
+
+        super().__init__()
+
+        self._picture = picture
+
+    def _paintPicture(self, painter):
+
+        if isinstance(self._picture, QtGui.QImage):
+            pix = QtGui.QPixmap.fromImage(self._picture)
+        else:
+            pix = QtGui.QPixmap(self._picture)
+        pix = pix.scaled(self.rect().size(), QtCore.Qt.KeepAspectRatio,
+                         QtCore.Qt.SmoothTransformation)
+
+        origin = ((self.rect().width() - pix.width()) // 2,
+                  (self.rect().height() - pix.height()) // 2)
+        painter.drawPixmap(QtCore.QPoint(*origin), pix)
+
+    def paintEvent(self, event):
+
+        painter = QtGui.QPainter(self)
+        self._paintPicture(painter)
+        painter.end()
+
+
 class WaitMessage(QtWidgets.QFrame):
     # With spinning wait clock, inspired by
     # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator

@@ -137,7 +137,8 @@ class PyQt5Gui(Gui):
 
         elif isinstance(state, PictureState):
             img = ImageQt.ImageQt(state.picture)
-            self._p.setCentralWidget(PyQt5PictureMessage(img))
+            # self._p.setCentralWidget(PyQt5PictureMessage(img))
+            self._p.setCentralWidget(Frames.PictureMessage(img))
             QtCore.QTimer.singleShot(cfg.getInt('Photobooth', 'display_time') * 1000, 
                 lambda : self.postprocessPicture(state.picture))
 
@@ -410,37 +411,4 @@ class PyQt5CountdownMessage(QtWidgets.QFrame):
         else:
             self.updateProgressBar()
             self.update()
-
-
-class PyQt5PictureMessage(QtWidgets.QFrame):
-
-    def __init__(self, picture):
-        
-        super().__init__()
-
-        self._picture = picture
-
-        self.initFrame()
-
-
-    def initFrame(self):
-
-        self.setStyleSheet('background-color: black; color: white')
-
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-
-        if isinstance(self._picture, QtGui.QImage):
-            pix = QtGui.QPixmap.fromImage(self._picture)
-        else:
-            pix = QtGui.QPixmap(self._picture)
-        pix = pix.scaled(self.rect().size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-
-        origin = ( (self.rect().width() - pix.width()) // 2,
-                   (self.rect().height() - pix.height()) // 2 )
-        painter.drawPixmap(QtCore.QPoint(*origin), pix)
-
-        painter.end()
 
