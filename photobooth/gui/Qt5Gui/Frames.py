@@ -13,6 +13,8 @@ from .. import modules
 from ... import camera
 from ... import printer
 
+from . import Widgets
+
 
 class Start(QtWidgets.QFrame):
 
@@ -220,6 +222,88 @@ class WaitMessage(QtWidgets.QFrame):
         self._paintMessage(painter)
         self._paintClock(painter)
         painter.end()
+
+
+class CountdownMessage(QtWidgets.QFrame):
+
+    def __init__(self, time, action):
+
+        super().__init__()
+
+        self._step_size = 50
+        self._value = time * (1000 // self._step_size)
+        self._action = action
+        self._picture = None
+
+        self._initProgressBar(time)
+
+    def _initProgressBar(self, time):
+
+        self._bar = Widgets.RoundProgressBar(0, time, time)
+        self._bar.setFixedSize(200, 200)
+
+    def _updateProgressBar(self):
+
+        self._bar.value = self._value / (1000 // self._step_size)
+
+    @property
+    def value(self):
+
+        return self._value
+
+    @value.setter
+    def value(self, value):
+
+        self._value = value
+
+    @property
+    def picture(self):
+
+        return self._picture
+
+    @picture.setter
+    def picture(self, picture):
+
+        if not isinstance(picture, QtGui.QImage):
+            raise ValueError('picture must be a QtGui.QImage')
+
+        self._picture = picture
+
+    def paintEvent(self, event):
+
+        # background image
+        if self.picture is not None:
+            painter = QtGui.QPainter(self)
+
+            pix = QtGui.QPixmap.fromImage(self.picture)
+            pix = pix.scaled(self.size(), QtCore.Qt.KeepAspectRatio,
+                             QtCore.Qt.FastTransformation)
+            origin = ((self.width() - pix.width()) // 2,
+                      (self.height() - pix.height()) // 2)
+            painter.drawPixmap(QtCore.QPoint(*origin), pix)
+
+            painter.end()
+
+        offset = ((self.width() - self._bar.width()) // 2,
+                  (self.height() - self._bar.height()) // 2)
+        self._bar.render(self, QtCore.QPoint(*offset),
+                         self._bar.visibleRegion(),
+                         QtWidgets.QWidget.DrawChildren)
+
+    def showEvent(self, event):
+
+        self._timer = self.startTimer(self._step_size)
+
+    def timerEvent(self, event):
+
+        self.value -= 1
+
+        if self.value == 0:
+            self.killTimer(self._timer)
+            self._action()
+        else:
+            self._updateProgressBar()
+            self.update()
 
 
 class Settings(QtWidgets.QFrame):

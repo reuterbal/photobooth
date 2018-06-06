@@ -120,7 +120,10 @@ class PyQt5Gui(Gui):
             QtCore.QTimer.singleShot(cfg.getInt('Photobooth', 'greeter_time') * 1000, self.sendAck)
 
         elif isinstance(state, CountdownState):
-            self._p.setCentralWidget(PyQt5CountdownMessage(cfg.getInt('Photobooth', 'countdown_time'), self.sendAck))
+            # self._p.setCentralWidget(PyQt5CountdownMessage(cfg.getInt('Photobooth', 'countdown_time'), self.sendAck))
+            countdown_time = cfg.getInt('Photobooth', 'countdown_time')
+            self._p.setCentralWidget(Frames.CountdownMessage(countdown_time, 
+                                                             self.sendAck))
 
         elif isinstance(state, PreviewState):
             self._p.centralWidget().picture = ImageQt.ImageQt(state.picture)
@@ -313,102 +316,3 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
     def keyPressEvent(self, event):
 
         self.handleKeypressEvent(event)
-
-
-
-class PyQt5CountdownMessage(QtWidgets.QFrame):
-
-    def __init__(self, time, action):
-        
-        super().__init__()
-
-        self._step_size = 50
-        self._counter = time * (1000 // self._step_size)
-        self._action = action
-        self._picture = None
-
-        self.initFrame()
-        self.initProgressBar(time)
-
-
-    def initFrame(self):
-
-        self.setStyleSheet('background-color: black; color: white;')
-
-
-    def initProgressBar(self, time):
-
-        self._bar = QRoundProgressBar()
-        self._bar.setBarStyle(QRoundProgressBar.StyleLine)
-        self._bar.setFixedSize(200, 200)
-
-        self._bar.setDataPenWidth(7)
-        self._bar.setOutlinePenWidth(10)
-
-        self._bar.setDecimals(0)
-        self._bar.setFormat('%v')
-
-        self._bar.setRange(0, time)
-        self._bar.setValue(time)
-
-
-    def updateProgressBar(self):
-
-        self._bar.setValue(self._counter / (1000 // self._step_size))
-
-
-    @property
-    def counter(self):
-        
-        return self._counter
-
-
-    @property
-    def picture(self):
-
-        return self._picture
-
-    
-    @picture.setter
-    def picture(self, pic):
-
-        if not isinstance(pic, QtGui.QImage):
-            raise ValueError('picture must be a QtGui.QImage')
-
-        self._picture = pic
-
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-
-        if self._picture != None:
-            pix = QtGui.QPixmap.fromImage(self._picture)
-            pix = pix.scaled(self.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
-            origin = ( (self.width() - pix.width()) // 2,
-                       (self.height() - pix.height()) // 2 )
-            painter.drawPixmap(QtCore.QPoint(*origin), pix)
-
-        painter.end()
-
-        offset = ( (self.width() - self._bar.width()) // 2, 
-                   (self.height() - self._bar.height()) // 2 )
-        self._bar.render(self, QtCore.QPoint(*offset), self._bar.visibleRegion(), QtWidgets.QWidget.DrawChildren)
-
-
-    def showEvent(self, event):
-    
-        self._timer = self.startTimer(self._step_size)    
-    
-
-    def timerEvent(self, event):
-    
-        self._counter -= 1
-
-        if self._counter == 0:
-            self.killTimer(self._timer)
-            self._action()
-        else:
-            self.updateProgressBar()
-            self.update()
-
