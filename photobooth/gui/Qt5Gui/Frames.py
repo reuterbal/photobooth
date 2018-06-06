@@ -3,8 +3,6 @@
 
 from os.path import expanduser
 
-import math
-
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -166,23 +164,21 @@ class PictureMessage(QtWidgets.QFrame):
 
 
 class WaitMessage(QtWidgets.QFrame):
-    # With spinning wait clock, inspired by
-    # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator
 
     def __init__(self, message):
 
         super().__init__()
 
         self._message = message
+        self._clock = Widgets.SpinningWaitClock()
 
     def showEvent(self, event):
 
-        self._counter = 0
         self.startTimer(100)
 
     def timerEvent(self, event):
 
-        self._counter += 1
+        self._clock.value += 1
         self.update()
 
     def _paintMessage(self, painter):
@@ -191,36 +187,20 @@ class WaitMessage(QtWidgets.QFrame):
         f.setPixelSize(self.height() / 8)
         painter.setFont(f)
 
-        rect = QtCore.QRect(0, self.height() * 3 / 5,
-                            self.width(), self.height() * 3 / 10)
+        rect = QtCore.QRect(0, self.height() * 3 / 5, self.width(),
+                            self.height() * 3 / 10)
         painter.drawText(rect, QtCore.Qt.AlignCenter, self._message)
-
-    def _paintClock(self, painter):
-
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-
-        center = (self.width() / 2, self.height() / 2)
-
-        dots = 8
-        pos = self._counter % dots
-
-        for i in range(dots):
-
-            distance = (pos - i) % dots
-            color = (distance + 1) / (dots + 1) * 255
-            painter.setBrush(QtGui.QBrush(QtGui.QColor(color, color, color)))
-
-            painter.drawEllipse(
-                center[0] + 180 / dots * math.cos(2 * math.pi * i / dots) - 20,
-                center[1] + 180 / dots * math.sin(2 * math.pi * i / dots) - 20,
-                15, 15)
 
     def paintEvent(self, event):
 
+        offset = ((self.width() - self._clock.width()) // 2,
+                  (self.height() - self._clock.height()) // 2)
+
         painter = QtGui.QPainter(self)
         self._paintMessage(painter)
-        self._paintClock(painter)
+        self._clock.render(painter, QtCore.QPoint(*offset),
+                           self._clock.visibleRegion(),
+                           QtWidgets.QWidget.DrawChildren)
         painter.end()
 
 
@@ -236,15 +216,6 @@ class CountdownMessage(QtWidgets.QFrame):
         self._picture = None
 
         self._initProgressBar(time)
-
-    def _initProgressBar(self, time):
-
-        self._bar = Widgets.RoundProgressBar(0, time, time)
-        self._bar.setFixedSize(200, 200)
-
-    def _updateProgressBar(self):
-
-        self._bar.value = self._value / (1000 // self._step_size)
 
     @property
     def value(self):
@@ -269,26 +240,14 @@ class CountdownMessage(QtWidgets.QFrame):
 
         self._picture = picture
 
-    def paintEvent(self, event):
+    def _initProgressBar(self, time):
 
-        # background image
-        if self.picture is not None:
-            painter = QtGui.QPainter(self)
+        self._bar = Widgets.RoundProgressBar(0, time, time)
+        self._bar.setFixedSize(200, 200)
 
-            pix = QtGui.QPixmap.fromImage(self.picture)
-            pix = pix.scaled(self.size(), QtCore.Qt.KeepAspectRatio,
-                             QtCore.Qt.FastTransformation)
-            origin = ((self.width() - pix.width()) // 2,
-                      (self.height() - pix.height()) // 2)
-            painter.drawPixmap(QtCore.QPoint(*origin), pix)
+    def _updateProgressBar(self):
 
-            painter.end()
-
-        offset = ((self.width() - self._bar.width()) // 2,
-                  (self.height() - self._bar.height()) // 2)
-        self._bar.render(self, QtCore.QPoint(*offset),
-                         self._bar.visibleRegion(),
-                         QtWidgets.QWidget.DrawChildren)
+        self._bar.value = self._value / (1000 // self._step_size)
 
     def showEvent(self, event):
 
@@ -304,6 +263,28 @@ class CountdownMessage(QtWidgets.QFrame):
         else:
             self._updateProgressBar()
             self.update()
+
+    def paintEvent(self, event):
+
+        painter = QtGui.QPainter(self)
+
+        # background image
+        if self.picture is not None:
+
+            pix = QtGui.QPixmap.fromImage(self.picture)
+            pix = pix.scaled(self.size(), QtCore.Qt.KeepAspectRatio,
+                             QtCore.Qt.FastTransformation)
+            origin = ((self.width() - pix.width()) // 2,
+                      (self.height() - pix.height()) // 2)
+            painter.drawPixmap(QtCore.QPoint(*origin), pix)
+
+        offset = ((self.width() - self._bar.width()) // 2,
+                  (self.height() - self._bar.height()) // 2)
+        self._bar.render(painter, QtCore.QPoint(*offset),
+                         self._bar.visibleRegion(),
+                         QtWidgets.QWidget.DrawChildren)
+
+        painter.end()
 
 
 class Settings(QtWidgets.QFrame):

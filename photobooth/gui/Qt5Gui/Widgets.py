@@ -1,12 +1,67 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from math import ceil
+import math
 
 from PyQt5 import Qt
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+
+
+class SpinningWaitClock(QtWidgets.QWidget):
+    # Spinning wait clock, inspired by
+    # https://wiki.python.org/moin/PyQt/A%20full%20widget%20waiting%20indicator
+
+    def __init__(self):
+
+        super().__init__()
+
+        self._num_dots = 8
+        self._value = 0
+
+    @property
+    def value(self):
+
+        return self._value
+
+    @value.setter
+    def value(self, value):
+
+        if self._value != value:
+            self._value = value
+            self.update()
+
+    def showEvent(self, event):
+
+        self.startTimer(100)
+
+    def timerEvent(self, event):
+
+        self.value += 1
+
+    def paintEvent(self, event):
+
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+
+        dots = self._num_dots
+        center = (self.width() / 2, self.height() / 2)
+        pos = self.value % dots
+
+        for dot in range(dots):
+            distance = (pos - dot) % dots
+            offset = (180 / dots * math.cos(2 * math.pi * dot / dots) - 20,
+                      180 / dots * math.sin(2 * math.pi * dot / dots) - 20)
+
+            color = (distance + 1) / (dots + 1) * 255
+            painter.setBrush(QtGui.QBrush(QtGui.QColor(color, color, color)))
+
+            painter.drawEllipse(center[0] + offset[0], center[1] + offset[1],
+                                15, 15)
+
+        painter.end()
 
 
 class RoundProgressBar(QtWidgets.QWidget):
@@ -76,7 +131,7 @@ class RoundProgressBar(QtWidgets.QWidget):
 
     def _drawText(self, painter, inner_rect, inner_radius):
 
-        text = '{}'.format(ceil(self.value))
+        text = '{}'.format(math.ceil(self.value))
 
         f = self.font()
         f.setPixelSize(inner_radius * 0.8 / len(text))
