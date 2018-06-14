@@ -21,6 +21,8 @@ This is a Python application to build your own photobooth.
 ### History
 I started this project for my own wedding in 2015. 
 See [Version 0.1](https://github.com/reuterbal/photobooth/tree/v0.1) for the original version.
+Github user [hackerb9](https://github.com/hackerb9/photobooth) forked this version and added a print functionality.
+However, I was not happy with the original software design and the limited options provided by the previously used [pygame](https://www.pygame.org) GUI library and thus abandoned the original version.
 Since then it underwent a complete rewrite, with vastly improved performance and a much more modular and mature software design.
 
 ## Installation and usage
