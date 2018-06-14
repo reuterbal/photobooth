@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from .GuiState import *  # noqa
-from .GuiPostprocess import *  # noqa
+# from .GuiState import *  # noqa
+# from .GuiPostprocess import *  # noqa
+
+from . import GuiState # noqa
 
 # Available gui modules as tuples of (config name, module name, class name)
-modules = (('PyQt5', 'PyQt5Gui', 'PyQt5Gui'), )
+modules = (('PyQt5', 'Qt5Gui', 'PyQt5Gui'), )
 
 
-class Gui:
+# class Gui:
 
-    def __init__(self):
+#     def __init__(self):
 
-        pass
+#         pass
 
-    def run(self, camera_conn, worker_queue):
+#     def run(self, camera_conn, worker_queue):
 
-        raise NotImplementedError()
+#         raise NotImplementedError()

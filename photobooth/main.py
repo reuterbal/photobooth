@@ -32,7 +32,7 @@ class CameraProcess(mp.Process):
 
     def run_camera(self):
 
-        try:
+        # try:
             cap = lookup_and_import(
                 camera.modules, self.cfg.get('Camera', 'module'), 'camera')
 
@@ -40,14 +40,14 @@ class CameraProcess(mp.Process):
                 self.cfg, cap, self.conn, self.worker_queue)
             return photobooth.run()
 
-        except BaseException as e:
-            self.conn.send(gui.ErrorState('Camera error', str(e)))
-            event = self.conn.recv()
-            if str(event) in ('cancel', 'ack'):
-                return 123
-            else:
-                logging.error('Unknown event received: %s', str(event))
-                raise RuntimeError('Unknown event received', str(event))
+        # except BaseException as e:
+        #     self.conn.send(gui.GuiState.ErrorState('Camera error', str(e)))
+        #     event = self.conn.recv()
+        #     if str(event) in ('cancel', 'ack'):
+        #         return 123
+        #     else:
+        #         logging.error('Unknown event received: %s', str(event))
+        #         raise RuntimeError('Unknown event received', str(event))
 
     def run(self):
 
@@ -96,7 +96,7 @@ class GuiProcess(mp.Process):
 
         Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'),
                                 'gui')
-        sys.exit(Gui(self.argv, self.cfg).run(self.conn, self.queue))
+        sys.exit(Gui(self.argv, self.cfg, self.conn, self.queue).run())
 
 
 def run(argv):

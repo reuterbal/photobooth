@@ -7,7 +7,7 @@ from PIL import Image, ImageOps
 
 from .PictureDimensions import PictureDimensions
 
-from . import gui
+from .gui import GuiState
 
 from .Worker import PictureSaver
 
@@ -113,7 +113,7 @@ class Photobooth:
     def initRun(self):
 
         self.setCameraIdle()
-        self._conn.send(gui.IdleState())
+        self._conn.send(GuiState.IdleState())
         self.triggerOn()
 
     def run(self):
@@ -131,7 +131,7 @@ class Photobooth:
                     self.trigger()
                 except RuntimeError as e:
                     logging.error('Camera error: %s', str(e))
-                    self._conn.send(gui.ErrorState('Camera error', str(e)))
+                    self._conn.send(GuiState.ErrorState('Cam error', str(e)))
                     self.recvAck()
 
         except TeardownException:
@@ -149,22 +149,22 @@ class Photobooth:
 
     def showCountdownPreview(self):
 
-        self._conn.send(gui.CountdownState())
+        self._conn.send(GuiState.CountdownState())
 
         while not self._conn.poll():
             picture = ImageOps.mirror(self._cap.getPreview())
-            self._conn.send(gui.PreviewState(picture=picture))
+            self._conn.send(GuiState.PreviewState(picture=picture))
 
         self.recvAck()
 
     def showCountdownNoPreview(self):
 
-        self._conn.send(gui.CountdownState())
+        self._conn.send(GuiState.CountdownState())
         self.recvAck()
 
     def showPose(self, num_picture):
 
-        self._conn.send(gui.PoseState(num_picture))
+        self._conn.send(GuiState.PoseState(num_picture))
 
     def captureSinglePicture(self, num_picture):
 
@@ -199,24 +199,24 @@ class Photobooth:
 
         logging.info('Photobooth triggered')
 
-        self._conn.send(gui.GreeterState())
+        self._conn.send(GuiState.GreeterState())
         self.triggerOff()
 
         self.setCameraActive()
         self.recvAck()
 
         pics = self.capturePictures()
-        self._conn.send(gui.AssembleState())
+        self._conn.send(GuiState.AssembleState())
 
         img = self.assemblePictures(pics)
-        self._conn.send(gui.PictureState(img))
+        self._conn.send(GuiState.ReviewState(picture=img))
 
         self.enqueueWorkerTasks(img)
 
         self.setCameraIdle()
         self.recvAck()
 
-        self._conn.send(gui.IdleState())
+        self._conn.send(GuiState.IdleState())
         self.triggerOn()
 
     def gpioTrigger(self):
@@ -225,7 +225,7 @@ class Photobooth:
 
     def gpioExit(self):
 
-        self._conn.send(gui.TeardownState())
+        self._conn.send(GuiState.TeardownState())
 
     def triggerOff(self):
 
@@ -235,4 +235,4 @@ class Photobooth:
     def triggerOn(self):
 
         self._lampOn()
-        self._gpioTrigger = lambda: self._conn.send(gui.TriggerState())
+        self._gpioTrigger = lambda: self._conn.send(GuiState.TriggerState())

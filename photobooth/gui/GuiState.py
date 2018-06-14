@@ -144,6 +144,13 @@ class PreviewState(PictureState):
         super().__init__(**kwargs)
 
 
+class ReviewState(PictureState):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+
 class TeardownState(GuiState):
 
     def __init__(self, **kwargs):
