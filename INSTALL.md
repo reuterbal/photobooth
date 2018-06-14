@@ -39,7 +39,7 @@ If you plan on using a printer, make sure it is configured as default printer!
 ## Install dependencies for the photobooth
 
 These dependencies are required to run the application.
-You might be able to skip some packages if you plan on not using 
+You might be able to skip some packages if you plan on not using gphoto2.
 
 ### Install required packages
 In a terminal, enter the following commands
@@ -75,7 +75,7 @@ These are the steps to install the application.
 ### Clone the Photobooth repository
 Run the following command to obtain the source code:
 ```bash
-git clone -b development https://github.com/reuterbal/photobooth
+git clone https://github.com/reuterbal/photobooth.git
 ```
 This will create a folder `photobooth` with all necessary files.
 
@@ -110,6 +110,12 @@ and run the photobooth as
 ```bash
 python photobooth
 ```
+
+Change any settings via the "Settings" menu.
+Afterwards, select "Start photobooth" to get started.
+You can trigger the countdown via space bar or an external button.
+
+To exit the application, use the Esc-key or an external button.
 
 ## Additional setup steps for my hardware setup
 
@@ -195,5 +201,3 @@ sudo usermod -a -G lpadmin pi
 It is important that you set the printer as the default printer. 
 For that, go to the CUPS administration interface (http://localhost:631), open the list of printers and select your printer.
 In the drop-down menu 'Administration' select 'Set as Server Default'.
-
-
