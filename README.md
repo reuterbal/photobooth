@@ -44,9 +44,9 @@ Feel free to add new postprocessing components, a GUI based on some other librar
 
 ## Feedback and bugs
 I appreciate any feedback or bug reports.
-Please submit them via the [Issue tracker](https://github.com/reuterbal/photobooth/issues) and always include your `photobooth.log` file (is created automatically in the top folder) and a description of your hardware and software setup.
+Please submit them via the [Issue tracker](https://github.com/reuterbal/photobooth/issues/new?template=bug_report.md) and always include your `photobooth.log` file (is created automatically in the top folder) and a description of your hardware and software setup.
 
-I am also happy to hear any success stories!
+I am also happy to hear any success stories! Feel free to [submit them here](https://github.com/reuterbal/photobooth/issues/new?template=success-story.md)
 
 ## License
 I provide this code under AGPL v3. See [LICENSE](https://github.com/reuterbal/photobooth/blob/master/LICENSE).
