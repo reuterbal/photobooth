@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import os
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -27,6 +28,7 @@ from PIL import ImageQt
 from .. import GuiState
 from ..GuiSkeleton import GuiSkeleton
 
+from . import styles
 from . import Frames
 from . import Postprocessor
 from . import Receiver
@@ -79,7 +81,14 @@ class PyQt5Gui(GuiSkeleton):
 
         self._disableTrigger()
 
+        style = self._cfg.get('Gui', 'style')
+        filename = next((file for name, file in styles if name == style))
+
+        with open(os.path.join(os.path.dirname(__file__), filename), 'r') as f:
+            stylesheet = f.read()
+
         self._app = QtWidgets.QApplication(argv)
+        self._app.setStyleSheet(stylesheet)
         self._gui = PyQt5MainWindow(self._cfg, self._handleKeypressEvent)
 
     def _initReceiver(self):

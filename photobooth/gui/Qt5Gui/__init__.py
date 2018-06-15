@@ -17,4 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+# Available style sheets as tuples of (style name, style file)
+styles = (('default', 'stylesheets/default.qss'), 
+		  ('dark', 'stylesheets/dark.qss'))
+
 from .PyQt5Gui import PyQt5Gui  # noqa

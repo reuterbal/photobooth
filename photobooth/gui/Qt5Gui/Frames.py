@@ -31,6 +31,7 @@ from ... import camera
 from ... import printer
 
 from . import Widgets
+from . import styles
 
 
 class Start(QtWidgets.QFrame):
@@ -492,14 +493,23 @@ class Settings(QtWidgets.QFrame):
                                            self._cfg.get('Gui', 'module'))
         self.add('Gui', 'module', module)
 
-        width = QtWidgets.QLineEdit(self._cfg.get('Gui', 'width'))
-        height = QtWidgets.QLineEdit(self._cfg.get('Gui', 'height'))
+        width = QtWidgets.QSpinBox()
+        width.setRange(100, 999999)
+        width.setValue(self._cfg.getInt('Gui', 'width'))
         self.add('Gui', 'width', width)
+
+        height = QtWidgets.QSpinBox()
+        height.setRange(100, 999999)
+        height.setValue(self._cfg.getInt('Gui', 'height'))
         self.add('Gui', 'height', height)
 
         cursor = QtWidgets.QCheckBox()
         cursor.setChecked(self._cfg.getBool('Gui', 'hide_cursor'))
         self.add('Gui', 'hide_cursor', cursor)
+
+        style = self.createModuleComboBox(styles,
+                                          self._cfg.get('Gui', 'style'))
+        self.add('Gui', 'style', style)
 
         lay_size = QtWidgets.QHBoxLayout()
         lay_size.addWidget(width)
@@ -511,6 +521,7 @@ class Settings(QtWidgets.QFrame):
         layout.addRow('Gui module:', module)
         layout.addRow('Window size [px]:', lay_size)
         layout.addRow('Hide cursor:', cursor)
+        layout.addRow('Appearance:', style)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -524,14 +535,19 @@ class Settings(QtWidgets.QFrame):
         preview.setChecked(self._cfg.getBool('Photobooth', 'show_preview'))
         self.add('Photobooth', 'show_preview', preview)
 
-        greet_time = QtWidgets.QLineEdit(self._cfg.get('Photobooth',
-                                                       'greeter_time'))
-        count_time = QtWidgets.QLineEdit(self._cfg.get('Photobooth',
-                                                       'countdown_time'))
-        displ_time = QtWidgets.QLineEdit(self._cfg.get('Photobooth',
-                                                       'display_time'))
+        greet_time = QtWidgets.QSpinBox()
+        greet_time.setRange(0, 1000)
+        greet_time.setValue(self._cfg.getInt('Photobooth', 'greeter_time'))
         self.add('Photobooth', 'greeter_time', greet_time)
+
+        count_time = QtWidgets.QSpinBox()
+        count_time.setRange(0, 1000)
+        count_time.setValue(self._cfg.getInt('Photobooth', 'countdown_time'))
         self.add('Photobooth', 'countdown_time', count_time)
+
+        displ_time = QtWidgets.QSpinBox()
+        displ_time.setRange(0, 1000)
+        displ_time.setValue(self._cfg.getInt('Photobooth', 'display_time'))
         self.add('Photobooth', 'display_time', displ_time)
 
         layout = QtWidgets.QFormLayout()
@@ -563,21 +579,34 @@ class Settings(QtWidgets.QFrame):
 
         self.init('Picture')
 
-        num_x = QtWidgets.QLineEdit(self._cfg.get('Picture', 'num_x'))
-        num_y = QtWidgets.QLineEdit(self._cfg.get('Picture', 'num_y'))
+        num_x = QtWidgets.QSpinBox()
+        num_x.setRange(1, 99)
+        num_x.setValue(self._cfg.getInt('Picture', 'num_x'))
         self.add('Picture', 'num_x', num_x)
+        
+        num_y = QtWidgets.QSpinBox()
+        num_y.setRange(1, 99)
+        num_y.setValue(self._cfg.getInt('Picture', 'num_y'))
         self.add('Picture', 'num_y', num_y)
 
-        size_x = QtWidgets.QLineEdit(self._cfg.get('Picture', 'size_x'))
-        size_y = QtWidgets.QLineEdit(self._cfg.get('Picture', 'size_y'))
+        size_x = QtWidgets.QSpinBox()
+        size_x.setRange(1, 999999)
+        size_x.setValue(self._cfg.getInt('Picture', 'size_x'))
         self.add('Picture', 'size_x', size_x)
+        
+        size_y = QtWidgets.QSpinBox()
+        size_y.setRange(1, 999999)
+        size_y.setValue(self._cfg.getInt('Picture', 'size_y'))
         self.add('Picture', 'size_y', size_y)
 
-        min_dist_x = QtWidgets.QLineEdit(self._cfg.get('Picture',
-                                         'min_dist_x'))
-        min_dist_y = QtWidgets.QLineEdit(self._cfg.get('Picture',
-                                         'min_dist_y'))
+        min_dist_x = QtWidgets.QSpinBox()
+        min_dist_x.setRange(0, 999999)
+        min_dist_x.setValue(self._cfg.getInt('Picture', 'min_dist_x'))
         self.add('Picture', 'min_dist_x', min_dist_x)
+
+        min_dist_y = QtWidgets.QSpinBox()
+        min_dist_y.setRange(0, 999999)
+        min_dist_y.setValue(self._cfg.getInt('Picture', 'min_dist_y'))
         self.add('Picture', 'min_dist_y', min_dist_y)
 
         basedir = QtWidgets.QLineEdit(self._cfg.get('Picture', 'basedir'))
@@ -603,7 +632,7 @@ class Settings(QtWidgets.QFrame):
         def file_dialog():
             dialog = QtWidgets.QFileDialog.getExistingDirectory
             basedir.setText(dialog(self, 'Select directory',
-                                   os.expanduser('~'),
+                                   os.path.expanduser('~'),
                                    QtWidgets.QFileDialog.ShowDirsOnly))
 
         file_button = QtWidgets.QPushButton('Select directory')
@@ -635,11 +664,19 @@ class Settings(QtWidgets.QFrame):
         enable.setChecked(self._cfg.getBool('Gpio', 'enable'))
         self.add('Gpio', 'enable', enable)
 
-        exit_pin = QtWidgets.QLineEdit(self._cfg.get('Gpio', 'exit_pin'))
-        trig_pin = QtWidgets.QLineEdit(self._cfg.get('Gpio', 'trigger_pin'))
-        lamp_pin = QtWidgets.QLineEdit(self._cfg.get('Gpio', 'lamp_pin'))
+        exit_pin = QtWidgets.QSpinBox()
+        exit_pin.setRange(1, 40)
+        exit_pin.setValue(self._cfg.getInt('Gpio', 'exit_pin'))
         self.add('Gpio', 'exit_pin', exit_pin)
+
+        trig_pin = QtWidgets.QSpinBox()
+        trig_pin.setRange(1, 40)
+        trig_pin.setValue(self._cfg.getInt('Gpio', 'trigger_pin'))
         self.add('Gpio', 'trigger_pin', trig_pin)
+
+        lamp_pin = QtWidgets.QSpinBox()
+        lamp_pin.setRange(1, 40)
+        lamp_pin.setValue(self._cfg.getInt('Gpio', 'lamp_pin'))
         self.add('Gpio', 'lamp_pin', lamp_pin)
 
         layout = QtWidgets.QFormLayout()
@@ -664,8 +701,12 @@ class Settings(QtWidgets.QFrame):
                                            self._cfg.get('Printer', 'module'))
         self.add('Printer', 'module', module)
 
-        width = QtWidgets.QLineEdit(self._cfg.get('Printer', 'width'))
-        height = QtWidgets.QLineEdit(self._cfg.get('Printer', 'height'))
+        width = QtWidgets.QSpinBox()
+        width.setRange(0, 999999)
+        width.setValue(self._cfg.getInt('Printer', 'width'))
+        height = QtWidgets.QSpinBox()
+        height.setRange(0, 999999)
+        height.setValue(self._cfg.getInt('Printer', 'height'))
         self.add('Printer', 'width', width)
         self.add('Printer', 'height', height)
 
@@ -693,6 +734,8 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Gui', 'height', self.get('Gui', 'height').text())
         self._cfg.set('Gui', 'hide_cursor',
                       str(self.get('Gui', 'hide_cursor').isChecked()))
+        self._cfg.set('Gui', 'style',
+                      styles[self.get('Gui', 'style').currentIndex()][0])
 
         self._cfg.set('Photobooth', 'show_preview',
                       str(self.get('Photobooth', 'show_preview').isChecked()))

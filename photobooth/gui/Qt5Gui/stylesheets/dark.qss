@@ -1,0 +1,87 @@
+QMainWindow, QWidget {
+    background-color: black;
+    color: #eeeeee;
+}
+
+/* Customizing settings */
+
+QTabWidget {
+    background-color: black;
+    color: #eeeeee;
+}
+
+QTabBar::tab {
+    background-color: #333333;
+    border-style: outset;
+    border-width: 2px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    border-color: #eeeeee;
+    padding: 8px;
+}
+
+QTabBar::tab:selected {
+    background-color: #666666;
+}
+
+QCheckBox::indicator {
+    width: 25px;
+    height: 25px;
+    background-color: #333333;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: #eeeeee;
+}
+
+QCheckBox::indicator::unchecked {
+    background: none;
+}
+
+QCheckBox::indicator::checked {
+    background-color: #eeeeee;
+}
+
+QComboBox, QDateEdit, QLineEdit, QSpinBox, QTimeEdit {
+    height: 25px;
+    background-color: #333333;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: #eeeeee;
+    padding: 8px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #333333;
+    selection-background-color: #666666;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: #eeeeee;
+    padding: 8px;
+}
+
+QComboBox::drop-down, QDateEdit::drop-down, QSpinBox::down-button, 
+QTimeEdit::down-button {
+    background: #666666;
+    color: #eeeeee;
+    border: none;
+    width: 20px;
+}
+
+QSpinBox::up-button, QTimeEdit::up-button {
+    background: #999999;
+    color: #eeeeee;
+    border: none;
+    width: 20px;
+}
+
+QPushButton {
+    background-color: #333333;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 15px;
+    border-color: #eeeeee;
+    padding: 8px;
+}
