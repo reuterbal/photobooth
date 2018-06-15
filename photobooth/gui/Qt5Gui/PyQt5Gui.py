@@ -131,10 +131,18 @@ class PyQt5Gui(GuiSkeleton):
         self._disableTrigger()
         self._disableEscape()
         self._lastHandle = self._showWelcomeScreen
-        self._setWidget(Frames.Start(self._showStart, self._showSettings,
-                                     self.close))
+        self._setWidget(Frames.Start(self._showStart, self._showSetDateTime,
+                                     self._showSettings, self.close))
         if QtWidgets.QApplication.overrideCursor() != 0:
             QtWidgets.QApplication.restoreOverrideCursor()
+
+    def _showSetDateTime(self):
+
+        self._disableTrigger()
+        self._disableEscape()
+        self._lastHandle = self._showSetDateTime
+        self._setWidget(Frames.SetDateTime(self._showWelcomeScreen,
+                                           self.restart))
 
     def _showSettings(self):
 

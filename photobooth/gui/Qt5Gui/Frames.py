@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from os.path import expanduser
+import logging
+import os
+import subprocess
+import sys
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -16,16 +19,22 @@ from . import Widgets
 
 class Start(QtWidgets.QFrame):
 
-    def __init__(self, start_action, settings_action, exit_action):
+    def __init__(self, start_action, set_date_action, settings_action,
+                 exit_action):
 
         super().__init__()
 
-        self.initFrame(start_action, settings_action, exit_action)
+        self.initFrame(start_action, set_date_action, settings_action,
+                       exit_action)
 
-    def initFrame(self, start_action, settings_action, exit_action):
+    def initFrame(self, start_action, set_date_action, settings_action,
+                  exit_action):
 
-        btnStart = QtWidgets.QPushButton('Start Photobooth')
+        btnStart = QtWidgets.QPushButton('Start photobooth')
         btnStart.clicked.connect(start_action)
+
+        btnSetDate = QtWidgets.QPushButton('Set date/time')
+        btnSetDate.clicked.connect(set_date_action)
 
         btnSettings = QtWidgets.QPushButton('Settings')
         btnSettings.clicked.connect(settings_action)
@@ -33,10 +42,21 @@ class Start(QtWidgets.QFrame):
         btnQuit = QtWidgets.QPushButton('Quit')
         btnQuit.clicked.connect(exit_action)
 
-        lay = QtWidgets.QHBoxLayout()
-        lay.addWidget(btnStart)
-        lay.addWidget(btnSettings)
-        lay.addWidget(btnQuit)
+        btnLay = QtWidgets.QHBoxLayout()
+        btnLay.addWidget(btnStart)
+        btnLay.addWidget(btnSetDate)
+        btnLay.addWidget(btnSettings)
+        btnLay.addWidget(btnQuit)
+
+        title = QtWidgets.QLabel('photobooth')
+
+        url = 'https://github.com/reuterbal/photobooth'
+        link = QtWidgets.QLabel('<a href="{0}">{0}</a>'.format(url))
+
+        lay = QtWidgets.QVBoxLayout()
+        lay.addWidget(title)
+        lay.addLayout(btnLay)
+        lay.addWidget(link)
         self.setLayout(lay)
 
 
@@ -287,6 +307,85 @@ class CountdownMessage(QtWidgets.QFrame):
         painter.end()
 
 
+class SetDateTime(QtWidgets.QFrame):
+
+    def __init__(self, cancel_action, restart_action):
+
+        super().__init__()
+
+        self._cancelAction = cancel_action
+        self._restartAction = restart_action
+
+        self.initFrame()
+
+    def initFrame(self):
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.createForm())
+        layout.addStretch(1)
+        layout.addWidget(self.createButtons())
+        self.setLayout(layout)
+
+    def createForm(self):
+
+        self._date_widget = QtWidgets.QDateEdit(QtCore.QDate.currentDate())
+        self._date_widget.setCalendarPopup(True)
+
+        self._time_widget = QtWidgets.QTimeEdit(QtCore.QTime.currentTime())
+
+        layout = QtWidgets.QFormLayout()
+        layout.addRow('Date:', self._date_widget)
+        layout.addRow('Time:', self._time_widget)
+
+        widget = QtWidgets.QGroupBox()
+        widget.setTitle('Set system date and time:')
+        widget.setLayout(layout)
+        return widget
+
+    def createButtons(self):
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addStretch(1)
+
+        btnSave = QtWidgets.QPushButton('Save and restart')
+        btnSave.clicked.connect(self.saveAndRestart)
+        layout.addWidget(btnSave)
+
+        btnCancel = QtWidgets.QPushButton('Cancel')
+        btnCancel.clicked.connect(self._cancelAction)
+        layout.addWidget(btnCancel)
+
+        widget = QtWidgets.QGroupBox()
+        widget.setLayout(layout)
+        return widget
+
+    def saveAndRestart(self):
+
+        if os.name != 'posix':
+            raise NotImplementedError(('Setting time/date not yet implemented '
+                                       'for OS type "{}"'.format(os.name)))
+
+        date = self._date_widget.date()
+        time = self._time_widget.time()
+        datetime = '{:04d}{:02d}{:02d} {:02d}:{:02d}'.format(date.year(),
+                                                             date.month(),
+                                                             date.day(),
+                                                             time.hour(),
+                                                             time.minute())
+        logging.info(['sudo', '-A', 'date', '-s', datetime])
+        logging.info('Setting date to "{}"'.format(datetime))
+
+        try:
+            subprocess.run(['sudo', '-A', 'date', '-s', datetime],
+                           stderr=subprocess.PIPE).check_returncode()
+        except subprocess.CalledProcessError as e:
+            cmd = ' '.join(e.cmd)
+            msg = e.stderr.decode(sys.stdout.encoding)
+            logging.error('Failed to execute "{}": "{}"'.format(cmd, msg))
+
+        self._restartAction()
+
+
 class Settings(QtWidgets.QFrame):
 
     def __init__(self, config, reload_action, cancel_action, restart_action):
@@ -487,7 +586,8 @@ class Settings(QtWidgets.QFrame):
 
         def file_dialog():
             dialog = QtWidgets.QFileDialog.getExistingDirectory
-            basedir.setText(dialog(self, 'Select directory', expanduser('~'),
+            basedir.setText(dialog(self, 'Select directory',
+                                   os.expanduser('~'),
                                    QtWidgets.QFileDialog.ShowDirsOnly))
 
         file_button = QtWidgets.QPushButton('Select directory')
