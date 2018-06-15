@@ -11,6 +11,13 @@ For what type of event have you been using the application? What does your photo
  - Device [e.g. Intel Laptop, Raspberry Pi 3B+, Odroid C2]
  - Camera [e.g. Canon EOS 500D]
  - GPIO: [Yes/No]
+ 
+ **Additional equipment**
+  - Flash/Light
+  - External USB battery
+  - Switch
+  - (Touch)Screen
+  - ...
 
 **Software (please complete the following information):**
  - OS [e.g. Raspbian Stretch]
@@ -24,5 +31,5 @@ For what type of event have you been using the application? What does your photo
  - A list of problems...
  - ...that you experienced during the use
 
-**Pictures**
+**Pictures:**
 If you like, add pictures of your photobooth, include screenshots etc.
