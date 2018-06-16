@@ -34,14 +34,25 @@ class CameraPicamera(Camera):
         super().__init__()
 
         self.hasPreview = True
-        self.hasIdle = False
+        self.hasIdle = True
 
         logging.info('Using PiCamera')
 
         self._cap = PiCamera()
 
+    def setActive(self):
+
+        if self._cap.closed:
+            self._cap = PiCamera()
+
+    def setIdle(self):
+
+        if not self._cap.closed:
+            self._cap.close()
+
     def getPreview(self):
 
+        self.setActive()
         stream = io.BytesIO()
         self._cap.capture(stream, format='jpeg', use_video_port=True)
         stream.seek(0)
@@ -49,6 +60,7 @@ class CameraPicamera(Camera):
 
     def getPicture(self):
 
+        self.setActive()
         stream = io.BytesIO()
         self._cap.capture(stream, format='jpeg')
         stream.seek(0)
