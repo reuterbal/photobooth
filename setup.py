@@ -111,7 +111,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         'Environment :: X11 Applications :: Qt',
 
@@ -158,11 +158,12 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'opencv-python', 
-        'Pillow', 
+        'opencv-python',
+        'Pillow',
         'gpiozero',
         'gphoto2',
-        'gphoto2-cffi'],  # Optional
+        'gphoto2-cffi',  # Optional
+        ],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
@@ -174,10 +175,11 @@ setup(
     # projects.
     extras_require={  # Optional
         'dev': ['PyQt5'],
+        'picamera': ['picamera'],
         # 'test': ['coverage'],
     },
 
-    python_requires='>=3',
+    python_requires='>=3.5',
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.
@@ -222,5 +224,3 @@ setup(
         'Source': 'https://github.com/reuterbal/photobooth/',
     },
 )
-
-
