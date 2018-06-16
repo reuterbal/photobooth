@@ -583,7 +583,7 @@ class Settings(QtWidgets.QFrame):
         num_x.setRange(1, 99)
         num_x.setValue(self._cfg.getInt('Picture', 'num_x'))
         self.add('Picture', 'num_x', num_x)
-        
+
         num_y = QtWidgets.QSpinBox()
         num_y.setRange(1, 99)
         num_y.setValue(self._cfg.getInt('Picture', 'num_y'))
@@ -593,7 +593,7 @@ class Settings(QtWidgets.QFrame):
         size_x.setRange(1, 999999)
         size_x.setValue(self._cfg.getInt('Picture', 'size_x'))
         self.add('Picture', 'size_x', size_x)
-        
+
         size_y = QtWidgets.QSpinBox()
         size_y.setRange(1, 999999)
         size_y.setValue(self._cfg.getInt('Picture', 'size_y'))
