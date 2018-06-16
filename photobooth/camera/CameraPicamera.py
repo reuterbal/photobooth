@@ -38,17 +38,18 @@ class CameraPicamera(Camera):
 
         logging.info('Using PiCamera')
 
-        self._cap = PiCamera()
+        self._cap = None
 
     def setActive(self):
 
-        if self._cap.closed:
+        if self._cap is None or self._cap.closed:
             self._cap = PiCamera()
 
     def setIdle(self):
 
-        if not self._cap.closed:
+        if self._cap is not None and not self._cap.closed:
             self._cap.close()
+            self._cap = None
 
     def getPreview(self):
 
