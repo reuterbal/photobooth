@@ -12,11 +12,11 @@ This is a Python application to build your own photobooth.
 * Support for external buttons and lamps via GPIO interface
 
 ### Technical specifications
-* Many camera models supported, thanks to interfaces to [gPhoto2](http://www.gphoto.org/), [OpenCV](https://opencv.org/),  Raspberry Pi camera (*soon*)
+* Many camera models supported, thanks to interfaces to [gPhoto2](http://www.gphoto.org/), [OpenCV](https://opencv.org/),  [Raspberry Pi camera module](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera)
 * Tested on Standard x86 hardware and [Raspberry Pi](https://raspberrypi.org/) models 1B+, 3B, 3B+
 * Flexible, modular design: Easy to add features or customize the appearance
 * Multi-threaded for responsive GUI and fast processing
-* Based on [Python 3](https://www.python.org/) and [Qt5](https://www.qt.io/developers/)
+* Based on [Python 3](https://www.python.org/), [Pillow](https://pillow.readthedocs.io), and [Qt5](https://www.qt.io/developers/)
 
 ### History
 I started this project for my own wedding in 2015. 
@@ -28,8 +28,8 @@ Since then it underwent a complete rewrite, with vastly improved performance and
 ## Installation and usage
 
 ### Hardware requirements
-* Some computer/SoC that is able to run Python 3 as well as any of the supported camera libraries
-* Camera supported by gPhoto 2 (see [compatibility list](http://gphoto.org/doc/remote/)) or OpenCV (e.g., most standard webcams).
+* Some computer/SoC that is able to run Python 3.5+ as well as any of the supported camera libraries
+* Camera supported by gPhoto 2 (see [compatibility list](http://gphoto.org/doc/remote/)), OpenCV (e.g., most standard webcams), or a Raspberry Pi Camera Module.
 * Optional: External buttons and lamps (in combination with GPIO-enabled hardware)
 
 ### Installing and running the photobooth
