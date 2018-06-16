@@ -43,13 +43,13 @@ class CameraPicamera(Camera):
     def getPreview(self):
 
         stream = io.BytesIO()
-        self._cap.capture(stream, format='rgb', use_video_port=True)
+        self._cap.capture(stream, format='jpeg', use_video_port=True)
         stream.seek(0)
-        return Image.fromarray(stream)
+        return Image.open(stream)
 
     def getPicture(self):
 
         stream = io.BytesIO()
-        self._cap.capture(stream, format='rgb')
+        self._cap.capture(stream, format='jpeg')
         stream.seek(0)
-        return Image.fromarray(stream)
+        return Image.open(stream)
