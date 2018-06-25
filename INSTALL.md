@@ -29,6 +29,15 @@ Afterwards, open the configuration utility to adapt everything to your needs (e.
 sudo rpi-config
 ```
 
+### Disable screensaver/screen blanking
+By default, Raspbian blanks the screen after ten minutes of idle time.
+You probably do not want that for a photobooth, thus it is best to disable this.
+
+For that, edit  `/etc/lightdm/lightdm.conf` and change the startup command to the following:
+```
+xserver-command=X -s 0 -dpms
+```
+
 ### Configure touch screen, printer etc.
 Configure any not working hardware, e.g., my touch screen needs some additional steps since some of the latest Raspbian releases.
 See the instructions at the end for my hardware setup.
