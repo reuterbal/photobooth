@@ -215,8 +215,8 @@ class Photobooth:
 
         logging.info('Photobooth triggered')
 
-        self._conn.send(GuiState.GreeterState())
         self.triggerOff()
+        self._conn.send(GuiState.GreeterState())
 
         self.setCameraActive()
         self.recvAck()
