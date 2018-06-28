@@ -82,23 +82,22 @@ class IdleMessage(QtWidgets.QFrame):
     def __init__(self):
 
         super().__init__()
+        self.setObjectName('IdleMessage')
 
-        self._message = 'Hit the button!'
+        self._message_label = 'Hit the'
+        self._message_button = 'Button!'
 
-    def _paintMessage(self, painter):
+        self.initFrame()
 
-        f = self.font()
-        f.setPixelSize(self.height() / 5)
-        painter.setFont(f)
+    def initFrame(self):
 
-        rect = self.rect()
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._message)
+        lbl = QtWidgets.QLabel(self._message_label)
+        btn = QtWidgets.QPushButton(self._message_button)
 
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-        self._paintMessage(painter)
-        painter.end()
+        lay = QtWidgets.QVBoxLayout()
+        lay.addWidget(lbl)
+        lay.addWidget(btn)
+        self.setLayout(lay)
 
 
 class GreeterMessage(QtWidgets.QFrame):
@@ -106,34 +105,31 @@ class GreeterMessage(QtWidgets.QFrame):
     def __init__(self, num_x, num_y):
 
         super().__init__()
+        self.setObjectName('GreeterMessage')
 
-        self._title = 'Get ready!'
+        self._text_title = 'Get ready!'
+        self._text_button = 'Start countdown'
         if num_x * num_y > 1:
-            self._text = ('Capturing {} pictures...'.format(num_x * num_y))
+            self._text_label = ('for {} pictures...'.format(num_x * num_y))
         else:
-            self._text = 'Starting the countdown...'
+            self._text_label = ''
 
-    def _paintMessage(self, painter):
+        self.initFrame()
 
-        f = self.font()
+    def initFrame(self):
 
-        f.setPixelSize(self.height() / 5)
-        painter.setFont(f)
-        rect = QtCore.QRect(0, self.height() * 1 / 5,
-                            self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._title)
+        ttl = QtWidgets.QLabel(self._text_title)
+        ttl.setObjectName('title')
+        btn = QtWidgets.QPushButton(self._text_button)
+        btn.setObjectName('button')
+        lbl = QtWidgets.QLabel(self._text_label)
+        lbl.setObjectName('message')
 
-        f.setPixelSize(self.height() / 8)
-        painter.setFont(f)
-        rect = QtCore.QRect(0, self.height() * 3 / 5,
-                            self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._text)
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-        self._paintMessage(painter)
-        painter.end()
+        lay = QtWidgets.QVBoxLayout()
+        lay.addWidget(ttl)
+        lay.addWidget(btn)
+        lay.addWidget(lbl)
+        self.setLayout(lay)
 
 
 class PoseMessage(QtWidgets.QFrame):
@@ -141,35 +137,22 @@ class PoseMessage(QtWidgets.QFrame):
     def __init__(self, num_picture, num_x, num_y):
 
         super().__init__()
+        self.setObjectName('PoseMessage')
 
-        self._title = 'Pose!'
         if num_x * num_y > 1:
             self._text = 'Picture {} of {}...'.format(num_picture,
                                                       num_x * num_y)
         else:
             self._text = 'Taking a photo...'
 
-    def _paintMessage(self, painter):
+        self.initFrame()
 
-        f = self.font()
+    def initFrame(self):
 
-        f.setPixelSize(self.height() / 5)
-        painter.setFont(f)
-        rect = QtCore.QRect(0, self.height() * 1 / 5,
-                            self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._title)
-
-        f.setPixelSize(self.height() / 8)
-        painter.setFont(f)
-        rect = QtCore.QRect(0, self.height() * 3 / 5,
-                            self.width(), self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._text)
-
-    def paintEvent(self, event):
-
-        painter = QtGui.QPainter(self)
-        self._paintMessage(painter)
-        painter.end()
+        lbl = QtWidgets.QLabel(self._text)
+        lay = QtWidgets.QVBoxLayout()
+        lay.addWidget(lbl)
+        self.setLayout(lay)
 
 
 class PictureMessage(QtWidgets.QFrame):
@@ -177,6 +160,7 @@ class PictureMessage(QtWidgets.QFrame):
     def __init__(self, picture):
 
         super().__init__()
+        self.setObjectName('PictureMessage')
 
         self._picture = picture
 
@@ -205,9 +189,19 @@ class WaitMessage(QtWidgets.QFrame):
     def __init__(self, message):
 
         super().__init__()
+        self.setObjectName('WaitMessage')
 
-        self._message = message
+        self._text = message
         self._clock = Widgets.SpinningWaitClock()
+
+        self.initFrame()
+
+    def initFrame(self):
+
+        lbl = QtWidgets.QLabel(self._text)
+        lay = QtWidgets.QVBoxLayout()
+        lay.addWidget(lbl)
+        self.setLayout(lay)
 
     def showEvent(self, event):
 
@@ -218,23 +212,12 @@ class WaitMessage(QtWidgets.QFrame):
         self._clock.value += 1
         self.update()
 
-    def _paintMessage(self, painter):
-
-        f = self.font()
-        f.setPixelSize(self.height() / 8)
-        painter.setFont(f)
-
-        rect = QtCore.QRect(0, self.height() * 3 / 5, self.width(),
-                            self.height() * 3 / 10)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, self._message)
-
     def paintEvent(self, event):
 
         offset = ((self.width() - self._clock.width()) // 2,
                   (self.height() - self._clock.height()) // 2)
 
         painter = QtGui.QPainter(self)
-        self._paintMessage(painter)
         self._clock.render(painter, QtCore.QPoint(*offset),
                            self._clock.visibleRegion(),
                            QtWidgets.QWidget.DrawChildren)
@@ -246,6 +229,7 @@ class CountdownMessage(QtWidgets.QFrame):
     def __init__(self, time, action):
 
         super().__init__()
+        self.setObjectName('CountdownMessage')
 
         self._step_size = 50
         self._value = time * (1000 // self._step_size)
@@ -309,7 +293,8 @@ class CountdownMessage(QtWidgets.QFrame):
         if self.picture is not None:
 
             pix = QtGui.QPixmap.fromImage(self.picture)
-            pix = pix.scaled(self.size(), QtCore.Qt.KeepAspectRatio,
+            pix = pix.scaled(self.contentsRect().size(),
+                             QtCore.Qt.KeepAspectRatio,
                              QtCore.Qt.FastTransformation)
             origin = ((self.width() - pix.width()) // 2,
                       (self.height() - pix.height()) // 2)
@@ -479,6 +464,10 @@ class Settings(QtWidgets.QFrame):
         idx = [x for x, m in enumerate(module_list) if m[0] == current_module]
         cb.setCurrentIndex(idx[0] if len(idx) > 0 else -1)
 
+        # Fix bug in Qt to allow changing the items in a stylesheet
+        delegate = QtWidgets.QStyledItemDelegate()
+        cb.setItemDelegate(delegate)
+
         return cb
 
     def createGuiSettings(self):
@@ -645,11 +634,11 @@ class Settings(QtWidgets.QFrame):
         layout = QtWidgets.QFormLayout()
         layout.addRow('Number of shots per picture:', lay_num)
         layout.addRow('Size of assembled picture [px]:', lay_size)
-        layout.addRow('Minimum distance between shots in picture [px]:',
+        layout.addRow('Min. distance between shots [px]:',
                       lay_dist)
-        layout.addRow('Output directory (strftime directives possible):',
+        layout.addRow('Output directory (strftime possible):',
                       lay_file)
-        layout.addRow('Basename of files (strftime directives possible):',
+        layout.addRow('Basename of files (strftime possible):',
                       basename)
 
         widget = QtWidgets.QWidget()

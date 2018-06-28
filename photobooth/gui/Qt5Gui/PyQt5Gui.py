@@ -21,6 +21,7 @@ import logging
 import os
 
 from PyQt5 import QtCore
+from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 from PIL import ImageQt
@@ -90,6 +91,12 @@ class PyQt5Gui(GuiSkeleton):
         self._app = QtWidgets.QApplication(argv)
         self._app.setStyleSheet(stylesheet)
         self._gui = PyQt5MainWindow(self._cfg, self._handleKeypressEvent)
+
+        fonts = ['photobooth/gui/Qt5Gui/fonts/AmaticSC-Regular.ttf',
+                 'photobooth/gui/Qt5Gui/fonts/AmaticSC-Bold.ttf']
+        self._fonts = QtGui.QFontDatabase()
+        for font in fonts:
+            self._fonts.addApplicationFont(font)
 
     def _initReceiver(self):
 
@@ -200,7 +207,7 @@ class PyQt5Gui(GuiSkeleton):
         self._disableTrigger()
 
         num_pic = (self._cfg.getInt('Picture', 'num_x'),
-                   self._cfg.getInt('Picture', 'num_x'))
+                   self._cfg.getInt('Picture', 'num_y'))
         greeter_time = self._cfg.getInt('Photobooth', 'greeter_time') * 1000
 
         self._setWidget(Frames.GreeterMessage(*num_pic))
@@ -219,7 +226,7 @@ class PyQt5Gui(GuiSkeleton):
     def _showPose(self, state):
 
         num_pic = (self._cfg.getInt('Picture', 'num_x'),
-                   self._cfg.getInt('Picture', 'num_x'))
+                   self._cfg.getInt('Picture', 'num_y'))
         self._setWidget(Frames.PoseMessage(state.num_picture, *num_pic))
 
     def _showAssemble(self, state):
@@ -267,8 +274,8 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
         if self._cfg.getBool('Gui', 'fullscreen'):
             self.showFullScreen()
         else:
-            self.resize(self._cfg.getInt('Gui', 'width'),
-                        self._cfg.getInt('Gui', 'height'))
+            self.setFixedSize(self._cfg.getInt('Gui', 'width'),
+                              self._cfg.getInt('Gui', 'height'))
             self.show()
 
     def closeEvent(self, e):

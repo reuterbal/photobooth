@@ -19,6 +19,7 @@
 
 # Available style sheets as tuples of (style name, style file)
 styles = (('default', 'stylesheets/default.qss'),
-          ('dark', 'stylesheets/dark.qss'))
+          ('dark', 'stylesheets/dark.qss'),
+          ('pastel', 'stylesheets/pastel.qss'))
 
 from .PyQt5Gui import PyQt5Gui  # noqa

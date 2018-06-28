@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="199.6391mm"
+   height="297.63135mm"
+   viewBox="0 0 199.6391 297.63135"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (unknown)"
+   sodipodi:docname="arrow.svg">
+  <defs
+     id="defs2">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Roughen"
+       id="filter6254">
+      <feTurbulence
+         type="fractalNoise"
+         numOctaves="3"
+         seed="2"
+         baseFrequency="0.011 0.018"
+         result="turbulence"
+         id="feTurbulence6250" />
+      <feDisplacementMap
+         in="SourceGraphic"
+         in2="turbulence"
+         scale="4"
+         yChannelSelector="G"
+         xChannelSelector="R"
+         id="feDisplacementMap6252" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Roughen"
+       id="filter6260">
+      <feTurbulence
+         type="fractalNoise"
+         numOctaves="3"
+         seed="2"
+         baseFrequency="0.011 0.018"
+         result="turbulence"
+         id="feTurbulence6256" />
+      <feDisplacementMap
+         in="SourceGraphic"
+         in2="turbulence"
+         scale="4"
+         yChannelSelector="G"
+         xChannelSelector="R"
+         id="feDisplacementMap6258" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Roughen"
+       id="filter6266">
+      <feTurbulence
+         type="fractalNoise"
+         numOctaves="3"
+         seed="2"
+         baseFrequency="0.011 0.018"
+         result="turbulence"
+         id="feTurbulence6262" />
+      <feDisplacementMap
+         in="SourceGraphic"
+         in2="turbulence"
+         scale="4"
+         yChannelSelector="G"
+         xChannelSelector="R"
+         id="feDisplacementMap6264" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="756.22901"
+     inkscape:cy="432.22136"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-0.46865904,-8.1350937)">
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.11666667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter6254)"
+       d="m 17.10525,32.937706 c 176.93243,0 166.24164,248.026114 166.24164,248.026114"
+       id="path1172"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.11666667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter6260)"
+       d="M 183.34689,280.96382 C 172.82815,259.95369 158.67307,262.38934 158.67307,262.38934"
+       id="path1176"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.11666667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter6266)"
+       d="m 183.34689,280.96382 c 5.29447,-27.1829 14.9916,-26.55026 14.9916,-26.55026"
+       id="path1178"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>
