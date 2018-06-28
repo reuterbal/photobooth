@@ -112,7 +112,7 @@ QFrame#WaitMessage QLabel {
 /* Picture Screen*/
 
 QFrame#PictureMessage {
-    margin: 40px;
+    margin: 30px;
 }
 
 /* Customizing settings */

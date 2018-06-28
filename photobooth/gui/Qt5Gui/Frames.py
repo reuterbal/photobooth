@@ -170,11 +170,11 @@ class PictureMessage(QtWidgets.QFrame):
             pix = QtGui.QPixmap.fromImage(self._picture)
         else:
             pix = QtGui.QPixmap(self._picture)
-        pix = pix.scaled(self.rect().size(), QtCore.Qt.KeepAspectRatio,
+        pix = pix.scaled(self.contentsRect().size(), QtCore.Qt.KeepAspectRatio,
                          QtCore.Qt.SmoothTransformation)
 
-        origin = ((self.rect().width() - pix.width()) // 2,
-                  (self.rect().height() - pix.height()) // 2)
+        origin = ((self.width() - pix.width()) // 2,
+                  (self.height() - pix.height()) // 2)
         painter.drawPixmap(QtCore.QPoint(*origin), pix)
 
     def paintEvent(self, event):
