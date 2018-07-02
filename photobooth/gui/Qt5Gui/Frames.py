@@ -309,6 +309,44 @@ class CountdownMessage(QtWidgets.QFrame):
         painter.end()
 
 
+class PostprocessMessage(Widgets.TransparentOverlay):
+
+    def __init__(self, parent, tasks, idle_handle, timeout=None,
+                 timeout_handle=None):
+
+        if timeout_handle is None:
+            timeout_handle = idle_handle
+
+        super().__init__(parent, timeout, timeout_handle)
+        self.setObjectName('PostprocessMessage')
+        self.initFrame(tasks, idle_handle)
+
+    def initFrame(self, tasks, idle_handle):
+
+        def disableAndCall(button, handle):
+            button.setEnabled(False)
+            handle()
+
+        def createButton(task):
+            button = QtWidgets.QPushButton(task.label)
+            button.clicked.connect(lambda: disableAndCall(button, task.action))
+            return button
+
+        buttons = [createButton(task) for task in tasks]
+        buttons.append(QtWidgets.QPushButton('Start over'))
+        buttons[-1].clicked.connect(idle_handle)
+
+        button_lay = QtWidgets.QGridLayout()
+        for i, button in enumerate(buttons):
+            pos = divmod(i, 2)
+            button_lay.addWidget(button, *pos)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(QtWidgets.QLabel('Happy?'))
+        layout.addLayout(button_lay)
+        self.setLayout(layout)
+
+
 class SetDateTime(QtWidgets.QFrame):
 
     def __init__(self, cancel_action, restart_action):
@@ -539,11 +577,18 @@ class Settings(QtWidgets.QFrame):
         displ_time.setValue(self._cfg.getInt('Photobooth', 'display_time'))
         self.add('Photobooth', 'display_time', displ_time)
 
+        postproc_time = QtWidgets.QSpinBox()
+        postproc_time.setRange(0, 1000)
+        postproc_time.setValue(self._cfg.getInt('Photobooth',
+                                                'postprocess_time'))
+        self.add('Photobooth', 'postprocess_time', postproc_time)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow('Show preview during countdown:', preview)
         layout.addRow('Greeter time before countdown [s]:', greet_time)
         layout.addRow('Countdown time [s]:', count_time)
         layout.addRow('Picture display time [s]:', displ_time)
+        layout.addRow('Postprocess timeout [s]:', postproc_time)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -734,6 +779,8 @@ class Settings(QtWidgets.QFrame):
                       str(self.get('Photobooth', 'countdown_time').text()))
         self._cfg.set('Photobooth', 'display_time',
                       str(self.get('Photobooth', 'display_time').text()))
+        self._cfg.set('Photobooth', 'postprocess_time',
+                      str(self.get('Photobooth', 'postprocess_time').text()))
 
         self._cfg.set('Camera', 'module',
                       camera.modules[self.get('Camera',

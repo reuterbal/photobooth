@@ -24,14 +24,14 @@ QPushButton {
 }
 
 QPushButton:pressed {
-    background-color: #66ffffff;
+    background-color: #66eeeeee;
 }
 
 /* Idle Screen */
 
 QFrame#IdleMessage {
     background-image: url(photobooth/gui/Qt5Gui/images/arrow.png);
-    background-repeat:; no-repeat;
+    background-repeat: no-repeat;
     padding: 80px 400px 120px 80px;
 }
 
@@ -80,9 +80,13 @@ QFrame#GreeterMessage QLabel#message {
 /* Countdown Screen */
 
 QFrame#CountdownMessage {
+    background-color: #eeeeee;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 30px;
+    border-color: #eeeeee;
     margin: 20px;
     padding: 30px;
-    background-color: #eeeeee;
 }
 
 /* Pose Screen */
@@ -109,10 +113,46 @@ QFrame#WaitMessage QLabel {
     qproperty-alignment: AlignCenter;
 }
 
-/* Picture Screen*/
+/* Picture Screen */
 
 QFrame#PictureMessage {
     margin: 30px;
+}
+
+/* Overlay message */
+
+QWidget#TransparentOverlay {
+    background-color: #aaeeeeee;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 30px;
+    border-color: #eeeeee;
+    color: #333333;
+    padding: 40px;
+}
+
+/* Postprocess message */
+
+QWidget#PostprocessMessage QLabel {
+    color: #333333;
+    font-size: 110px;
+    qproperty-alignment: AlignCenter;
+}
+
+QWidget#PostprocessMessage QPushButton {
+    color: #333333;
+    border-color: #333333;
+    margin: 20px;
+}
+
+QWidget#PostprocessMessage QPushButton:pressed {
+    background-color: #66eeeeee;
+}
+
+QWidget#PostprocessMessage QPushButton:disabled {
+    background-color: #66eeeeee;
+    color: #33eeeeee;
+    border-color: #33eeeeee;
 }
 
 /* Customizing settings */

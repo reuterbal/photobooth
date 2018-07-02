@@ -53,6 +53,8 @@ class PrinterPyQt5(Printer):
             self._printer.setOutputFileName('print_%d.pdf' % self._counter)
             self._counter += 1
 
+        logging.info('Printing picture')
+
         img = ImageQt.ImageQt(picture)
         img = img.scaled(self._printer.pageRect().size(),
                          QtCore.Qt.KeepAspectRatio,

@@ -28,10 +28,10 @@ from PIL import ImageQt
 
 from .. import GuiState
 from ..GuiSkeleton import GuiSkeleton
+from ..GuiPostprocessor import GuiPostprocessor
 
 from . import styles
 from . import Frames
-from . import Postprocessor
 from . import Receiver
 
 
@@ -48,7 +48,7 @@ class PyQt5Gui(GuiSkeleton):
         self._initUI(argv)
         self._initReceiver()
 
-        self._postprocess = Postprocessor.Postprocessor(self._cfg)
+        self._postprocess = GuiPostprocessor(self._cfg)
 
     def run(self):
 
@@ -152,12 +152,6 @@ class PyQt5Gui(GuiSkeleton):
         elif self._is_trigger and event.key() == QtCore.Qt.Key_Space:
             self.handleState(GuiState.TriggerState())
 
-    def _postprocessPicture(self, picture):
-
-        self._postprocess.fill(picture)
-        self._postprocess.work(MessageBox(self._gui))
-        self._sendAck()
-
     def _showWelcomeScreen(self):
 
         self._disableTrigger()
@@ -239,22 +233,27 @@ class PyQt5Gui(GuiSkeleton):
         review_time = self._cfg.getInt('Photobooth', 'display_time') * 1000
         self._setWidget(Frames.PictureMessage(img))
         QtCore.QTimer.singleShot(review_time, lambda:
-                                 self._postprocessPicture(state.picture))
+                                 self._showPostprocess(state.picture))
+
+    def _showPostprocess(self, picture):
+
+        tasks = self._postprocess.get(picture)
+        postproc_t = self._cfg.getInt('Photobooth', 'postprocess_time')
+
+        Frames.PostprocessMessage(self._gui.centralWidget(), tasks, 
+                                  self._sendAck, postproc_t * 1000)
 
     def _showError(self, state):
 
         logging.error('%s: %s', state.title, state.message)
-        reply = QtWidgets.QMessageBox.warning(self._gui, state.title,
-                                              state.message,
-                                              QtWidgets.QMessageBox.Close |
-                                              QtWidgets.QMessageBox.Retry,
-                                              QtWidgets.QMessageBox.Retry)
-        if reply == QtWidgets.QMessageBox.Retry:
-            self._sendAck()
-            self._lastState()
-        else:
-            self._sendCancel()
-            self._showWelcomeScreen()
+
+        def exec(*handles):
+            for handle in handles:
+                handle()
+
+        MessageBox(self, MessageBox.RETRY, state.title, state.message,
+                   exec(self._sendAck, self._lastState),
+                   exec(self._sendCancel, self._showWelcomeScreen))
 
 
 class PyQt5MainWindow(QtWidgets.QMainWindow):
@@ -296,23 +295,67 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
         self._handle_key(event)
 
 
-class MessageBox:
+class MessageBox(QtWidgets.QWidget):
 
-    def __init__(self, parent):
+    QUESTION = 1
+    RETRY = 2
+    INFORMATION = 3
 
-        super().__init__()
+    def __init__(self, parent, type, title, message, *handles):
 
-        self._parent = parent
+        super().__init__(parent)
 
-    def question(self, title, message):
+        if type == MessageBox.QUESTION:
+            self.question(title, message, *handles)
+        elif type == MessageBox.RETRY:
+            self.retry(title, message, *handles)
+        else:
+            raise ValueError('Unknown type specified')
 
-        reply = QtWidgets.QMessageBox.question(self._parent, title, message,
-                                               QtWidgets.QMessageBox.Yes |
-                                               QtWidgets.QMessageBox.No,
-                                               QtWidgets.QMessageBox.No)
-        return reply == QtWidgets.QMessageBox.Yes
+    def question(self, title, message, *handles):
 
-    def information(self, title, message):
+        lbl_title = QtWidgets.QLabel(title)
+        lbl_title.setObjectName('title')
 
-        QtWidgets.QMessageBox.information(self._parent, title, message,
-                                          QtWidgets.QMessageBox.Ok)
+        lbl_message = QtWidgets.QLabel(message)
+        lbl_message.setObjectName('message')
+
+        btn_yes = QtWidgets.QPushButton('Yes')
+        btn_yes.clicked.connect(handles[0])
+
+        btn_no = QtWidgets.QPushButton('No')
+        btn_no.clicked.connect(handles[1])
+
+        lay_buttons = QtWidgets.QHBoxLayout()
+        lay_buttons.addWidget(btn_yes)
+        lay_buttons.addWidget(btn_no)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(lbl_title)
+        layout.addWidget(lbl_message)
+        layout.addLayout(lay_buttons)
+        self.setLayout(layout)
+
+    def retry(self, title, message, *handles):
+
+        lbl_title = QtWidgets.QLabel(title)
+        lbl_title.setObjectName('title')
+
+        lbl_message = QtWidgets.QLabel(message)
+        lbl_message.setObjectName('message')
+
+        btn_retry = QtWidgets.QPushButton('Retry')
+        btn_retry.clicked.connect(handles[0])
+
+        btn_cancel = QtWidgets.QPushButton('Cancel')
+        btn_cancel.clicked.connect(handles[1])
+
+        lay_buttons = QtWidgets.QHBoxLayout()
+        lay_buttons.addWidget(btn_retry)
+        lay_buttons.addWidget(btn_cancel)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(lbl_title)
+        layout.addWidget(lbl_message)
+        layout.addLayout(lay_buttons)
+        self.setLayout(layout)
