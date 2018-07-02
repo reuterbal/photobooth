@@ -240,7 +240,7 @@ class PyQt5Gui(GuiSkeleton):
         tasks = self._postprocess.get(picture)
         postproc_t = self._cfg.getInt('Photobooth', 'postprocess_time')
 
-        Frames.PostprocessMessage(self._gui.centralWidget(), tasks, 
+        Frames.PostprocessMessage(self._gui.centralWidget(), tasks,
                                   self._sendAck, postproc_t * 1000)
 
     def _showError(self, state):
