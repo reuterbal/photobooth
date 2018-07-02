@@ -41,8 +41,8 @@ class CameraPicamera(Camera):
         self._cap = None
 
         self.setActive()
-        res_x, res_y = self._cap.resolution
-        self._preview_resolution = (res_x // 2, res_y // 2)
+        self._preview_resolution = (self._cap.resolution[0] // 2,
+                                    self._cap.resolution[1] // 2)
         self.setIdle()
 
     def setActive(self):
