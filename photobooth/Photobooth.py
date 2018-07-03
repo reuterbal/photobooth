@@ -92,6 +92,7 @@ class Photobooth:
         logging.info('Teardown of camera')
         self.triggerOff()
         self.setCameraIdle()
+        self._cap.cleanup()
 
     def recvEvent(self, expected):
 

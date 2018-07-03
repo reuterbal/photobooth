@@ -43,12 +43,16 @@ class CameraGphoto2(Camera):
 
     def cleanup(self):
 
-        self._cap.set_config(self._oldconfig)
+        config = self._cap.get_config()
+        config.get_child_by_name('imageformat').set_value(self._imageformat)
+        config.get_child_by_name('imageformatsd').set_value(self._imageformat)
+        # config.get_child_by_name('autopoweroff').set_value(self._autopoweroff)
+        self._cap.set_config(config)
         self._cap.exit(self._ctxt)
 
     def _setupLogging(self):
 
-        gp.error_severity[gp.GP_ERROR] = logging.WARNING
+        gp.error_severity[gp.GP_ERROR] = logging.ERROR
         gp.check_result(gp.use_python_logging())
 
     def _setupCamera(self):
@@ -61,16 +65,29 @@ class CameraGphoto2(Camera):
                      str(self._cap.get_summary(self._ctxt)))
 
         # get configuration tree
-        # self._config = self._cap.get_config()
-        # self._oldconfig = self._config
         config = self._cap.get_config()
 
         # make sure camera format is not set to raw
-        imageformat = config.get_child_by_name('imageformat').get_value()
-        if 'raw' in imageformat.lower():
-            raise RuntimeError('Camera file format is set to RAW')
+        imageformat = config.get_child_by_name('imageformat')
+        self._imageformat = imageformat.get_value()
+        if 'raw' in self._imageformat.lower():
+            imageformat.set_value('Large Fine JPEG')
+        imageformatsd = config.get_child_by_name('imageformatsd')
+        self._imageformatsd = imageformatsd.get_value()
+        if 'raw' in self._imageformatsd.lower():
+            imageformatsd.set_value('Large Fine JPEG')
 
-        self._printConfig(config)
+        # make sure autopoweroff is disabled
+        # this doesn't seem to work
+        # autopoweroff = config.get_child_by_name('autopoweroff')
+        # self._autopoweroff = autopoweroff.get_value()
+        # logging.info('autopoweroff: {}'.format(self._autopoweroff))
+        # if int(self._autopoweroff) > 0:
+        #     autopoweroff.set_value('0')
+
+        # apply configuration and print current config
+        self._cap.set_config(config)
+        self._printConfig(self._cap.get_config())
 
     @staticmethod
     def _configTreeToText(tree, indent=0):
