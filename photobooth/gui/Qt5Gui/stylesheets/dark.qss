@@ -55,18 +55,20 @@ QFrame#IdleMessage QPushButton:pressed {
 /* Greeter Screen */
 
 QFrame#GreeterMessage {
-    padding: 50px;
+    padding: 30px;
 }
 
 QFrame#GreeterMessage QLabel#title {
     font-size: 180px;
+    margin: 0;
+    padding: 0;
     qproperty-alignment: AlignCenter;
 }
 
 QFrame#GreeterMessage QPushButton#button {
     border: none;
     font-size: 120px;
-    margin: 60px 0 20px 0;
+    margin: 0;
     min-height: 160px;
     padding: 0;
     text-align: center;
@@ -74,6 +76,8 @@ QFrame#GreeterMessage QPushButton#button {
 
 QFrame#GreeterMessage QLabel#message {
     font-size: 120px;
+    margin: 0;
+    padding: 0;
     qproperty-alignment: AlignCenter;
 }
 

@@ -457,7 +457,7 @@ class Settings(QtWidgets.QFrame):
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.createTabs())
-        layout.addStretch(1)
+        # layout.addStretch(1)
         layout.addWidget(self.createButtons())
         self.setLayout(layout)
 
