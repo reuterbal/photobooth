@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import logging
 import os
 
@@ -44,15 +45,24 @@ class PyQt5Gui(GuiSkeleton):
         self._cfg = config
         self._conn = camera_conn
 
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--run', action='store_true',
+                            help='omit welcome screen and run photobooth')
+        parsed_args, unparsed_args = parser.parse_known_args()
+        self._omit_welcome = parsed_args.run
+
         self._registerCallbacks()
-        self._initUI(argv)
+        self._initUI(argv[:1] + unparsed_args)
         self._initReceiver()
 
         self._postprocess = GuiPostprocessor(self._cfg)
 
     def run(self):
 
-        self._showWelcomeScreen()
+        if self._omit_welcome:
+            self._showStart(None)
+        else:
+            self._showWelcomeScreen()
         exit_code = self._app.exec_()
         self._gui = None
         return exit_code
