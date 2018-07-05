@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import queue
-
 from .. import printer
 from ..util import lookup_and_import
 
@@ -30,13 +28,12 @@ class GuiPostprocessor:
         super().__init__()
 
         self._task_list = []
-        self._queue = queue.Queue()
 
         if config.getBool('Printer', 'enable'):
             module = config.get('Printer', 'module')
-            size = (config.getInt('Printer', 'width'),
-                    config.getInt('Printer', 'height'))
-            self._task_list.append(PrintPostprocess(module, size))
+            paper_size = (config.getInt('Printer', 'width'),
+                          config.getInt('Printer', 'height'))
+            self._task_list.append(PrintPostprocess(module, paper_size))
 
     def get(self, picture):
 
@@ -92,12 +89,12 @@ class PostprocessItem:
 
 class PrintPostprocess(PostprocessTask):
 
-    def __init__(self, printer_module, page_size, **kwargs):
+    def __init__(self, printer_module, paper_size, **kwargs):
 
         super().__init__(**kwargs)
 
         Printer = lookup_and_import(printer.modules, printer_module, 'printer')
-        self._printer = Printer(page_size, True)
+        self._printer = Printer(paper_size, True)
 
     def get(self, picture):
 

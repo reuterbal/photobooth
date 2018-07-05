@@ -54,8 +54,8 @@ class Photobooth:
         self._cap = camera
         self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
 
-        if (config.getBool('Photobooth', 'show_preview')
-           and self._cap.hasPreview):
+        if (config.getBool('Photobooth', 'show_preview') and
+           self._cap.hasPreview):
             logging.info('Countdown with preview activated')
             self._show_counter = self.showCountdownPreview
         else:

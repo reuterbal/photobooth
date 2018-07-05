@@ -42,8 +42,8 @@ class CameraGphoto2Cffi(Camera):
 
     def cleanup(self):
 
-        self._cap.config['imgsettings']['imageformat'].set(self._imageformat)
-        self._cap.config['imgsettings']['imageformatsd'].set(self._imageformatsd)
+        self._cap.config['imgsettings']['imageformat'].set(self._imgfmt)
+        self._cap.config['imgsettings']['imageformatsd'].set(self._imgfmtsd)
         # self._cap.config['settings']['autopoweroff'].set(self._autopoweroff)
 
     def _setupCamera(self):
@@ -53,16 +53,18 @@ class CameraGphoto2Cffi(Camera):
                      self._cap.supported_operations)
 
         # make sure camera format is not set to raw
-        self._imageformat = self._cap.config['imgsettings']['imageformat'].value
-        if 'raw' in self._imageformat.lower():
-            self._cap.config['imgsettings']['imageformat'].set('Large Fine JPEG')
-        self._imageformatsd = self._cap.config['imgsettings']['imageformatsd'].value
-        if 'raw' in self._imageformatsd.lower():
-            self._cap.config['imgsettings']['imageformatsd'].set('Large Fine JPEG')
+        imgfmt = 'Large Fine JPEG'
+        self._imgfmt = self._cap.config['imgsettings']['imageformat'].value
+        if 'raw' in self._imgfmt.lower():
+            self._cap.config['imgsettings']['imageformat'].set(imgfmt)
+        self._imgfmtsd = self._cap.config['imgsettings']['imageformatsd'].value
+        if 'raw' in self._imgfmtsd.lower():
+            self._cap.config['imgsettings']['imageformatsd'].set(imgfmt)
 
         # make sure autopoweroff is disabled
         # this doesn't seem to work
-        # self._autopoweroff = int(self._cap.config['settings']['autopoweroff'].value)
+        # self._autopoweroff = int(
+        #                   self._cap.config['settings']['autopoweroff'].value)
         #  if self._autopoweroff > 0:
         #      self._cap.config['settings']['autopoweroff'].set("0")
 
