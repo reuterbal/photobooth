@@ -1,5 +1,10 @@
 # photobooth
+
+[![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](https://www.buymeacoffee.com/reuterbal)
+
 A flexible Photobooth software.
+
+It supports many different camera models, the appearance can be adapted to your likings, and it runs on many different hardware setups.
 
 ## Description
 This is a Python application to build your own photobooth.
@@ -10,6 +15,7 @@ This is a Python application to build your own photobooth.
 * Printing of captured pictures
 * Highly customizable via settings menu inside the graphical user interface
 * Support for external buttons and lamps via GPIO interface
+* Theming support using [Qt stylesheets](https://doc.qt.io/qt-5/stylesheet-syntax.html)
 
 ### Technical specifications
 * Many camera models supported, thanks to interfaces to [gPhoto2](http://www.gphoto.org/), [OpenCV](https://opencv.org/),  [Raspberry Pi camera module](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera)
@@ -47,6 +53,9 @@ I appreciate any feedback or bug reports.
 Please submit them via the [Issue tracker](https://github.com/reuterbal/photobooth/issues/new?template=bug_report.md) and always include your `photobooth.log` file (is created automatically in the top folder) and a description of your hardware and software setup.
 
 I am also happy to hear any success stories! Feel free to [submit them here](https://github.com/reuterbal/photobooth/issues/new?template=success-story.md)
+
+If you find this application useful, please consider [buying me a coffee](https://www.buymeacoffee.com/reuterbal).
+
 
 ## License
 I provide this code under AGPL v3. See [LICENSE](https://github.com/reuterbal/photobooth/blob/master/LICENSE.txt).
