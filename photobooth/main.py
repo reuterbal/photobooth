@@ -32,6 +32,8 @@ from . import camera, gui
 from .Config import Config
 from .Photobooth import Photobooth
 from .util import lookup_and_import
+from .StateMachine import Context
+from .Threading import Communicator, Workers
 from .Worker import Worker
 
 
@@ -99,7 +101,7 @@ class WorkerProcess(mp.Process):
 
 class GuiProcess(mp.Process):
 
-    def __init__(self, argv, config, conn, queue):
+    def __init__(self, argv, config, conn, queue, communicator):
 
         super().__init__()
 
@@ -107,12 +109,13 @@ class GuiProcess(mp.Process):
         self.cfg = config
         self.conn = conn
         self.queue = queue
+        self.comm = communicator
 
     def run(self):
 
         Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'),
                                 'gui')
-        sys.exit(Gui(self.argv, self.cfg, self.conn, self.queue).run())
+        sys.exit(Gui(self.argv, self.cfg, self.conn, self.queue, self.comm).run())
 
 
 def run(argv):
@@ -121,6 +124,9 @@ def run(argv):
 
     # Load configuration
     config = Config('photobooth.cfg')
+
+    comm = Communicator()
+    context = Context()
 
     # Create communication objects:
     # 1. We use a pipe to connect GUI and camera process
@@ -138,8 +144,11 @@ def run(argv):
     worker_proc = WorkerProcess(config, worker_queue)
     worker_proc.start()
 
-    gui_proc = GuiProcess(argv, config, gui_conn, worker_queue)
+    gui_proc = GuiProcess(argv, config, gui_conn, worker_queue, comm)
     gui_proc.start()
+
+    for event in comm.iter(Workers.MASTER):
+        context.handleEvent(event)
 
     # Close endpoints
     gui_conn.close()
@@ -156,7 +165,7 @@ def run(argv):
 def main(argv):
 
     # Setup log level and format
-    log_level = logging.INFO
+    log_level = logging.DEBUG
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 

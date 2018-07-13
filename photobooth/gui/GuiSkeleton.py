@@ -19,12 +19,15 @@
 
 from . import GuiState
 
+from .. import StateMachine
+
 
 class GuiSkeleton:
 
-    def __init__(self):
+    def __init__(self, communicator):
 
         super().__init__()
+        self._comm = communicator
 
     @property
     def idle(self):

@@ -27,6 +27,9 @@ from PyQt5 import QtWidgets
 
 from PIL import ImageQt
 
+from ... import StateMachine
+from ...Threading import Workers
+
 from .. import GuiState
 from ..GuiSkeleton import GuiSkeleton
 from ..GuiPostprocessor import GuiPostprocessor
@@ -38,9 +41,9 @@ from . import Receiver
 
 class PyQt5Gui(GuiSkeleton):
 
-    def __init__(self, argv, config, camera_conn, worker_queue):
+    def __init__(self, argv, config, camera_conn, worker_queue, communicator):
 
-        super().__init__()
+        super().__init__(communicator)
 
         self._cfg = config
         self._conn = camera_conn
@@ -181,6 +184,8 @@ class PyQt5Gui(GuiSkeleton):
                                            self.restart))
 
     def _showSettings(self):
+        
+        self._comm.send(Workers.MASTER, StateMachine.GuiEvent('settings'))
 
         self._disableTrigger()
         self._disableEscape()
@@ -189,6 +194,8 @@ class PyQt5Gui(GuiSkeleton):
                                         self._showWelcomeScreen, self.restart))
 
     def _showStart(self, state):
+
+        self._comm.send(Workers.MASTER, StateMachine.GuiEvent('start'))
 
         self._disableTrigger()
         self._enableEscape()

@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 
 class Context:
 
-    def __init__(self, initial_state):
+    def __init__(self):
 
         super().__init__()
-
-        self.state = initial_state
+        self.state = WelcomeState()
 
     @property
     def state(self):
@@ -37,10 +38,16 @@ class Context:
         if not isinstance(new_state, State):
             raise TypeError('new_state must implement State')
 
+        logging.debug('New state is "{}"'.format(new_state))
+
+        self._state = new_state
+
     def handleEvent(self, event):
 
         if not isinstance(event, Event):
             raise TypeError('event must implement Event')
+
+        logging.debug('Handling event "{}"'.format(event))
 
         if isinstance(event, ErrorEvent):
             self.state = ErrorState(event.exception, self.state)
@@ -109,7 +116,7 @@ class TeardownEvent(Event):
     def __init__(self, target):
 
         self._target = target
-        super().__init__('Teardown')
+        super().__init__('Teardown({})'.format(target))
 
     @property
     def target(self):
@@ -168,6 +175,10 @@ class ErrorState(State):
         self.old_state = old_state
         super().__init__()
 
+    def __str__(self):
+
+        return 'ErrorState'
+
     @property
     def old_state(self):
 
@@ -198,12 +209,20 @@ class TeardownState(State):
 
         super().__init__()
 
+    def __str__(self):
+
+        return 'TeardownState'
+
 
 class WelcomeState(State):
 
     def __init__(self):
 
         super().__init__()
+
+    def __str__(self):
+
+        return 'WelcomeState'
 
     def handleEvent(self, event, context):
 
@@ -226,6 +245,10 @@ class SettingsState(State):
 
         super().__init__()
 
+    def __str__(self):
+
+        return 'SettingsState'
+
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'welcome':
@@ -240,6 +263,10 @@ class StartupState(State):
 
         super().__init__()
 
+    def __str__(self):
+
+        return 'StartupState'
+
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'ready':
@@ -253,6 +280,10 @@ class IdleState(State):
     def __init__(self):
 
         super().__init__()
+
+    def __str__(self):
+
+        return 'IdleState'
 
     def handleEvent(self, event, context):
 
@@ -269,6 +300,10 @@ class GreeterState(State):
 
         super().__init__()
 
+    def __str__(self):
+
+        return 'GreeterState'
+
     def handleEvent(self, event, context):
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
@@ -284,6 +319,10 @@ class CountdownState(State):
 
         super().__init__()
 
+    def __str__(self):
+
+        return 'CountdownState'
+
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'capture':
@@ -297,6 +336,10 @@ class CaptureState(State):
     def __init__(self):
 
         super().__init__()
+
+    def __str__(self):
+
+        return 'CaptureState'
 
     def handleEvent(self, event, context):
 
@@ -314,6 +357,10 @@ class AssembleState(State):
 
         super().__init__()
 
+    def __str__(self):
+
+        return 'AssembleState'
+
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'review':
@@ -328,6 +375,10 @@ class ReviewState(State):
 
         super().__init__()
 
+    def __str__(self):
+
+        return 'ReviewState'
+
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'postprocess':
@@ -341,6 +392,10 @@ class PostprocessState(State):
     def __init__(self):
 
         super().__init__()
+
+    def __str__(self):
+
+        return 'PostprocessState'
 
     def handleEvent(self, event, context):
 
