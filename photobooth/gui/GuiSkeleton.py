@@ -19,8 +19,6 @@
 
 from . import GuiState
 
-from .. import StateMachine
-
 
 class GuiSkeleton:
 

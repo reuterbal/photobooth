@@ -23,10 +23,10 @@ from PIL import Image
 
 import cv2
 
-from . import Camera
+from .CameraInterface import CameraInterface
 
 
-class CameraOpenCV(Camera):
+class CameraOpenCV(CameraInterface):
 
     def __init__(self):
 

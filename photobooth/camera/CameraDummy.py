@@ -22,10 +22,10 @@ from colorsys import hsv_to_rgb
 
 from PIL import Image
 
-from . import Camera
+from .CameraInterface import CameraInterface
 
 
-class CameraDummy(Camera):
+class CameraDummy(CameraInterface):
 
     def __init__(self):
 

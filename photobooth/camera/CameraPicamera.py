@@ -24,10 +24,10 @@ from PIL import Image
 
 from picamera import PiCamera
 
-from . import Camera
+from .CameraInterface import CameraInterface
 
 
-class CameraPicamera(Camera):
+class CameraPicamera(CameraInterface):
 
     def __init__(self):
 

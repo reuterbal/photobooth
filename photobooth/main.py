@@ -30,33 +30,34 @@ import sys
 
 from . import camera, gui
 from .Config import Config
-from .Photobooth import Photobooth
+# from .Photobooth import Photobooth
 from .util import lookup_and_import
-from .StateMachine import Context
+from .StateMachine import Context, ErrorEvent
 from .Threading import Communicator, Workers
 from .Worker import Worker
 
 
 class CameraProcess(mp.Process):
 
-    def __init__(self, config, conn, worker_queue):
+    def __init__(self, config, comm):  # conn, worker_queue):
 
         super().__init__()
         self.daemon = True
 
         self.cfg = config
-        self.conn = conn
-        self.worker_queue = worker_queue
+        self.comm = comm
+        # self.conn = conn
+        # self.worker_queue = worker_queue
 
-    def run_camera(self):
+    # def run_camera(self):
 
         # try:
-            cap = lookup_and_import(
-                camera.modules, self.cfg.get('Camera', 'module'), 'camera')
+        #    # cap = lookup_and_import(
+        #    #     camera.modules, self.cfg.get('Camera', 'module'), 'camera')
 
-            photobooth = Photobooth(
-                self.cfg, cap, self.conn, self.worker_queue)
-            return photobooth.run()
+        #    # photobooth = Photobooth(
+        #    #     self.cfg, cap, self.conn, self.worker_queue)
+        #    # return photobooth.run()
 
         # except BaseException as e:
         #     self.conn.send(gui.GuiState.ErrorState('Camera error', str(e)))
@@ -69,19 +70,30 @@ class CameraProcess(mp.Process):
 
     def run(self):
 
-        status_code = 123
+        CameraModule = lookup_and_import(camera.modules,
+                                         self.cfg.get('Camera', 'module'),
+                                         'camera')
+        cap = camera.Camera(self.cfg, self.comm, CameraModule)
 
-        while status_code == 123:
-            event = self.conn.recv()
+        while True:
+            try:
+                cap.run()
+            except Exception as e:
+                self.comm.send(Workers.MASTER, ErrorEvent(e))
 
-            if str(event) != 'start':
-                logging.warning('Unknown event received: %s', str(event))
-                continue
+        # status_code = 123
 
-            status_code = self.run_camera()
-            logging.info('Camera exited with status code %d', status_code)
+        # while status_code == 123:
+        #     event = self.conn.recv()
 
-        sys.exit(status_code)
+        #     if str(event) != 'start':
+        #         logging.warning('Unknown event received: %s', str(event))
+        #         continue
+
+        #     status_code = self.run_camera()
+        #     logging.info('Camera exited with status code %d', status_code)
+
+        # sys.exit(status_code)
 
 
 class WorkerProcess(mp.Process):
@@ -115,7 +127,8 @@ class GuiProcess(mp.Process):
 
         Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'),
                                 'gui')
-        sys.exit(Gui(self.argv, self.cfg, self.conn, self.queue, self.comm).run())
+        sys.exit(Gui(self.argv, self.cfg, self.conn, self.queue,
+                     self.comm).run())
 
 
 def run(argv):
@@ -126,7 +139,7 @@ def run(argv):
     config = Config('photobooth.cfg')
 
     comm = Communicator()
-    context = Context()
+    context = Context(comm)
 
     # Create communication objects:
     # 1. We use a pipe to connect GUI and camera process
@@ -138,7 +151,7 @@ def run(argv):
     # 1. Camera processing
     # 2. Postprocessing
     # 3. GUI
-    camera_proc = CameraProcess(config, camera_conn, worker_queue)
+    camera_proc = CameraProcess(config, comm)  # camera_conn, worker_queue)
     camera_proc.start()
 
     worker_proc = WorkerProcess(config, worker_queue)

@@ -23,10 +23,10 @@ import subprocess
 
 from PIL import Image
 
-from . import Camera
+from .CameraInterface import CameraInterface
 
 
-class CameraGphoto2CommandLine(Camera):
+class CameraGphoto2CommandLine(CameraInterface):
 
     def __init__(self):
 

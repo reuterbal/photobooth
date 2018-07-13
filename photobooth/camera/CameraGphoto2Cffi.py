@@ -24,10 +24,10 @@ from PIL import Image
 
 import gphoto2cffi as gp
 
-from . import Camera
+from .CameraInterface import CameraInterface
 
 
-class CameraGphoto2Cffi(Camera):
+class CameraGphoto2Cffi(CameraInterface):
 
     def __init__(self):
 

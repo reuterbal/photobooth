@@ -17,6 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
+from PIL import Image, ImageOps
+
+from ..PictureDimensions import PictureDimensions
+from .. import StateMachine
+from ..Threading import Workers
+
 # Available camera modules as tuples of (config name, module name, class name)
 modules = (
     ('python-gphoto2', 'CameraGphoto2', 'CameraGphoto2'),
@@ -30,70 +38,94 @@ modules = (
 
 class Camera:
 
-    def __init__(self):
+    def __init__(self, config, comm, CameraModule):
 
-        self.hasPreview = False
-        self.hasIdle = False
+        super().__init__()
 
-    def __enter__(self):
+        self._comm = comm
+        self._cap = CameraModule()
+        self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
 
-        return self
+        self._is_preview = (config.getBool('Photobooth', 'show_preview') and
+                            self._cap.hasPreview)
+        self._is_keep_pictures = config.getBool('Photobooth', 'keep_pictures')
 
-    def __exit__(self, exc_type, exc_value, traceback):
+        logging.info('Using camera {} preview functionality'.format(
+            'with' if self.is_preview else 'without'))
 
-        self.cleanup()
+        self.setIdle()
 
-    def cleanup(self):
+    def teardown(self):
 
-        pass
+        self._cap.cleanup()
 
-    @property
-    def hasPreview(self):
+    def run(self):
 
-        return self._has_preview
+        for state in self._comm.iter(Workers.CAMERA):
+            self.handleEvent(state)
 
-    @hasPreview.setter
-    def hasPreview(self, value):
+    def handleEvent(self, event):
 
-        if not isinstance(value, bool):
-            raise ValueError('Expected bool')
-
-        self._has_preview = value
-
-    @property
-    def hasIdle(self):
-
-        return self._has_idle
-
-    @hasIdle.setter
-    def hasIdle(self, value):
-
-        if not isinstance(value, bool):
-            raise ValueError('Expected bool')
-
-        self._has_idle = value
+        if isinstance(event, StateMachine.GreeterState):
+            self.prepareCapture()
+        elif isinstance(event, StateMachine.CountdownState):
+            self.capturePreview()
+        elif isinstance(event, StateMachine.CaptureState):
+            self.capturePicture()
+        elif isinstance(event, StateMachine.AssembleState):
+            self.assemblePicture()
+        elif isinstance(event, StateMachine.TeardownState):
+            self.teardown()
 
     def setActive(self):
 
-        if not self.hasIdle:
-            pass
-        else:
-            raise NotImplementedError()
+        self._cap.setActive()
 
     def setIdle(self):
 
-        if not self.hasIdle:
-            raise RuntimeError('Camera does not have idle functionality')
+        if self._cap.hasIdle:
+            self._cap.setIdle()
 
-        raise NotImplementedError()
+    def prepareCapture(self):
 
-    def getPreview(self):
+        self.setActive()
+        self._pictures = []
 
-        if not self.hasPreview:
-            raise RuntimeError('Camera does not have preview functionality')
+    def capturePreview(self):
 
-        raise NotImplementedError()
+        if self._is_preview:
+            while self._comm.empty(Workers.CAMERA):
+                picture = ImageOps.mirror(self._cap.getPreview())
+                self._comm.send(Workers.GUI,
+                                StateMachine.CameraEvent('preview', picture))
 
-    def getPicture(self):
+    def capturePicture(self):
 
-        raise NotImplementedError()
+        self.setIdle()
+        picture = self._cap.getPicture()
+        self._pictures.append(picture)
+        self.setActive()
+
+        if self._is_keep_pictures:
+            self._comm.send(Workers.WORKER,
+                            StateMachine.CameraEvent('capture', picture))
+
+        if len(self._pictures) < self._pic_dims.totalNumPictures:
+            self._comm.send(Workers.MASTER,
+                            StateMachine.CameraEvent('countdown', picture))
+        else:
+            self._comm.send(Workers.MASTER,
+                            StateMachine.CameraEvent('assemble', picture))
+
+    def assemblePicture(self):
+
+        self.setIdle()
+
+        picture = Image.new('RGB', self._pic_dims.outputSize, (255, 255, 255))
+        for i in range(self._pic_dims.totalNumPictures):
+            resized = self._pictures[i].resize(self._pic_dims.thumbnailSize)
+            picture.paste(resized, self._pic_dims.thumbnailOffset[i])
+
+        self._comm.send(Workers.MASTER,
+                        StateMachine.CameraEvent('review', picture))
+        self._pictures = []

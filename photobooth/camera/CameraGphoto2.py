@@ -24,10 +24,10 @@ from PIL import Image
 
 import gphoto2 as gp
 
-from . import Camera
+from .CameraInterface import CameraInterface
 
 
-class CameraGphoto2(Camera):
+class CameraGphoto2(CameraInterface):
 
     def __init__(self):
 

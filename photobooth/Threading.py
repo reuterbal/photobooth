@@ -29,6 +29,11 @@ class Communicator:
 
         self._queues = [Queue() for _ in Workers]
 
+    def bcast(self, message):
+
+        for q in self._queues[1:]:
+            q.put(message)
+
     def send(self, target, message):
 
         if not isinstance(target, Workers):
@@ -50,8 +55,16 @@ class Communicator:
 
         return iter(self._queues[worker].get, None)
 
+    def empty(self, worker):
+
+        if not isinstance(worker, Workers):
+            raise TypeError('worker must be a member of Workers')
+
+        return self._queues[worker].empty()
+
 
 class Workers(IntEnum):
+
     MASTER = 0
     GUI = 1
     CAMERA = 2

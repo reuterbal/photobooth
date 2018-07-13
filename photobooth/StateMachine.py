@@ -22,9 +22,10 @@ import logging
 
 class Context:
 
-    def __init__(self):
+    def __init__(self, communicator):
 
         super().__init__()
+        self._comm = communicator
         self.state = WelcomeState()
 
     @property
@@ -41,6 +42,7 @@ class Context:
         logging.debug('New state is "{}"'.format(new_state))
 
         self._state = new_state
+        self._comm.bcast(self._state)
 
     def handleEvent(self, event):
 
@@ -140,9 +142,15 @@ class GpioEvent(Event):
 
 class CameraEvent(Event):
 
-    def __init__(self, name):
+    def __init__(self, name, picture=None):
 
         super().__init__(name)
+        self._picture = picture
+
+    @property
+    def picture(self):
+
+        return self._picture
 
 
 class WorkerEvent(Event):
@@ -343,7 +351,7 @@ class CaptureState(State):
 
     def handleEvent(self, event, context):
 
-        if isinstance(event, CameraEvent) and event.name == 'next':
+        if isinstance(event, CameraEvent) and event.name == 'countdown':
             context.state = CountdownState()
         elif isinstance(event, CameraEvent) and event.name == 'assemble':
             context.state = AssembleState()
