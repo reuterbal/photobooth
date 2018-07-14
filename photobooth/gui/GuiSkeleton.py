@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from . import GuiState
+# from . import GuiState
+from .. import StateMachine
 
 
 class GuiSkeleton:
@@ -27,161 +28,79 @@ class GuiSkeleton:
         super().__init__()
         self._comm = communicator
 
-    @property
-    def idle(self):
+    def showError(self, state):
 
-        return self._idle
+        raise NotImplementedError()
 
-    @idle.setter
-    def idle(self, handle):
+    def showWelcome(self, state):
 
-        if not callable(handle):
-            raise ValueError('Function handle for "idle" must be callable')
+        raise NotImplementedError()
 
-        self._idle = handle
+    def showStartup(self, state):
 
-    @property
-    def trigger(self):
+        raise NotImplementedError()
 
-        return self._trigger
+    def showSettings(self, state):
 
-    @trigger.setter
-    def trigger(self, handle):
+        raise NotImplementedError()
 
-        if not callable(handle):
-            raise ValueError('Function handle for "trigger" must be callable')
+    def showIdle(self, state):
 
-        self._trigger = handle
+        raise NotImplementedError()
 
-    @property
-    def greeter(self):
+    def showGreeter(self, state):
 
-        return self._greeter
+        raise NotImplementedError()
 
-    @greeter.setter
-    def greeter(self, handle):
+    def showCountdown(self, state):
 
-        if not callable(handle):
-            raise ValueError('Function handle for "greeter" must be callable')
+        raise NotImplementedError()
 
-        self._greeter = handle
+    def showCapture(self, state):
 
-    @property
-    def countdown(self):
+        raise NotImplementedError()
 
-        return self._countdown
+    def showAssemble(self, state):
 
-    @countdown.setter
-    def countdown(self, handle):
+        raise NotImplementedError()
 
-        if not callable(handle):
-            raise ValueError(('Function handle for "countdown" must be '
-                              'callable'))
+    def showReview(self, state):
 
-        self._countdown = handle
+        raise NotImplementedError()
 
-    @property
-    def preview(self):
+    def showPostprocess(self, state):
 
-        return self._preview
+        raise NotImplementedError()
 
-    @preview.setter
-    def preview(self, handle):
+    def teardown(self, state):
 
-        if not callable(handle):
-            raise ValueError('Function handle for "preview" must be callable')
-
-        self._preview = handle
-
-    @property
-    def pose(self):
-
-        return self._pose
-
-    @pose.setter
-    def pose(self, handle):
-
-        if not callable(handle):
-            raise ValueError('Function handle for "pose" must be callable')
-
-        self._pose = handle
-
-    @property
-    def assemble(self):
-
-        return self._assemble
-
-    @assemble.setter
-    def assemble(self, handle):
-
-        if not callable(handle):
-            raise ValueError('Function handle for "assemble" must be callable')
-
-        self._assemble = handle
-
-    @property
-    def review(self):
-
-        return self._review
-
-    @review.setter
-    def review(self, handle):
-
-        if not callable(handle):
-            raise ValueError('Function handle for "review" must be callable')
-
-        self._review = handle
-
-    @property
-    def teardown(self):
-
-        return self._teardown
-
-    @teardown.setter
-    def teardown(self, handle):
-
-        if not callable(handle):
-            raise ValueError('Function handle for "teardown" must be callable')
-
-        self._teardown = handle
-
-    @property
-    def error(self):
-
-        return self._error
-
-    @error.setter
-    def error(self, handle):
-
-        if not callable(handle):
-            raise ValueError('Function handle for "error" must be callable')
-
-        self._error = handle
+        raise NotImplementedError()
 
     def handleState(self, state):
 
-        if not isinstance(state, GuiState.GuiState):
-            raise ValueError('Not a GuiState object received')
-
-        if isinstance(state, GuiState.IdleState):
-            self.idle(state)
-        elif isinstance(state, GuiState.TriggerState):
-            self.trigger(state)
-        elif isinstance(state, GuiState.GreeterState):
-            self.greeter(state)
-        elif isinstance(state, GuiState.CountdownState):
-            self.countdown(state)
-        elif isinstance(state, GuiState.PreviewState):
-            self.preview(state)
-        elif isinstance(state, GuiState.PoseState):
-            self.pose(state)
-        elif isinstance(state, GuiState.AssembleState):
-            self.assemble(state)
-        elif isinstance(state, GuiState.ReviewState):
-            self.review(state)
-        elif isinstance(state, GuiState.TeardownState):
+        if isinstance(state, StateMachine.CameraEvent):
+            self.updateCountdown(state)
+        elif isinstance(state, StateMachine.ErrorState):
+            self.showError(state)
+        elif isinstance(state, StateMachine.WelcomeState):
+            self.showWelcome(state)
+        elif isinstance(state, StateMachine.StartupState):
+            self.showStartup(state)
+        elif isinstance(state, StateMachine.SettingsState):
+            self.showSettings(state)
+        elif isinstance(state, StateMachine.IdleState):
+            self.showIdle(state)
+        elif isinstance(state, StateMachine.GreeterState):
+            self.showGreeter(state)
+        elif isinstance(state, StateMachine.CountdownState):
+            self.showCountdown(state)
+        elif isinstance(state, StateMachine.CaptureState):
+            self.showCapture(state)
+        elif isinstance(state, StateMachine.AssembleState):
+            self.showAssemble(state)
+        elif isinstance(state, StateMachine.ReviewState):
+            self.showReview(state)
+        elif isinstance(state, StateMachine.PostprocessState):
+            self.showPostprocess(state)
+        elif isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
-        elif isinstance(state, GuiState.ErrorState):
-            self.error(state)
-        else:
-            raise ValueError('Unknown state received')

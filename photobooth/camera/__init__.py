@@ -62,19 +62,19 @@ class Camera:
     def run(self):
 
         for state in self._comm.iter(Workers.CAMERA):
-            self.handleEvent(state)
+            self.handleState(state)
 
-    def handleEvent(self, event):
+    def handleState(self, state):
 
-        if isinstance(event, StateMachine.GreeterState):
+        if isinstance(state, StateMachine.GreeterState):
             self.prepareCapture()
-        elif isinstance(event, StateMachine.CountdownState):
+        elif isinstance(state, StateMachine.CountdownState):
             self.capturePreview()
-        elif isinstance(event, StateMachine.CaptureState):
+        elif isinstance(state, StateMachine.CaptureState):
             self.capturePicture()
-        elif isinstance(event, StateMachine.AssembleState):
+        elif isinstance(state, StateMachine.AssembleState):
             self.assemblePicture()
-        elif isinstance(event, StateMachine.TeardownState):
+        elif isinstance(state, StateMachine.TeardownState):
             self.teardown()
 
     def setActive(self):
