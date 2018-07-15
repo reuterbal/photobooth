@@ -316,45 +316,59 @@ class GreeterState(State):
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'countdown'):
-            context.state = CountdownState()
+            context.state = CountdownState(1)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class CountdownState(State):
 
-    def __init__(self):
+    def __init__(self, num_picture):
 
         super().__init__()
+
+        self._num_picture = num_picture
 
     def __str__(self):
 
         return 'CountdownState'
+
+    @property
+    def num_picture(self):
+
+        return self._num_picture
 
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'countdown':
             pass
         elif isinstance(event, GuiEvent) and event.name == 'capture':
-            context.state == CaptureState()
+            context.state = CaptureState(self.num_picture)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class CaptureState(State):
 
-    def __init__(self):
+    def __init__(self, num_picture):
 
         super().__init__()
+
+        self._num_picture = num_picture
 
     def __str__(self):
 
         return 'CaptureState'
 
+    @property
+    def num_picture(self):
+
+        return self._num_picture
+
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'countdown':
-            context.state = CountdownState()
+            context.state = CountdownState(self.num_picture + 1)
         elif isinstance(event, CameraEvent) and event.name == 'assemble':
             context.state = AssembleState()
         else:
@@ -374,25 +388,31 @@ class AssembleState(State):
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'review':
-            context.state = ReviewState()
+            context.state = ReviewState(event.picture)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class ReviewState(State):
 
-    def __init__(self):
+    def __init__(self, picture):
 
         super().__init__()
+        self._picture = picture
 
     def __str__(self):
 
         return 'ReviewState'
 
+    @property
+    def picture(self):
+
+        return self._picture
+
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'postprocess':
-            context.state == PostprocessState()
+            context.state = PostprocessState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -411,6 +431,6 @@ class PostprocessState(State):
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'idle'):
-            context.state == IdleState()
+            context.state = IdleState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))

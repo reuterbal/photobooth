@@ -31,7 +31,7 @@ import sys
 from . import camera, gui
 from .Config import Config
 from .util import lookup_and_import
-from .StateMachine import Context, ErrorEvent, StartupState
+from .StateMachine import Context, ErrorEvent
 from .Threading import Communicator, Workers
 from .Worker import Worker
 

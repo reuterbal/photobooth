@@ -70,7 +70,7 @@ class Camera:
 
     def teardown(self, state):
 
-        if not self._cap is None:
+        if self._cap is not None:
             self._cap.cleanup()
         if state.target == StateMachine.TeardownEvent.EXIT:
             sys.exit(0)
@@ -91,7 +91,7 @@ class Camera:
         elif isinstance(state, StateMachine.CountdownState):
             self.capturePreview()
         elif isinstance(state, StateMachine.CaptureState):
-            self.capturePicture()
+            self.capturePicture(state)
         elif isinstance(state, StateMachine.AssembleState):
             self.assemblePicture()
         elif isinstance(state, StateMachine.TeardownState):
@@ -119,7 +119,7 @@ class Camera:
                 self._comm.send(Workers.GUI,
                                 StateMachine.CameraEvent('preview', picture))
 
-    def capturePicture(self):
+    def capturePicture(self, state):
 
         self.setIdle()
         picture = self._cap.getPicture()
@@ -130,12 +130,12 @@ class Camera:
             self._comm.send(Workers.WORKER,
                             StateMachine.CameraEvent('capture', picture))
 
-        if len(self._pictures) < self._pic_dims.totalNumPictures:
+        if state.num_picture < self._pic_dims.totalNumPictures:
             self._comm.send(Workers.MASTER,
-                            StateMachine.CameraEvent('countdown', picture))
+                            StateMachine.CameraEvent('countdown'))
         else:
             self._comm.send(Workers.MASTER,
-                            StateMachine.CameraEvent('assemble', picture))
+                            StateMachine.CameraEvent('assemble'))
 
     def assemblePicture(self):
 
