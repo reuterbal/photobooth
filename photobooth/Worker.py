@@ -19,10 +19,13 @@
 
 import logging
 import os.path
+import sys
 
 from time import localtime, strftime
 
 from .PictureList import PictureList
+from .StateMachine import TeardownEvent, TeardownState
+from .Threading import Workers
 
 
 class WorkerTask:
@@ -60,13 +63,23 @@ class PictureSaver(WorkerTask):
 
 class Worker:
 
-    def __init__(self, config, queue):
+    def __init__(self, config, comm):
 
-        self._queue = queue
+        self._comm = comm
 
     def run(self):
 
-        for func, args in iter(self._queue.get, 'teardown'):
-            func(*args)
+        for state in self._comm.iter(Workers.WORKER):
+            self.handleState(state)
 
-        return 0
+    def handleState(self, state):
+
+        if isinstance(state, TeardownState):
+            self.teardown(state)
+
+    def teardown(self, state):
+
+        if state.target == TeardownEvent.EXIT:
+            sys.exit(0)
+        elif state.target == TeardownEvent.RESTART:
+            sys.exit(123)

@@ -98,37 +98,34 @@ class CameraProcess(mp.Process):
 
 class WorkerProcess(mp.Process):
 
-    def __init__(self, config, queue):
+    def __init__(self, config, comm):
 
         super().__init__()
         self.daemon = True
 
         self.cfg = config
-        self.queue = queue
+        self.comm = comm
 
     def run(self):
 
-        sys.exit(Worker(self.cfg, self.queue).run())
+        sys.exit(Worker(self.cfg, self.comm).run())
 
 
 class GuiProcess(mp.Process):
 
-    def __init__(self, argv, config, conn, queue, communicator):
+    def __init__(self, argv, config, communicator):
 
         super().__init__()
 
         self.argv = argv
         self.cfg = config
-        self.conn = conn
-        self.queue = queue
         self.comm = communicator
 
     def run(self):
 
         Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'),
                                 'gui')
-        sys.exit(Gui(self.argv, self.cfg, self.conn, self.queue,
-                     self.comm).run())
+        sys.exit(Gui(self.argv, self.cfg, self.comm).run())
 
 
 def run(argv):
@@ -144,8 +141,8 @@ def run(argv):
     # Create communication objects:
     # 1. We use a pipe to connect GUI and camera process
     # 2. We use a queue to feed tasks to the postprocessing process
-    gui_conn, camera_conn = mp.Pipe()
-    worker_queue = mp.SimpleQueue()
+    # gui_conn, camera_conn = mp.Pipe()
+    # worker_queue = mp.SimpleQueue()
 
     # Initialize processes: We use three processes here:
     # 1. Camera processing
@@ -154,25 +151,27 @@ def run(argv):
     camera_proc = CameraProcess(config, comm)  # camera_conn, worker_queue)
     camera_proc.start()
 
-    worker_proc = WorkerProcess(config, worker_queue)
+    worker_proc = WorkerProcess(config, comm)
     worker_proc.start()
 
-    gui_proc = GuiProcess(argv, config, gui_conn, worker_queue, comm)
+    gui_proc = GuiProcess(argv, config, comm)
     gui_proc.start()
 
     for event in comm.iter(Workers.MASTER):
-        context.handleEvent(event)
+        exit_code = context.handleEvent(event)
+        if exit_code in (0, 123):
+            break
 
     # Close endpoints
-    gui_conn.close()
-    camera_conn.close()
+    # gui_conn.close()
+    # camera_conn.close()
 
     # Wait for processes to finish
     gui_proc.join()
-    worker_queue.put('teardown')
+    # worker_queue.put('teardown')
     worker_proc.join()
     camera_proc.join(1)
-    return gui_proc.exitcode
+    return exit_code
 
 
 def main(argv):

@@ -34,7 +34,7 @@ from . import Widgets
 from . import styles
 
 
-class Start(QtWidgets.QFrame):
+class Welcome(QtWidgets.QFrame):
 
     def __init__(self, start_action, set_date_action, settings_action,
                  exit_action):
@@ -79,7 +79,7 @@ class Start(QtWidgets.QFrame):
 
 class IdleMessage(QtWidgets.QFrame):
 
-    def __init__(self):
+    def __init__(self, trigger_action):
 
         super().__init__()
         self.setObjectName('IdleMessage')
@@ -87,12 +87,13 @@ class IdleMessage(QtWidgets.QFrame):
         self._message_label = 'Hit the'
         self._message_button = 'Button!'
 
-        self.initFrame()
+        self.initFrame(trigger_action)
 
-    def initFrame(self):
+    def initFrame(self, trigger_action):
 
         lbl = QtWidgets.QLabel(self._message_label)
         btn = QtWidgets.QPushButton(self._message_button)
+        btn.clicked.connect(trigger_action)
 
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(lbl)
@@ -102,7 +103,7 @@ class IdleMessage(QtWidgets.QFrame):
 
 class GreeterMessage(QtWidgets.QFrame):
 
-    def __init__(self, num_x, num_y):
+    def __init__(self, num_x, num_y, countdown_action):
 
         super().__init__()
         self.setObjectName('GreeterMessage')
@@ -114,14 +115,15 @@ class GreeterMessage(QtWidgets.QFrame):
         else:
             self._text_label = ''
 
-        self.initFrame()
+        self.initFrame(countdown_action)
 
-    def initFrame(self):
+    def initFrame(self, countdown_action):
 
         ttl = QtWidgets.QLabel(self._text_title)
         ttl.setObjectName('title')
         btn = QtWidgets.QPushButton(self._text_button)
         btn.setObjectName('button')
+        btn.clicked.connect(countdown_action)
         lbl = QtWidgets.QLabel(self._text_label)
         lbl.setObjectName('message')
 
@@ -132,7 +134,7 @@ class GreeterMessage(QtWidgets.QFrame):
         self.setLayout(lay)
 
 
-class PoseMessage(QtWidgets.QFrame):
+class CaptureMessage(QtWidgets.QFrame):
 
     def __init__(self, num_picture, num_x, num_y):
 
@@ -325,6 +327,7 @@ class PostprocessMessage(Widgets.TransparentOverlay):
 
         def disableAndCall(button, handle):
             button.setEnabled(False)
+            button.update()
             handle()
 
         def createButton(task):

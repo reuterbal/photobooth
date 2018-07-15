@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-# from . import GuiState
 from .. import StateMachine
 
 
@@ -86,8 +85,6 @@ class GuiSkeleton:
             self.showWelcome(state)
         elif isinstance(state, StateMachine.StartupState):
             self.showStartup(state)
-        elif isinstance(state, StateMachine.SettingsState):
-            self.showSettings(state)
         elif isinstance(state, StateMachine.IdleState):
             self.showIdle(state)
         elif isinstance(state, StateMachine.GreeterState):

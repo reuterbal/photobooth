@@ -17,19 +17,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import multiprocessing as mp
-
 from PyQt5 import QtCore
+
+from ...Threading import Workers
 
 
 class Receiver(QtCore.QThread):
 
     notify = QtCore.pyqtSignal(object)
 
-    def __init__(self, conn):
+    def __init__(self, comm):
 
         super().__init__()
-        self._conn = conn
+        self._comm = comm
 
     def handle(self, state):
 
@@ -37,11 +37,5 @@ class Receiver(QtCore.QThread):
 
     def run(self):
 
-        while self._conn:
-            for c in mp.connection.wait(self._conn):
-                try:
-                    state = c.recv()
-                except EOFError:
-                    break
-                else:
-                    self.handle(state)
+        for state in self._comm.iter(Workers.GUI):
+            self.handle(state)

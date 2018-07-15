@@ -55,6 +55,10 @@ class Context:
             self.state = ErrorState(event.exception, self.state)
         elif isinstance(event, TeardownEvent):
             self.state = TeardownState(event.target)
+            if event.target == TeardownEvent.EXIT:
+                return 0
+            elif event.target == TeardownEvent.RESTART:
+                return 123
         else:
             self.state.handleEvent(event, self)
 
@@ -206,7 +210,7 @@ class ErrorState(State):
             context.state = self.old_state
             context.state.update()
         elif isinstance(event, GuiEvent) and event.name == 'abort':
-            context.state = TeardownState()
+            context.state = TeardownState(TeardownEvent.WELCOME)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -216,10 +220,26 @@ class TeardownState(State):
     def __init__(self, target):
 
         super().__init__()
+        self._target = target
 
     def __str__(self):
 
         return 'TeardownState'
+
+    @property
+    def target(self):
+
+        return self._target
+
+    def handleEvent(self, event, context):
+
+        if self._target == TeardownEvent.WELCOME:
+            if isinstance(event, GuiEvent) and event.name == 'welcome':
+                context.state = WelcomeState()
+            else:
+                raise ValueError('Unknown GuiEvent "{}"'.format(event.name))
+        else:
+            raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class WelcomeState(State):
@@ -237,30 +257,10 @@ class WelcomeState(State):
         if isinstance(event, GuiEvent):
             if event.name == 'start':
                 context.state = StartupState()
-            elif event.name == 'settings':
-                context.state = SettingsState()
             elif event.name == 'exit':
-                context.state = TeardownState()
+                context.state = TeardownState(TeardownEvent.EXIT)
             else:
                 raise ValueError('Unknown GuiEvent "{}"'.format(event.name))
-        else:
-            raise TypeError('Unknown Event type "{}"'.format(event))
-
-
-class SettingsState(State):
-
-    def __init__(self):
-
-        super().__init__()
-
-    def __str__(self):
-
-        return 'SettingsState'
-
-    def handleEvent(self, event, context):
-
-        if isinstance(event, GuiEvent) and event.name == 'welcome':
-            context.state = WelcomeState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
