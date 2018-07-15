@@ -333,7 +333,9 @@ class CountdownState(State):
 
     def handleEvent(self, event, context):
 
-        if isinstance(event, GuiEvent) and event.name == 'capture':
+        if isinstance(event, GuiEvent) and event.name == 'countdown':
+            pass
+        elif isinstance(event, GuiEvent) and event.name == 'capture':
             context.state == CaptureState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))

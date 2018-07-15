@@ -30,70 +30,33 @@ import sys
 
 from . import camera, gui
 from .Config import Config
-# from .Photobooth import Photobooth
 from .util import lookup_and_import
-from .StateMachine import Context, ErrorEvent
+from .StateMachine import Context, ErrorEvent, StartupState
 from .Threading import Communicator, Workers
 from .Worker import Worker
 
 
 class CameraProcess(mp.Process):
 
-    def __init__(self, config, comm):  # conn, worker_queue):
+    def __init__(self, config, comm):
 
         super().__init__()
         self.daemon = True
 
-        self.cfg = config
-        self.comm = comm
-        # self.conn = conn
-        # self.worker_queue = worker_queue
-
-    # def run_camera(self):
-
-        # try:
-        #    # cap = lookup_and_import(
-        #    #     camera.modules, self.cfg.get('Camera', 'module'), 'camera')
-
-        #    # photobooth = Photobooth(
-        #    #     self.cfg, cap, self.conn, self.worker_queue)
-        #    # return photobooth.run()
-
-        # except BaseException as e:
-        #     self.conn.send(gui.GuiState.ErrorState('Camera error', str(e)))
-        #     event = self.conn.recv()
-        #     if str(event) in ('cancel', 'ack'):
-        #         return 123
-        #     else:
-        #         logging.error('Unknown event received: %s', str(event))
-        #         raise RuntimeError('Unknown event received', str(event))
+        self._cfg = config
+        self._comm = comm
 
     def run(self):
 
-        CameraModule = lookup_and_import(camera.modules,
-                                         self.cfg.get('Camera', 'module'),
-                                         'camera')
-        cap = camera.Camera(self.cfg, self.comm, CameraModule)
+        CameraModule = lookup_and_import(
+            camera.modules, self._cfg.get('Camera', 'module'), 'camera')
+        cap = camera.Camera(self._cfg, self._comm, CameraModule)
 
         while True:
             try:
                 cap.run()
             except Exception as e:
-                self.comm.send(Workers.MASTER, ErrorEvent(e))
-
-        # status_code = 123
-
-        # while status_code == 123:
-        #     event = self.conn.recv()
-
-        #     if str(event) != 'start':
-        #         logging.warning('Unknown event received: %s', str(event))
-        #         continue
-
-        #     status_code = self.run_camera()
-        #     logging.info('Camera exited with status code %d', status_code)
-
-        # sys.exit(status_code)
+                self._comm.send(Workers.MASTER, ErrorEvent(e))
 
 
 class WorkerProcess(mp.Process):
@@ -108,7 +71,11 @@ class WorkerProcess(mp.Process):
 
     def run(self):
 
-        sys.exit(Worker(self.cfg, self.comm).run())
+        while True:
+            try:
+                Worker(self.cfg, self.comm).run()
+            except Exception as e:
+                self._comm.send(Workers.MASTER, ErrorEvent(e))
 
 
 class GuiProcess(mp.Process):

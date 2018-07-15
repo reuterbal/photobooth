@@ -44,21 +44,34 @@ class Camera:
         super().__init__()
 
         self._comm = comm
-        self._cap = CameraModule()
-        self._pic_dims = PictureDimensions(config, self._cap.getPicture().size)
+        self._cfg = config
+        self._cam = CameraModule
 
-        self._is_preview = (config.getBool('Photobooth', 'show_preview') and
-                            self._cap.hasPreview)
-        self._is_keep_pictures = config.getBool('Photobooth', 'keep_pictures')
+        self._cap = None
+        self._pic_dims = None
+
+        self._is_preview = self._cfg.getBool('Photobooth', 'show_preview')
+        self._is_keep_pictures = self._cfg.getBool('Photobooth',
+                                                   'keep_pictures')
+
+    def startup(self):
+
+        self._cap = self._cam()
+        self._pic_dims = PictureDimensions(self._cfg,
+                                           self._cap.getPicture().size)
+        self._is_preview = self._is_preview and self._cap.hasPreview
 
         logging.info('Using camera {} preview functionality'.format(
             'with' if self._is_preview else 'without'))
 
         self.setIdle()
 
+        self._comm.send(Workers.MASTER, StateMachine.CameraEvent('ready'))
+
     def teardown(self, state):
 
-        self._cap.cleanup()
+        if not self._cap is None:
+            self._cap.cleanup()
         if state.target == StateMachine.TeardownEvent.EXIT:
             sys.exit(0)
         elif state.target == StateMachine.TeardownEvent.RESTART:
@@ -71,7 +84,9 @@ class Camera:
 
     def handleState(self, state):
 
-        if isinstance(state, StateMachine.GreeterState):
+        if isinstance(state, StateMachine.StartupState):
+            self.startup()
+        elif isinstance(state, StateMachine.GreeterState):
             self.prepareCapture()
         elif isinstance(state, StateMachine.CountdownState):
             self.capturePreview()
