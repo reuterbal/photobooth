@@ -23,8 +23,8 @@ import os.path
 from time import localtime, strftime
 
 from .PictureList import PictureList
-from . import StateMachine
-from .Threading import Workers
+from .. import StateMachine
+from ..Threading import Workers
 
 
 class WorkerTask:

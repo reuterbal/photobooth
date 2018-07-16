@@ -33,7 +33,7 @@ from .Config import Config
 from .util import lookup_and_import
 from .StateMachine import Context, ErrorEvent
 from .Threading import Communicator, Workers
-from .Worker import Worker
+from .worker import Worker
 
 
 class CameraProcess(mp.Process):
@@ -107,16 +107,11 @@ def run(argv):
     comm = Communicator()
     context = Context(comm)
 
-    # Create communication objects:
-    # 1. We use a pipe to connect GUI and camera process
-    # 2. We use a queue to feed tasks to the postprocessing process
-    # gui_conn, camera_conn = mp.Pipe()
-    # worker_queue = mp.SimpleQueue()
-
-    # Initialize processes: We use three processes here:
+    # Initialize processes: We use four processes here:
     # 1. Camera processing
     # 2. Postprocessing
     # 3. GUI
+    # 4. Master
     camera_proc = CameraProcess(config, comm)  # camera_conn, worker_queue)
     camera_proc.start()
 
@@ -131,15 +126,12 @@ def run(argv):
         if exit_code in (0, 123):
             break
 
-    # Close endpoints
-    # gui_conn.close()
-    # camera_conn.close()
-
     # Wait for processes to finish
     gui_proc.join()
-    # worker_queue.put('teardown')
     worker_proc.join()
-    camera_proc.join(1)
+    camera_proc.join()
+    logging.debug('All processes joined, returning code {}'. format(exit_code))
+
     return exit_code
 
 
