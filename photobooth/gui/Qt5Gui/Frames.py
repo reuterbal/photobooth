@@ -734,6 +734,10 @@ class Settings(QtWidgets.QFrame):
         enable.setChecked(self._cfg.getBool('Printer', 'enable'))
         self.add('Printer', 'enable', enable)
 
+        pdf = QtWidgets.QCheckBox()
+        pdf.setChecked(self._cfg.getBool('Printer', 'pdf'))
+        self.add('Printer', 'pdf', pdf)
+
         module = self.createModuleComboBox(printer.modules,
                                            self._cfg.get('Printer', 'module'))
         self.add('Printer', 'module', module)
@@ -755,6 +759,7 @@ class Settings(QtWidgets.QFrame):
         layout = QtWidgets.QFormLayout()
         layout.addRow('Enable printing:', enable)
         layout.addRow('Module:', module)
+        layout.addRow('Print to PDF (for debugging):', pdf)
         layout.addRow('Paper size [mm]:', lay_size)
 
         widget = QtWidgets.QWidget()
@@ -813,6 +818,8 @@ class Settings(QtWidgets.QFrame):
 
         self._cfg.set('Printer', 'enable',
                       str(self.get('Printer', 'enable').isChecked()))
+        self._cfg.set('Printer', 'pdf',
+                      str(self.get('Printer', 'pdf').isChecked()))
         self._cfg.set('Printer', 'module',
                       printer.modules[self.get('Printer',
                                                'module').currentIndex()][0])

@@ -33,7 +33,8 @@ class GuiPostprocessor:
             module = config.get('Printer', 'module')
             paper_size = (config.getInt('Printer', 'width'),
                           config.getInt('Printer', 'height'))
-            self._task_list.append(PrintPostprocess(module, paper_size))
+            pdf = config.getBool('Printer', 'pdf')
+            self._task_list.append(PrintPostprocess(module, paper_size, pdf))
 
     def get(self, picture):
 
@@ -89,12 +90,12 @@ class PostprocessItem:
 
 class PrintPostprocess(PostprocessTask):
 
-    def __init__(self, printer_module, paper_size, **kwargs):
+    def __init__(self, printer_module, paper_size, is_pdf, **kwargs):
 
         super().__init__(**kwargs)
 
         Printer = lookup_and_import(printer.modules, printer_module, 'printer')
-        self._printer = Printer(paper_size, True)
+        self._printer = Printer(paper_size, is_pdf)
 
     def get(self, picture):
 

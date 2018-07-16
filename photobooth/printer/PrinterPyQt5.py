@@ -19,8 +19,6 @@
 
 import logging
 
-from PIL import ImageQt
-
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtPrintSupport import QPrinter
 
@@ -55,15 +53,14 @@ class PrinterPyQt5(Printer):
 
         logging.info('Printing picture')
 
-        img = ImageQt.ImageQt(picture)
-        img = img.scaled(self._printer.pageRect().size(),
-                         QtCore.Qt.KeepAspectRatio,
-                         QtCore.Qt.SmoothTransformation)
+        picture = picture.scaled(self._printer.pageRect().size(),
+                                 QtCore.Qt.KeepAspectRatio,
+                                 QtCore.Qt.SmoothTransformation)
 
         printable_size = self._printer.pageRect(QPrinter.DevicePixel)
-        origin = ((printable_size.width() - img.width()) // 2,
-                  (printable_size.height() - img.height()) // 2)
+        origin = ((printable_size.width() - picture.width()) // 2,
+                  (printable_size.height() - picture.height()) // 2)
 
         painter = QtGui.QPainter(self._printer)
-        painter.drawImage(QtCore.QPoint(*origin), img)
+        painter.drawImage(QtCore.QPoint(*origin), picture)
         painter.end()
