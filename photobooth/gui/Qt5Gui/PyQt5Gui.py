@@ -135,11 +135,17 @@ class PyQt5Gui(GuiSkeleton):
 
     def showError(self, state):
 
-        logging.error('%s: %s', state.title, state.message)
+        logging.error('%s: %s', state.origin, state.message)
 
-        MessageBox(self, MessageBox.RETRY, state.title, state.message,
-                   lambda: self._comm.send(Workers.MASTER, GuiEvent('retry')),
-                   lambda: self._comm.send(Workers.MASTER, GuiEvent('abort')))
+        reply = QtWidgets.QMessageBox.critical(
+            self._gui, state.origin, 'Error: ' + state.message,
+            QtWidgets.QMessageBox.Retry | QtWidgets.QMessageBox.Cancel,
+            QtWidgets.QMessageBox.Cancel)
+
+        if reply == QtWidgets.QMessageBox.Retry:
+            self._comm.send(Workers.MASTER, GuiEvent('retry'))
+        else:
+            self._comm.send(Workers.MASTER, GuiEvent('abort'))
 
     def showWelcome(self, state):
 
@@ -287,69 +293,3 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
     def keyPressEvent(self, event):
 
         self._handle_key(event)
-
-
-class MessageBox(QtWidgets.QWidget):
-
-    QUESTION = 1
-    RETRY = 2
-    INFORMATION = 3
-
-    def __init__(self, parent, type, title, message, *handles):
-
-        super().__init__(parent)
-
-        if type == MessageBox.QUESTION:
-            self.question(title, message, *handles)
-        elif type == MessageBox.RETRY:
-            self.retry(title, message, *handles)
-        else:
-            raise ValueError('Unknown type specified')
-
-    def question(self, title, message, *handles):
-
-        lbl_title = QtWidgets.QLabel(title)
-        lbl_title.setObjectName('title')
-
-        lbl_message = QtWidgets.QLabel(message)
-        lbl_message.setObjectName('message')
-
-        btn_yes = QtWidgets.QPushButton('Yes')
-        btn_yes.clicked.connect(handles[0])
-
-        btn_no = QtWidgets.QPushButton('No')
-        btn_no.clicked.connect(handles[1])
-
-        lay_buttons = QtWidgets.QHBoxLayout()
-        lay_buttons.addWidget(btn_yes)
-        lay_buttons.addWidget(btn_no)
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(lbl_title)
-        layout.addWidget(lbl_message)
-        layout.addLayout(lay_buttons)
-        self.setLayout(layout)
-
-    def retry(self, title, message, *handles):
-
-        lbl_title = QtWidgets.QLabel(title)
-        lbl_title.setObjectName('title')
-
-        lbl_message = QtWidgets.QLabel(message)
-        lbl_message.setObjectName('message')
-
-        btn_retry = QtWidgets.QPushButton('Retry')
-        btn_retry.clicked.connect(handles[0])
-
-        btn_cancel = QtWidgets.QPushButton('Cancel')
-        btn_cancel.clicked.connect(handles[1])
-
-        lay_buttons = QtWidgets.QHBoxLayout()
-        lay_buttons.addWidget(btn_retry)
-        lay_buttons.addWidget(btn_cancel)
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(lbl_title)
-        layout.addWidget(lbl_message)
-        layout.addLayout(lay_buttons)
-        self.setLayout(layout)

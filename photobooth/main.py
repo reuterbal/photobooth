@@ -57,7 +57,7 @@ class CameraProcess(mp.Process):
                 if cap.run():
                     break
             except Exception as e:
-                self._comm.send(Workers.MASTER, ErrorEvent(e))
+                self._comm.send(Workers.MASTER, ErrorEvent('Camera', str(e)))
 
 
 class WorkerProcess(mp.Process):
@@ -77,7 +77,7 @@ class WorkerProcess(mp.Process):
                 if Worker(self.cfg, self.comm).run():
                     break
             except Exception as e:
-                self._comm.send(Workers.MASTER, ErrorEvent(e))
+                self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
 
 
 class GuiProcess(mp.Process):

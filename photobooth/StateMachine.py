@@ -52,7 +52,7 @@ class Context:
         logging.debug('Handling event "{}"'.format(event))
 
         if isinstance(event, ErrorEvent):
-            self.state = ErrorState(event.exception, self.state)
+            self.state = ErrorState(event.origin, event.message, self.state)
         elif isinstance(event, TeardownEvent):
             self.state = TeardownState(event.target)
             if event.target == TeardownEvent.EXIT:
@@ -92,27 +92,41 @@ class Event:
 
 class ErrorEvent(Event):
 
-    def __init__(self, exception):
+    def __init__(self, origin, message):
 
         super().__init__('Error')
-        self.exception = exception
+        self.origin = origin
+        self.message = message
 
     def __str__(self):
 
-        return str(self.exception)
+        return self.origin + ': ' + self.message
 
     @property
-    def exception(self):
+    def origin(self):
 
-        return self._exception
+        return self._origin
 
-    @exception.setter
-    def exception(self, exception):
+    @origin.setter
+    def origin(self, origin):
 
-        if not isinstance(exception, Exception):
-            raise TypeError('exception must be derived from Exception')
+        if not isinstance(origin, str):
+            raise TypeError('origin must be a string')
 
-        self._exception = exception
+        self._origin = origin
+
+    @property
+    def message(self):
+
+        return self._message
+
+    @message.setter
+    def message(self, message):
+
+        if not isinstance(message, str):
+            raise TypeError('message must be a string')
+
+        self._message = message
 
 
 class TeardownEvent(Event):
@@ -184,14 +198,42 @@ class State:
 
 class ErrorState(State):
 
-    def __init__(self, exception, old_state):
+    def __init__(self, origin, message, old_state):
 
+        self.origin = origin
+        self.message = message
         self.old_state = old_state
         super().__init__()
 
     def __str__(self):
 
         return 'ErrorState'
+
+    @property
+    def origin(self):
+
+        return self._origin
+
+    @origin.setter
+    def origin(self, origin):
+
+        if not isinstance(origin, str):
+            raise TypeError('origin must be a string')
+
+        self._origin = origin
+
+    @property
+    def message(self):
+
+        return self._message
+
+    @message.setter
+    def message(self, message):
+
+        if not isinstance(message, str):
+            raise TypeError('message must be a string')
+
+        self._message = message
 
     @property
     def old_state(self):
