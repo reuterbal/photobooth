@@ -26,7 +26,6 @@ except DistributionNotFound:
 import logging
 import logging.handlers
 import multiprocessing as mp
-import sys
 
 from . import camera, gui
 from .Config import Config
@@ -158,7 +157,7 @@ def run(argv):
 def main(argv):
 
     # Setup log level and format
-    log_level = logging.DEBUG
+    log_level = logging.INFO
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
