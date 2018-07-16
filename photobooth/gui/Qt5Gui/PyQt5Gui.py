@@ -218,6 +218,7 @@ class PyQt5Gui(GuiSkeleton):
         QtCore.QTimer.singleShot(
             review_time,
             lambda: self._comm.send(Workers.MASTER, GuiEvent('postprocess')))
+        self._postprocess.do(self._picture)
 
     def showPostprocess(self, state):
 

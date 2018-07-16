@@ -27,19 +27,29 @@ class GuiPostprocessor:
 
         super().__init__()
 
-        self._task_list = []
+        self._get_task_list = []
+        self._do_task_list = []
 
         if config.getBool('Printer', 'enable'):
             module = config.get('Printer', 'module')
             paper_size = (config.getInt('Printer', 'width'),
                           config.getInt('Printer', 'height'))
             pdf = config.getBool('Printer', 'pdf')
-            self._task_list.append(PrintPostprocess(module, paper_size, pdf))
+            if config.getBool('Printer', 'confirmation'):
+                self._get_task_list.append(
+                    PrintPostprocess(module, paper_size, pdf))
+            else:
+                self._do_task_list.append(
+                    PrintPostprocess(module, paper_size, pdf))
 
     def get(self, picture):
 
-        tasks = [task.get(picture) for task in self._task_list]
-        return tasks
+        return [task.get(picture) for task in self._get_task_list]
+
+    def do(self, picture):
+
+        for task in self._do_task_list:
+            task.get(picture).action()
 
 
 class PostprocessTask:
