@@ -21,7 +21,7 @@ import logging
 
 from PIL import Image, ImageOps
 
-from ..PictureDimensions import PictureDimensions
+from .PictureDimensions import PictureDimensions
 from .. import StateMachine
 from ..Threading import Workers
 

@@ -17,7 +17,5 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from . import GuiState  # noqa
-
 # Available gui modules as tuples of (config name, module name, class name)
 modules = (('PyQt5', 'Qt5Gui', 'PyQt5Gui'), )
