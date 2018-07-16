@@ -65,7 +65,7 @@ class PictureList:
 
         # Print initial infos
         logging.info('Number of last existing file: %d', self.counter)
-        logging.info('Saving assembled pictures as "%s%s.%s"', self.basename,
+        logging.info('Saving pictures as "%s%s.%s"', self.basename,
                      self.count_width * 'X', 'jpg')
 
     def getFilename(self, count):

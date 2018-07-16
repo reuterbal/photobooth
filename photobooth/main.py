@@ -54,7 +54,8 @@ class CameraProcess(mp.Process):
 
         while True:
             try:
-                cap.run()
+                if cap.run():
+                    break
             except Exception as e:
                 self._comm.send(Workers.MASTER, ErrorEvent(e))
 
@@ -73,7 +74,8 @@ class WorkerProcess(mp.Process):
 
         while True:
             try:
-                Worker(self.cfg, self.comm).run()
+                if Worker(self.cfg, self.comm).run():
+                    break
             except Exception as e:
                 self._comm.send(Workers.MASTER, ErrorEvent(e))
 

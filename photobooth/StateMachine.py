@@ -56,8 +56,10 @@ class Context:
         elif isinstance(event, TeardownEvent):
             self.state = TeardownState(event.target)
             if event.target == TeardownEvent.EXIT:
+                self._comm.bcast(None)
                 return 0
             elif event.target == TeardownEvent.RESTART:
+                self._comm.bcast(None)
                 return 123
         else:
             self.state.handleEvent(event, self)

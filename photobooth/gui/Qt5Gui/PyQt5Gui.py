@@ -128,11 +128,7 @@ class PyQt5Gui(GuiSkeleton):
 
     def teardown(self, state):
 
-        if state.target == TeardownEvent.EXIT:
-            self._app.exit(0)
-        elif state.target == TeardownEvent.RESTART:
-            self._app.exit(123)
-        elif state.target == TeardownEvent.WELCOME:
+        if state.target == TeardownEvent.WELCOME:
             self._comm.send(Workers.MASTER, GuiEvent('welcome'))
 
     def showError(self, state):

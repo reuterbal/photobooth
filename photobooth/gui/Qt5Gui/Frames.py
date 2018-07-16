@@ -651,6 +651,10 @@ class Settings(QtWidgets.QFrame):
         self.add('Picture', 'basedir', basedir)
         self.add('Picture', 'basename', basename)
 
+        keep_pictures = QtWidgets.QCheckBox()
+        keep_pictures.setChecked(self._cfg.getBool('Picture', 'keep_pictures'))
+        self.add('Picture', 'keep_pictures', keep_pictures)
+
         lay_num = QtWidgets.QHBoxLayout()
         lay_num.addWidget(num_x)
         lay_num.addWidget(QtWidgets.QLabel('x'))
@@ -688,6 +692,7 @@ class Settings(QtWidgets.QFrame):
                       lay_file)
         layout.addRow('Basename of files (strftime possible):',
                       basename)
+        layout.addRow('Keep single shots:', keep_pictures)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -808,6 +813,8 @@ class Settings(QtWidgets.QFrame):
                       self.get('Picture', 'basedir').text())
         self._cfg.set('Picture', 'basename',
                       self.get('Picture', 'basename').text())
+        self._cfg.set('Picture', 'keep_pictures',
+                      str(self.get('Picture', 'keep_pictures').isChecked()))
 
         self._cfg.set('Gpio', 'enable',
                       str(self.get('Gpio', 'enable').isChecked()))

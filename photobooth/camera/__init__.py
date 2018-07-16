@@ -18,7 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import sys
 
 from PIL import Image, ImageOps
 
@@ -51,8 +50,7 @@ class Camera:
         self._pic_dims = None
 
         self._is_preview = self._cfg.getBool('Photobooth', 'show_preview')
-        self._is_keep_pictures = self._cfg.getBool('Photobooth',
-                                                   'keep_pictures')
+        self._is_keep_pictures = self._cfg.getBool('Picture', 'keep_pictures')
 
     def startup(self):
 
@@ -72,15 +70,13 @@ class Camera:
 
         if self._cap is not None:
             self._cap.cleanup()
-        if state.target == StateMachine.TeardownEvent.EXIT:
-            sys.exit(0)
-        elif state.target == StateMachine.TeardownEvent.RESTART:
-            sys.exit(123)
 
     def run(self):
 
         for state in self._comm.iter(Workers.CAMERA):
             self.handleState(state)
+
+        return True
 
     def handleState(self, state):
 
