@@ -114,7 +114,7 @@ class GpioProcess(mp.Process):
                 if Gpio(self._cfg, self._comm).run():
                     break
             except Exception as e:
-                self.comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
+                self._comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
 
 
 def run(argv):
