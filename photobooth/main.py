@@ -30,6 +30,7 @@ import sys
 
 from . import camera, gui
 from .Config import Config
+from .gpio import Gpio
 from .util import lookup_and_import
 from .StateMachine import Context, ErrorEvent
 from .Threading import Communicator, Workers
@@ -38,7 +39,7 @@ from .worker import Worker
 
 class CameraProcess(mp.Process):
 
-    def __init__(self, config, comm):
+    def __init__(self, argv, config, comm):
 
         super().__init__()
         self.daemon = True
@@ -60,41 +61,61 @@ class CameraProcess(mp.Process):
                 self._comm.send(Workers.MASTER, ErrorEvent('Camera', str(e)))
 
 
-class WorkerProcess(mp.Process):
-
-    def __init__(self, config, comm):
-
-        super().__init__()
-        self.daemon = True
-
-        self.cfg = config
-        self.comm = comm
-
-    def run(self):
-
-        while True:
-            try:
-                if Worker(self.cfg, self.comm).run():
-                    break
-            except Exception as e:
-                self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
-
-
 class GuiProcess(mp.Process):
 
     def __init__(self, argv, config, communicator):
 
         super().__init__()
 
-        self.argv = argv
-        self.cfg = config
-        self.comm = communicator
+        self._argv = argv
+        self._cfg = config
+        self._comm = communicator
 
     def run(self):
 
-        Gui = lookup_and_import(gui.modules, self.cfg.get('Gui', 'module'),
+        Gui = lookup_and_import(gui.modules, self._cfg.get('Gui', 'module'),
                                 'gui')
-        sys.exit(Gui(self.argv, self.cfg, self.comm).run())
+        return Gui(self._argv, self._cfg, self._comm).run()
+
+
+class WorkerProcess(mp.Process):
+
+    def __init__(self, argv, config, comm):
+
+        super().__init__()
+        self.daemon = True
+
+        self._cfg = config
+        self._comm = comm
+
+    def run(self):
+
+        while True:
+            try:
+                if Worker(self._cfg, self._comm).run():
+                    break
+            except Exception as e:
+                self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
+
+
+class GpioProcess(mp.Process):
+
+    def __init__(self, argv, config, comm):
+
+        super().__init__()
+        self.daemon = True
+
+        self._cfg = config
+        self._comm = comm
+
+    def run(self):
+
+        while True:
+            try:
+                if Gpio(self._cfg, self._comm).run():
+                    break
+            except Exception as e:
+                self.comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
 
 
 def run(argv):
@@ -107,29 +128,28 @@ def run(argv):
     comm = Communicator()
     context = Context(comm)
 
-    # Initialize processes: We use four processes here:
-    # 1. Camera processing
-    # 2. Postprocessing
+    # Initialize processes: We use five processes here:
+    # 1. Master that collects events and distributes state changes
+    # 2. Camera handling
     # 3. GUI
-    # 4. Master
-    camera_proc = CameraProcess(config, comm)  # camera_conn, worker_queue)
-    camera_proc.start()
+    # 4. Postprocessing worker
+    # 5. GPIO handler
+    proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess)
+    procs = [P(argv, config, comm) for P in proc_classes]
 
-    worker_proc = WorkerProcess(config, comm)
-    worker_proc.start()
+    for proc in procs:
+        proc.start()
 
-    gui_proc = GuiProcess(argv, config, comm)
-    gui_proc.start()
-
+    # Enter main loop
     for event in comm.iter(Workers.MASTER):
         exit_code = context.handleEvent(event)
         if exit_code in (0, 123):
             break
 
     # Wait for processes to finish
-    gui_proc.join()
-    worker_proc.join()
-    camera_proc.join()
+    for proc in procs:
+        proc.join()
+
     logging.debug('All processes joined, returning code {}'. format(exit_code))
 
     return exit_code
