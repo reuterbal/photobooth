@@ -117,8 +117,14 @@ source .venv/bin/activate
 ```
 and run the photobooth as
 ```bash
-python photobooth
+python -m photobooth
 ```
+
+Alternatively, use the Python binary of the virtual environment to start the photobooth directly without activating the environment first:
+```bash
+.venv/bin/python -m photobooth
+```
+This is useful, e.g., when starting the photobooth from scripts, desktop shortcuts, or when using an autostart mechanism of your window manager.
 
 Change any settings via the "Settings" menu.
 Afterwards, select "Start photobooth" to get started.
