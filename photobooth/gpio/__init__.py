@@ -106,7 +106,7 @@ class Gpio:
     def exit(self):
 
         self._comm.send(
-            Workers.Master,
+            Workers.MASTER,
             StateMachine.TeardownEvent(StateMachine.TeardownEvent.WELCOME))
 
     def showIdle(self):
