@@ -56,6 +56,10 @@ In a terminal, enter the following commands
 sudo apt install python3-dev python3-pip virtualenv  
 sudo apt install qt5-default pyqt5-dev pyqt5-dev-tools # for PyQt5-GUI
 sudo apt install gphoto2 libgphoto2-dev # to use gphoto2
+```
+
+If you want to use the gphoto2-cffi bindings you have to install the following packages:
+```bash
 sudo apt install libffi6 libffi-dev # for gphoto2-cffi bindings
 ```
 
@@ -109,6 +113,17 @@ Run the following command to download and install all dependencies and the photo
 ```bash
 pip install -e .
 ```
+
+Some dependencies are optional and must be included explicitly if you plan on using them.
+For that, change the above command to (note the lack of a whitespace after the dot)
+```bash
+pip install -e .[extras]
+```
+and replace `extras` by a comma separated list (without whitespaces!) of the desired options.
+These include:
+- `pyqt` if you want to install PyQt5 from PIP (doesn't work on Raspbian)
+- `picamera` if you want to use the Raspberry Pi camera module
+- `gphoto2-cffi` if you want to use the `gphoto2-cffi` bindings
 
 ## Run Photobooth
 If not yet done, activate your virtual environment

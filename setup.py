@@ -162,7 +162,6 @@ setup(
         'Pillow',
         'gpiozero',
         'gphoto2',
-        'gphoto2-cffi',  # Optional
         ],
 
     # List additional groups of dependencies here (e.g. development
@@ -174,9 +173,9 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
-        'dev': ['PyQt5'],
+        'pyqt': ['PyQt5'],
         'picamera': ['picamera'],
-        # 'test': ['coverage'],
+        'gphoto2-cffi': ['gphoto2-cffi'],
     },
 
     python_requires='>=3.5',
