@@ -22,11 +22,28 @@ import logging
 
 class Context:
 
-    def __init__(self, communicator):
+    def __init__(self, communicator, omit_welcome=False):
 
         super().__init__()
         self._comm = communicator
-        self.state = WelcomeState()
+        self.is_running = False
+        if omit_welcome:
+            self.state = StartupState()
+        else:
+            self.state = WelcomeState()
+
+    @property
+    def is_running(self):
+
+        return self._is_running
+
+    @is_running.setter
+    def is_running(self, running):
+
+        if not isinstance(running, bool):
+            raise TypeError('is_running must be a bool')
+
+        self._is_running = running
 
     @property
     def state(self):
@@ -37,7 +54,7 @@ class Context:
     def state(self, new_state):
 
         if not isinstance(new_state, State):
-            raise TypeError('new_state must implement State')
+            raise TypeError('state must implement State')
 
         logging.debug('New state is "{}"'.format(new_state))
 
@@ -52,8 +69,10 @@ class Context:
         logging.debug('Handling event "{}"'.format(event))
 
         if isinstance(event, ErrorEvent):
-            self.state = ErrorState(event.origin, event.message, self.state)
+            self.state = ErrorState(event.origin, event.message, self.state,
+                                    self.is_running)
         elif isinstance(event, TeardownEvent):
+            self.is_running = False
             self.state = TeardownState(event.target)
             if event.target == TeardownEvent.EXIT:
                 self._comm.bcast(None)
@@ -198,11 +217,12 @@ class State:
 
 class ErrorState(State):
 
-    def __init__(self, origin, message, old_state):
+    def __init__(self, origin, message, old_state, is_running):
 
         self.origin = origin
         self.message = message
         self.old_state = old_state
+        self.is_running = is_running
         super().__init__()
 
     def __str__(self):
@@ -248,13 +268,29 @@ class ErrorState(State):
 
         self._old_state = old_state
 
+    @property
+    def is_running(self):
+
+        return self._is_running
+
+    @is_running.setter
+    def is_running(self, running):
+
+        if not isinstance(running, bool):
+            raise TypeError('is_running must be a bool')
+
+        self._is_running = running
+
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'retry':
             context.state = self.old_state
             context.state.update()
         elif isinstance(event, GuiEvent) and event.name == 'abort':
-            context.state = TeardownState(TeardownEvent.WELCOME)
+            if self.is_running:
+                context.state = IdleState()
+            else:
+                context.state = TeardownState(TeardownEvent.WELCOME)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -322,6 +358,7 @@ class StartupState(State):
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'ready':
+            context.is_running = True
             context.state = IdleState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
