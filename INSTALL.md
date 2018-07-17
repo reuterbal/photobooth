@@ -132,6 +132,8 @@ You can trigger the countdown via space bar or an external button.
 
 To exit the application, use the Esc-key or an external button.
 
+You can directly startup the photobooth to the idle screen (skipping the welcome screen) by appending the parameter `--run`.
+
 ## Additional setup steps for my hardware setup
 
 ### Pollin LS-7T touch screen
