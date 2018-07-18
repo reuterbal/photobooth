@@ -655,6 +655,13 @@ class Settings(QtWidgets.QFrame):
         keep_pictures.setChecked(self._cfg.getBool('Picture', 'keep_pictures'))
         self.add('Picture', 'keep_pictures', keep_pictures)
 
+        skip_last = QtWidgets.QCheckBox()
+        skip_last.setChecked(self._cfg.getBool('Picture', 'skip_last'))
+        self.add('Picture', 'skip_last', skip_last)
+
+        bg = QtWidgets.QLineEdit(self._cfg.get('Picture', 'background'))
+        self.add('Picture', 'background', bg)
+
         lay_num = QtWidgets.QHBoxLayout()
         lay_num.addWidget(num_x)
         lay_num.addWidget(QtWidgets.QLabel('x'))
@@ -670,29 +677,40 @@ class Settings(QtWidgets.QFrame):
         lay_dist.addWidget(QtWidgets.QLabel('x'))
         lay_dist.addWidget(min_dist_y)
 
-        def file_dialog():
+        def directory_dialog():
             dialog = QtWidgets.QFileDialog.getExistingDirectory
             basedir.setText(dialog(self, 'Select directory',
                                    os.path.expanduser('~'),
                                    QtWidgets.QFileDialog.ShowDirsOnly))
 
-        file_button = QtWidgets.QPushButton('Select directory')
+        def file_dialog():
+            dialog = QtWidgets.QFileDialog.getOpenFileName
+            bg.setText(dialog(self, 'Select file', os.path.expanduser('~'),
+                             'Images (*.jpg *.png)')[0])
+
+        dir_button = QtWidgets.QPushButton('Select directory')
+        dir_button.clicked.connect(directory_dialog)
+
+        lay_dir = QtWidgets.QHBoxLayout()
+        lay_dir.addWidget(basedir)
+        lay_dir.addWidget(dir_button)
+
+        file_button = QtWidgets.QPushButton('Select file')
         file_button.clicked.connect(file_dialog)
 
         lay_file = QtWidgets.QHBoxLayout()
-        lay_file.addWidget(basedir)
+        lay_file.addWidget(bg)
         lay_file.addWidget(file_button)
 
         layout = QtWidgets.QFormLayout()
         layout.addRow('Number of shots per picture:', lay_num)
         layout.addRow('Size of assembled picture [px]:', lay_size)
-        layout.addRow('Min. distance between shots [px]:',
-                      lay_dist)
-        layout.addRow('Output directory (strftime possible):',
-                      lay_file)
-        layout.addRow('Basename of files (strftime possible):',
-                      basename)
+        layout.addRow('Min. distance between shots [px]:', lay_dist)
+        layout.addRow('Output directory (strftime possible):', lay_dir)
+        layout.addRow('Basename of files (strftime possible):', basename)
         layout.addRow('Keep single shots:', keep_pictures)
+        layout.addRow('Omit last picture:', skip_last)
+        layout.addRow('Background image:', lay_file)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -820,6 +838,10 @@ class Settings(QtWidgets.QFrame):
                       self.get('Picture', 'basename').text())
         self._cfg.set('Picture', 'keep_pictures',
                       str(self.get('Picture', 'keep_pictures').isChecked()))
+        self._cfg.set('Picture', 'skip_last',
+                      str(self.get('Picture', 'skip_last').isChecked()))
+        self._cfg.set('Picture', 'background',
+                      self.get('Picture', 'background').text())
 
         self._cfg.set('Gpio', 'enable',
                       str(self.get('Gpio', 'enable').isChecked()))
