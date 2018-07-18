@@ -17,6 +17,15 @@ This is a Python application to build your own photobooth.
 * Support for external buttons and lamps via GPIO interface
 * Theming support using [Qt stylesheets](https://doc.qt.io/qt-5/stylesheet-syntax.html)
 
+### Screenshots
+Screenshots produced using `CameraDummy` that produces unicolor images.
+
+#### Theme _pastel_
+<img alt="Idle screen" title="Idle screen" src="screenshots/pastel_1.png" width="280" /> <img alt="Greeter screen" title="Greeter screen" src="screenshots/pastel_2.png" width="280" /> <img alt="Countdown screen" title="Countdown screen" src="screenshots/pastel_3.png" width="280" /> <img alt="Postprocessing screen" title="Postprocessing screen" src="screenshots/pastel_4.png" width="280" /> <img alt="Settings screen" title="Settings screen" src="screenshots/pastel_settings.png" width="280" />
+
+#### Theme _dark_
+<img alt="Idle screen" title="Idle screen" src="screenshots/dark_1.png" width="280" /> <img alt="Greeter screen" title="Greeter screen" src="screenshots/dark_2.png" width="280" /> <img alt="Countdown screen" title="Countdown screen" src="screenshots/dark_3.png" width="280" /> <img alt="Postprocessing screen" title="Postprocessing screen" src="screenshots/dark_4.png" width="280" />
+
 ### Technical specifications
 * Many camera models supported, thanks to interfaces to [gPhoto2](http://www.gphoto.org/), [OpenCV](https://opencv.org/),  [Raspberry Pi camera module](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera)
 * Tested on Standard x86 hardware and [Raspberry Pi](https://raspberrypi.org/) models 1B+, 3B, 3B+
