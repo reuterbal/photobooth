@@ -46,12 +46,18 @@ class Gpio:
             trigger_pin = config.getInt('Gpio', 'trigger_pin')
             exit_pin = config.getInt('Gpio', 'exit_pin')
 
+            rgb_pin = (config.getInt('Gpio', 'chan_r_pin'),
+                       config.getInt('Gpio', 'chan_g_pin'),
+                       config.getInt('Gpio', 'chan_b_pin'))
+
             logging.info(('GPIO enabled (lamp_pin=%d, trigger_pin=%d, '
-                         'exit_pin=%d)'), lamp_pin, trigger_pin, exit_pin)
+                         'exit_pin=%d, rgb_pins=(%d, %d, %d))'),
+                         lamp_pin, trigger_pin, exit_pin, *rgb_pin)
 
             self._gpio.setButton(trigger_pin, self.trigger)
             self._gpio.setButton(exit_pin, self.exit)
             self._lamp = self._gpio.setLamp(lamp_pin)
+            self._rgb = self._gpio.setRgb(rgb_pin)
         else:
             logging.info('GPIO disabled')
 
@@ -97,6 +103,21 @@ class Gpio:
             self._is_trigger = False
             self._gpio.lampOff(self._lamp)
 
+    def setRgbColor(self, r, g, b):
+
+        if self._is_enabled:
+            self._gpio.rgbColor(self._rgb, (r, g, b))
+
+    def rgbOn(self):
+
+        if self._is_enabled:
+            self._gpio.rgbOn(self._rgb)
+
+    def rgbOff(self):
+
+        if self._is_enabled:
+            self._gpio.rgbOff(self._rgb)
+
     def trigger(self):
 
         if self._is_trigger:
@@ -123,11 +144,12 @@ class Gpio:
 
     def showCapture(self):
 
-        pass
+        self.rgbOn()
+        self.setRgbColor(1, 1, 1)
 
     def showAssemble(self):
 
-        pass
+        self.rgbOff()
 
     def showReview(self):
 
@@ -146,10 +168,12 @@ class Entities:
 
         import gpiozero
         self.LED = gpiozero.LED
+        self.RGBLED = gpiozero.RGBLED
         self.Button = gpiozero.Button
 
         self._buttons = []
         self._lamps = []
+        self._rgb = []
 
     def setButton(self, bcm_pin, handler):
 
@@ -159,6 +183,11 @@ class Entities:
     def setLamp(self, bcm_pin):
 
         self._lamps.append(self.LED(bcm_pin))
+        return len(self._lamps) - 1
+
+    def setRgb(self, bcm_pins):
+
+        self._rgb.append(self.RGBLED(*bcm_pins))
         return len(self._lamps) - 1
 
     def lampOn(self, index):
@@ -172,3 +201,15 @@ class Entities:
     def lampToggle(self, index):
 
         self._lamps[index].toggle()
+
+    def rgbOn(self, index):
+
+        self._rgb[index].on()
+
+    def rgbOff(self, index):
+
+        self._rgb[index].off()
+
+    def rgbColor(self, index, color):
+
+        self._rgb[index].color = color
