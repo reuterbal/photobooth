@@ -55,15 +55,24 @@ class Camera:
     def startup(self):
 
         self._cap = self._cam()
-        self._pic_dims = PictureDimensions(self._cfg,
-                                           self._cap.getPicture().size)
-        self._is_preview = self._is_preview and self._cap.hasPreview
 
         logging.info('Using camera {} preview functionality'.format(
             'with' if self._is_preview else 'without'))
 
-        self.setIdle()
+        self._pic_dims = PictureDimensions(self._cfg,
+                                           self._cap.getPicture().size)
+        self._is_preview = self._is_preview and self._cap.hasPreview
 
+        background = self._cfg.get('Picture', 'background')
+        if len(background) > 0:
+            logging.info('Using background "{}"'.format(background))
+            bg_picture = Image.open(background)
+            self._template = bg_picture.resize(self._pic_dims.outputSize)
+        else:
+            self._template = Image.new('RGB', self._pic_dims.outputSize,
+                                       (255, 255, 255))
+
+        self.setIdle()
         self._comm.send(Workers.MASTER, StateMachine.CameraEvent('ready'))
 
     def teardown(self, state):
@@ -137,7 +146,7 @@ class Camera:
 
         self.setIdle()
 
-        picture = Image.new('RGB', self._pic_dims.outputSize, (255, 255, 255))
+        picture = self._template.copy()
         for i in range(self._pic_dims.totalNumPictures):
             resized = self._pictures[i].resize(self._pic_dims.thumbnailSize)
             picture.paste(resized, self._pic_dims.thumbnailOffset[i])

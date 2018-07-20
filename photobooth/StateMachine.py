@@ -339,8 +339,6 @@ class WelcomeState(State):
                 context.state = StartupState()
             elif event.name == 'exit':
                 context.state = TeardownState(TeardownEvent.EXIT)
-            else:
-                raise ValueError('Unknown GuiEvent "{}"'.format(event.name))
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
