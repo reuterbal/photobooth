@@ -33,6 +33,8 @@ class PictureDimensions:
         self._min_distance = (config.getInt('Picture', 'min_dist_x'),
                               config.getInt('Picture', 'min_dist_y'))
 
+        self._skip_last = config.getBool('Picture', 'skip_last')
+
         self.computeThumbnailDimensions()
 
     def computeThumbnailDimensions(self):
@@ -64,7 +66,13 @@ class PictureDimensions:
     @property
     def totalNumPictures(self):
 
-        return self._num_pictures[0] * self._num_pictures[1]
+        return max(self._num_pictures[0] * self._num_pictures[1] -
+                   int(self._skip_last), 1)
+
+    @property
+    def skipLast(self):
+
+        return self._skip_last
 
     @property
     def captureSize(self):

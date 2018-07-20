@@ -103,15 +103,17 @@ class IdleMessage(QtWidgets.QFrame):
 
 class GreeterMessage(QtWidgets.QFrame):
 
-    def __init__(self, num_x, num_y, countdown_action):
+    def __init__(self, num_x, num_y, skip_last, countdown_action):
 
         super().__init__()
         self.setObjectName('GreeterMessage')
 
         self._text_title = 'Get ready!'
         self._text_button = 'Start countdown'
-        if num_x * num_y > 1:
-            self._text_label = ('for {} pictures...'.format(num_x * num_y))
+
+        num_pictures = max(num_x * num_y - int(skip_last), 1)
+        if num_pictures > 1:
+            self._text_label = ('for {} pictures...'.format(num_pictures))
         else:
             self._text_label = ''
 
@@ -686,7 +688,7 @@ class Settings(QtWidgets.QFrame):
         def file_dialog():
             dialog = QtWidgets.QFileDialog.getOpenFileName
             bg.setText(dialog(self, 'Select file', os.path.expanduser('~'),
-                             'Images (*.jpg *.png)')[0])
+                              'Images (*.jpg *.png)')[0])
 
         dir_button = QtWidgets.QPushButton('Select directory')
         dir_button.clicked.connect(directory_dialog)
