@@ -202,11 +202,12 @@ QGroupBox {
 
 QTabWidget QWidget {
     color: #333333;
+    font-size: 30px;
 }
 
 QCheckBox::indicator {
-    width: 45px;
-    height: 45px;
+    width: 30px;
+    height: 30px;
     background-color: transparent;
     border-style: outset;
     border-width: 2px;
