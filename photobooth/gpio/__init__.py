@@ -224,8 +224,11 @@ class Entities:
     def setRgb(self, bcm_pins):
 
         try:
-            self._rgb.append(self.RGBLED(*bcm_pins))
-            return len(self._lamps) - 1
+            led = self.RGBLED(*bcm_pins)
+            for l in led._leds:
+                l.frequency = 120
+            self._rgb.append(led)
+            return len(self._rgb) - 1
         except self.GPIOPinInUse:
             logging.error('Some pin {} already in use!'.format(bcm_pins))
             return None
