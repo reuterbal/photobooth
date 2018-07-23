@@ -36,6 +36,7 @@ class Gpio:
 
         self._is_trigger = False
         self._is_enabled = config.getBool('Gpio', 'enable')
+        self._countdown_time = config.getInt('Photobooth', 'countdown_time')
 
         self.initGpio(config)
 
@@ -91,14 +92,14 @@ class Gpio:
 
     def teardown(self, state):
 
-        pass
+        if self._is_enabled:
+            self._gpio.teardown()
 
     def enableTrigger(self):
 
         if self._is_enabled:
             self._is_trigger = True
             self._gpio.lampOn(self._lamp)
-            self._setRgbColor(0.5)
 
     def disableTrigger(self):
 
@@ -121,12 +122,11 @@ class Gpio:
         if self._is_enabled:
             self._gpio.rgbOff(self._rgb)
 
-    def rgbPulse(self):
+    def rgbBlink(self):
 
         if self._is_enabled:
-            count = self._cfg.getInt('Photobooth', 'countdown_time')
-            self._gpio.rgbPulse(self._rgb, (1, 0, 0), (0.2, 0, 0), 0.3, 0.7,
-                                count)
+            self._gpio.rgbBlink(self._rgb, 0.4, 0.4, 0.1, 0.1, (1, 0, 0),
+                                (0, 0, 0), self._countdown_time)
 
     def trigger(self):
 
@@ -147,8 +147,8 @@ class Gpio:
         if self._is_enabled:
             h, s, v = 0, 1, 1
             while self._comm.empty(Workers.GPIO):
-                h = (h + 1) % 3600
-                rgb = hsv_to_rgb(h / 3600, s, v)
+                h = (h + 1) % 360
+                rgb = hsv_to_rgb(h / 360, s, v)
                 self.setRgbColor(*rgb)
                 sleep(0.1)
 
@@ -159,12 +159,13 @@ class Gpio:
 
     def showCountdown(self):
 
-        self.rgbPulse()
+        sleep(0.2)
+        self.rgbBlink()
 
     def showCapture(self):
 
         self.rgbOn()
-        self.setRgbColor(1, 1, 1)
+        self.setRgbColor(1, 1, .9)
 
     def showAssemble(self):
 
@@ -172,7 +173,7 @@ class Gpio:
 
     def showReview(self):
 
-        pass
+        self.setRgbColor(0, .15, 0)
 
     def showPostprocess(self):
 
@@ -189,52 +190,79 @@ class Entities:
         self.LED = gpiozero.LED
         self.RGBLED = gpiozero.RGBLED
         self.Button = gpiozero.Button
+        self.GPIOPinInUse = gpiozero.GPIOPinInUse
 
         self._buttons = []
         self._lamps = []
         self._rgb = []
 
+    def teardown(self):
+
+        for l in self._lamps:
+            l.off()
+
+        for l in self._rgb:
+            l.off()
+
     def setButton(self, bcm_pin, handler):
 
-        self._buttons.append(self.Button(bcm_pin))
-        self._buttons[-1].when_pressed = handler
+        try:
+            self._buttons.append(self.Button(bcm_pin))
+            self._buttons[-1].when_pressed = handler
+        except self.GPIOPinInUse:
+            logging.error('Pin {} already in use!'.format(bcm_pin))
 
     def setLamp(self, bcm_pin):
 
-        self._lamps.append(self.LED(bcm_pin))
-        return len(self._lamps) - 1
+        try:
+            self._lamps.append(self.LED(bcm_pin))
+            return len(self._lamps) - 1
+        except self.GPIOPinInUse:
+            logging.error('Pin {} already in use!'.format(bcm_pin))
+            return None
 
     def setRgb(self, bcm_pins):
 
-        self._rgb.append(self.RGBLED(*bcm_pins))
-        return len(self._lamps) - 1
+        try:
+            self._rgb.append(self.RGBLED(*bcm_pins))
+            return len(self._lamps) - 1
+        except self.GPIOPinInUse:
+            logging.error('Some pin {} already in use!'.format(bcm_pins))
+            return None
 
     def lampOn(self, index):
 
-        self._lamps[index].on()
+        if index is not None:
+            self._lamps[index].on()
 
     def lampOff(self, index):
 
-        self._lamps[index].off()
+        if index is not None:
+            self._lamps[index].off()
 
     def lampToggle(self, index):
 
-        self._lamps[index].toggle()
+        if index is not None:
+            self._lamps[index].toggle()
 
     def rgbOn(self, index):
 
-        self._rgb[index].on()
+        if index is not None:
+            self._rgb[index].on()
 
     def rgbOff(self, index):
 
-        self._rgb[index].off()
+        if index is not None:
+            self._rgb[index].off()
 
     def rgbColor(self, index, color):
 
-        self._rgb[index].color = color
+        if index is not None:
+            self._rgb[index].color = color
 
-    def rgbPulse(self, index, on_color, off_color, fade_in_time, fade_out_time,
-                 count):
+    def rgbBlink(self, index, on_time, off_time, fade_in_time, fade_out_time,
+                 on_color, off_color, count):
 
-        self._rgb[index].pulse(fade_in_time, fade_out_time, on_color,
-                               off_color, count)
+        if index is not None:
+            self._rgb[index].blink(on_time, off_time, fade_in_time,
+                                   fade_out_time, on_color, off_color, count)
