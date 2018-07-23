@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from colorsys import hsv_to_rgb
+from time import sleep
 
 from .. import StateMachine
 from ..Threading import Workers
@@ -96,6 +98,7 @@ class Gpio:
         if self._is_enabled:
             self._is_trigger = True
             self._gpio.lampOn(self._lamp)
+            self._setRgbColor(0.5)
 
     def disableTrigger(self):
 
@@ -118,6 +121,13 @@ class Gpio:
         if self._is_enabled:
             self._gpio.rgbOff(self._rgb)
 
+    def rgbPulse(self):
+
+        if self._is_enabled:
+            count = self._cfg.getInt('Photobooth', 'countdown_time')
+            self._gpio.rgbPulse(self._rgb, (1, 0, 0), (0.2, 0, 0), 0.3, 0.7,
+                                count)
+
     def trigger(self):
 
         if self._is_trigger:
@@ -134,13 +144,22 @@ class Gpio:
 
         self.enableTrigger()
 
+        if self._is_enabled:
+            h, s, v = 0, 1, 1
+            while self._comm.empty(Workers.GPIO):
+                h = (h + 1) % 3600
+                rgb = hsv_to_rgb(h / 3600, s, v)
+                self.setRgbColor(*rgb)
+                sleep(0.1)
+
     def showGreeter(self):
 
         self.disableTrigger()
+        self.rgbOff()
 
     def showCountdown(self):
 
-        pass
+        self.rgbPulse()
 
     def showCapture(self):
 
@@ -213,3 +232,9 @@ class Entities:
     def rgbColor(self, index, color):
 
         self._rgb[index].color = color
+
+    def rgbPulse(self, index, on_color, off_color, fade_in_time, fade_out_time,
+                 count):
+
+        self._rgb[index].pulse(fade_in_time, fade_out_time, on_color,
+                               off_color, count)
