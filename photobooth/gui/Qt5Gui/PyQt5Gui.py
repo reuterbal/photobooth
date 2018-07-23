@@ -205,7 +205,9 @@ class PyQt5Gui(GuiSkeleton):
 
         num_pic = (self._cfg.getInt('Picture', 'num_x'),
                    self._cfg.getInt('Picture', 'num_y'))
-        self._setWidget(Frames.CaptureMessage(state.num_picture, *num_pic))
+        skip_last = self._cfg.getBool('Picture', 'skip_last')
+        self._setWidget(Frames.CaptureMessage(state.num_picture, *num_pic,
+                                              skip_last))
 
     def showAssemble(self, state):
 

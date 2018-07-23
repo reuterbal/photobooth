@@ -190,6 +190,16 @@ QTabBar::tab:selected {
     background-color: #33ffffff;
 }
 
+QGroupBox {
+    background-color: transparent;
+    border-style: outset;
+    border-width: 1px;
+    border-radius: 15px;
+    border-color: #eeeeee;
+    margin: 0px;
+    padding: 4px;
+}
+
 QTabWidget QWidget {
     color: #333333;
 }

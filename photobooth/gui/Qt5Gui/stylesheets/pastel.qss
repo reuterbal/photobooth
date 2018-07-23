@@ -169,6 +169,7 @@ QTabWidget::pane {
     border-color: #eeeeee;
     color: #333333;
     padding: 10px;
+    margin: 0; 
 }
 
 QTabWidget::tab-bar {
@@ -187,6 +188,16 @@ QTabBar::tab {
 
 QTabBar::tab:selected {
     background-color: #66ffffff;
+}
+
+QGroupBox {
+    background-color: transparent;
+    border-style: outset;
+    border-width: 1px;
+    border-radius: 15px;
+    border-color: #eeeeee;
+    margin: 0px;
+    padding: 4px;
 }
 
 QTabWidget QWidget {

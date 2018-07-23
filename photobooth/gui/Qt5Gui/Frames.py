@@ -138,14 +138,15 @@ class GreeterMessage(QtWidgets.QFrame):
 
 class CaptureMessage(QtWidgets.QFrame):
 
-    def __init__(self, num_picture, num_x, num_y):
+    def __init__(self, num_picture, num_x, num_y, skip_last):
 
         super().__init__()
         self.setObjectName('PoseMessage')
 
-        if num_x * num_y > 1:
+        num_pictures = max(num_x * num_y - int(skip_last), 1)
+        if num_pictures > 1:
             self._text = 'Picture {} of {}...'.format(num_picture,
-                                                      num_x * num_y)
+                                                      num_pictures)
         else:
             self._text = 'Taking a photo...'
 
@@ -462,7 +463,6 @@ class Settings(QtWidgets.QFrame):
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.createTabs())
-        # layout.addStretch(1)
         layout.addWidget(self.createButtons())
         self.setLayout(layout)
 
@@ -704,14 +704,19 @@ class Settings(QtWidgets.QFrame):
         lay_file.addWidget(bg)
         lay_file.addWidget(file_button)
 
+        lay_checkbox = QtWidgets.QHBoxLayout()
+        lay_checkbox.addWidget(keep_pictures)
+        lay_checkbox.addStretch(1)
+        lay_checkbox.addWidget(QtWidgets.QLabel('Omit last picture:'))
+        lay_checkbox.addWidget(skip_last)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow('Number of shots per picture:', lay_num)
         layout.addRow('Size of assembled picture [px]:', lay_size)
         layout.addRow('Min. distance between shots [px]:', lay_dist)
         layout.addRow('Output directory (strftime possible):', lay_dir)
         layout.addRow('Basename of files (strftime possible):', basename)
-        layout.addRow('Keep single shots:', keep_pictures)
-        layout.addRow('Omit last picture:', skip_last)
+        layout.addRow('Keep single shots:', lay_checkbox)
         layout.addRow('Background image:', lay_file)
 
         widget = QtWidgets.QWidget()
