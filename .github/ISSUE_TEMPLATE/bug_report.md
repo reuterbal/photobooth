@@ -28,8 +28,10 @@ OR
 
 Attach a session recording using https://asciinema.org/
 To use it:
-```sudo apt-get install -y asciinema && asciinema rec # start session recording
-```.venv/bin/python -m photobooth # start photobooth directly
+```sudo apt install -y asciinema && asciinema rec # start session recording
+```commandToInstall # To install photobooth if you encounter issue during install process
+```   OR
+```.venv/bin/python -m photobooth # To start photobooth if you encounter issue during usage
 ```Ctrl+D # stop recording
 ```y # yes to upload and get URL to paste here
 ```
