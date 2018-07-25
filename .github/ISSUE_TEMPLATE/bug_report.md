@@ -20,9 +20,21 @@ Steps to reproduce the behavior:
 
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+**Screenshots/Screencast**
 
 If applicable, add screenshots to help explain your problem.
+
+OR
+
+Attach a session recording using https://asciinema.org/
+To use it:
+```sudo apt install -y asciinema && asciinema rec # start session recording
+```commandToInstall # To install photobooth if you encounter issue during install process
+```   OR
+```.venv/bin/python -m photobooth # To start photobooth if you encounter issue during usage
+```Ctrl+D # stop recording
+```y # yes to upload and get URL to paste here
+```
 
 **Hardware (please complete the following information)**
 
