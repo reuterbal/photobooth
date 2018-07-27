@@ -759,7 +759,7 @@ class Settings(QtWidgets.QFrame):
         chan_g_pin = QtWidgets.QSpinBox()
         chan_g_pin.setRange(1, 40)
         chan_g_pin.setValue(self._cfg.getInt('Gpio', 'chan_g_pin'))
-        self.add('Gpio', 'chan_g_pin', chan_r_pin)
+        self.add('Gpio', 'chan_g_pin', chan_g_pin)
 
         chan_b_pin = QtWidgets.QSpinBox()
         chan_b_pin.setRange(1, 40)
