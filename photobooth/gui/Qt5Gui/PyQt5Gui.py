@@ -161,7 +161,7 @@ class PyQt5Gui(GuiSkeleton):
 
         self._disableTrigger()
         self._enableEscape()
-        self._setWidget(Frames.WaitMessage('Starting the photobooth...'))
+        self._setWidget(Frames.WaitMessage(_('Starting the photobooth...')))
         if self._cfg.getBool('Gui', 'hide_cursor'):
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.BlankCursor)
 
@@ -211,7 +211,7 @@ class PyQt5Gui(GuiSkeleton):
 
     def showAssemble(self, state):
 
-        self._setWidget(Frames.WaitMessage('Processing picture...'))
+        self._setWidget(Frames.WaitMessage(_('Processing picture...')))
 
     def showReview(self, state):
 
@@ -283,8 +283,8 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, e):
 
-        reply = QtWidgets.QMessageBox.question(self, 'Confirmation',
-                                               "Quit Photobooth?",
+        reply = QtWidgets.QMessageBox.question(self, _('Confirmation'),
+                                               _('Quit Photobooth?'),
                                                QtWidgets.QMessageBox.Yes |
                                                QtWidgets.QMessageBox.No,
                                                QtWidgets.QMessageBox.No)

@@ -47,16 +47,16 @@ class Welcome(QtWidgets.QFrame):
     def initFrame(self, start_action, set_date_action, settings_action,
                   exit_action):
 
-        btnStart = QtWidgets.QPushButton('Start photobooth')
+        btnStart = QtWidgets.QPushButton(_('Start photobooth'))
         btnStart.clicked.connect(start_action)
 
-        btnSetDate = QtWidgets.QPushButton('Set date/time')
+        btnSetDate = QtWidgets.QPushButton(_('Set date/time'))
         btnSetDate.clicked.connect(set_date_action)
 
-        btnSettings = QtWidgets.QPushButton('Settings')
+        btnSettings = QtWidgets.QPushButton(_('Settings'))
         btnSettings.clicked.connect(settings_action)
 
-        btnQuit = QtWidgets.QPushButton('Quit')
+        btnQuit = QtWidgets.QPushButton(_('Quit'))
         btnQuit.clicked.connect(exit_action)
 
         btnLay = QtWidgets.QHBoxLayout()
@@ -65,7 +65,7 @@ class Welcome(QtWidgets.QFrame):
         btnLay.addWidget(btnSettings)
         btnLay.addWidget(btnQuit)
 
-        title = QtWidgets.QLabel('photobooth')
+        title = QtWidgets.QLabel(_('photobooth'))
 
         url = 'https://github.com/reuterbal/photobooth'
         link = QtWidgets.QLabel('<a href="{0}">{0}</a>'.format(url))
@@ -84,8 +84,8 @@ class IdleMessage(QtWidgets.QFrame):
         super().__init__()
         self.setObjectName('IdleMessage')
 
-        self._message_label = 'Hit the'
-        self._message_button = 'Button!'
+        self._message_label = _('Hit the')
+        self._message_button = _('Button!')
 
         self.initFrame(trigger_action)
 
@@ -108,12 +108,12 @@ class GreeterMessage(QtWidgets.QFrame):
         super().__init__()
         self.setObjectName('GreeterMessage')
 
-        self._text_title = 'Get ready!'
-        self._text_button = 'Start countdown'
+        self._text_title = _('Get ready!')
+        self._text_button = _('Start countdown')
 
         num_pictures = max(num_x * num_y - int(skip_last), 1)
         if num_pictures > 1:
-            self._text_label = ('for {} pictures...'.format(num_pictures))
+            self._text_label = _('for {} pictures...').format(num_pictures)
         else:
             self._text_label = ''
 
@@ -145,8 +145,8 @@ class CaptureMessage(QtWidgets.QFrame):
 
         num_pictures = max(num_x * num_y - int(skip_last), 1)
         if num_pictures > 1:
-            self._text = 'Picture {} of {}...'.format(num_picture,
-                                                      num_pictures)
+            self._text = _('Picture {} of {}...').format(num_picture,
+                                                         num_pictures)
         else:
             self._text = 'Taking a photo...'
 
@@ -339,7 +339,7 @@ class PostprocessMessage(Widgets.TransparentOverlay):
             return button
 
         buttons = [createButton(task) for task in tasks]
-        buttons.append(QtWidgets.QPushButton('Start over'))
+        buttons.append(QtWidgets.QPushButton(_('Start over')))
         buttons[-1].clicked.connect(idle_handle)
 
         button_lay = QtWidgets.QGridLayout()
@@ -348,7 +348,7 @@ class PostprocessMessage(Widgets.TransparentOverlay):
             button_lay.addWidget(button, *pos)
 
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(QtWidgets.QLabel('Happy?'))
+        layout.addWidget(QtWidgets.QLabel(_('Happy?')))
         layout.addLayout(button_lay)
         self.setLayout(layout)
 
@@ -380,11 +380,11 @@ class SetDateTime(QtWidgets.QFrame):
         self._time_widget = QtWidgets.QTimeEdit(QtCore.QTime.currentTime())
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow('Date:', self._date_widget)
-        layout.addRow('Time:', self._time_widget)
+        layout.addRow(_('Date:'), self._date_widget)
+        layout.addRow(_('Time:'), self._time_widget)
 
         widget = QtWidgets.QGroupBox()
-        widget.setTitle('Set system date and time:')
+        widget.setTitle(_('Set system date and time:'))
         widget.setLayout(layout)
         return widget
 
@@ -393,11 +393,11 @@ class SetDateTime(QtWidgets.QFrame):
         layout = QtWidgets.QHBoxLayout()
         layout.addStretch(1)
 
-        btnSave = QtWidgets.QPushButton('Save and restart')
+        btnSave = QtWidgets.QPushButton(_('Save and restart'))
         btnSave.clicked.connect(self.saveAndRestart)
         layout.addWidget(btnSave)
 
-        btnCancel = QtWidgets.QPushButton('Cancel')
+        btnCancel = QtWidgets.QPushButton(_('Cancel'))
         btnCancel.clicked.connect(self._cancelAction)
         layout.addWidget(btnCancel)
 
@@ -469,12 +469,12 @@ class Settings(QtWidgets.QFrame):
     def createTabs(self):
 
         tabs = QtWidgets.QTabWidget()
-        tabs.addTab(self.createGuiSettings(), 'Interface')
-        tabs.addTab(self.createPhotoboothSettings(), 'Photobooth')
-        tabs.addTab(self.createCameraSettings(), 'Camera')
-        tabs.addTab(self.createPictureSettings(), 'Picture')
-        tabs.addTab(self.createGpioSettings(), 'GPIO')
-        tabs.addTab(self.createPrinterSettings(), 'Printer')
+        tabs.addTab(self.createGuiSettings(), _('Interface'))
+        tabs.addTab(self.createPhotoboothSettings(), _('Photobooth'))
+        tabs.addTab(self.createCameraSettings(), _('Camera'))
+        tabs.addTab(self.createPictureSettings(), _('Picture'))
+        tabs.addTab(self.createGpioSettings(), _('GPIO'))
+        tabs.addTab(self.createPrinterSettings(), _('Printer'))
         return tabs
 
     def createButtons(self):
@@ -482,15 +482,15 @@ class Settings(QtWidgets.QFrame):
         layout = QtWidgets.QHBoxLayout()
         layout.addStretch(1)
 
-        btnSave = QtWidgets.QPushButton('Save and restart')
+        btnSave = QtWidgets.QPushButton(_('Save and restart'))
         btnSave.clicked.connect(self.storeConfigAndRestart)
         layout.addWidget(btnSave)
 
-        btnCancel = QtWidgets.QPushButton('Cancel')
+        btnCancel = QtWidgets.QPushButton(_('Cancel'))
         btnCancel.clicked.connect(self._cancelAction)
         layout.addWidget(btnCancel)
 
-        btnRestore = QtWidgets.QPushButton('Restore defaults')
+        btnRestore = QtWidgets.QPushButton(_('Restore defaults'))
         btnRestore.clicked.connect(self.restoreDefaults)
         layout.addWidget(btnRestore)
 
@@ -549,11 +549,11 @@ class Settings(QtWidgets.QFrame):
         lay_size.addWidget(height)
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow('Enable fullscreen:', fullscreen)
-        layout.addRow('Gui module:', module)
-        layout.addRow('Window size [px]:', lay_size)
-        layout.addRow('Hide cursor:', cursor)
-        layout.addRow('Appearance:', style)
+        layout.addRow(_('Enable fullscreen:'), fullscreen)
+        layout.addRow(_('Gui module:'), module)
+        layout.addRow(_('Window size [px]:'), lay_size)
+        layout.addRow(_('Hide cursor:'), cursor)
+        layout.addRow(_('Appearance:'), style)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -589,11 +589,11 @@ class Settings(QtWidgets.QFrame):
         self.add('Photobooth', 'postprocess_time', postproc_time)
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow('Show preview during countdown:', preview)
-        layout.addRow('Greeter time before countdown [s]:', greet_time)
-        layout.addRow('Countdown time [s]:', count_time)
-        layout.addRow('Picture display time [s]:', displ_time)
-        layout.addRow('Postprocess timeout [s]:', postproc_time)
+        layout.addRow(_('Show preview during countdown:'), preview)
+        layout.addRow(_('Greeter time before countdown [s]:'), greet_time)
+        layout.addRow(_('Countdown time [s]:'), count_time)
+        layout.addRow(_('Picture display time [s]:'), displ_time)
+        layout.addRow(_('Postprocess timeout [s]:'), postproc_time)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -608,7 +608,7 @@ class Settings(QtWidgets.QFrame):
         self.add('Camera', 'module', module)
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow('Camera module:', module)
+        layout.addRow(_('Camera module:'), module)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -681,23 +681,23 @@ class Settings(QtWidgets.QFrame):
 
         def directory_dialog():
             dialog = QtWidgets.QFileDialog.getExistingDirectory
-            basedir.setText(dialog(self, 'Select directory',
+            basedir.setText(dialog(self, _('Select directory'),
                                    os.path.expanduser('~'),
                                    QtWidgets.QFileDialog.ShowDirsOnly))
 
         def file_dialog():
             dialog = QtWidgets.QFileDialog.getOpenFileName
-            bg.setText(dialog(self, 'Select file', os.path.expanduser('~'),
+            bg.setText(dialog(self, _('Select file'), os.path.expanduser('~'),
                               'Images (*.jpg *.png)')[0])
 
-        dir_button = QtWidgets.QPushButton('Select directory')
+        dir_button = QtWidgets.QPushButton(_('Select directory'))
         dir_button.clicked.connect(directory_dialog)
 
         lay_dir = QtWidgets.QHBoxLayout()
         lay_dir.addWidget(basedir)
         lay_dir.addWidget(dir_button)
 
-        file_button = QtWidgets.QPushButton('Select file')
+        file_button = QtWidgets.QPushButton(_('Select file'))
         file_button.clicked.connect(file_dialog)
 
         lay_file = QtWidgets.QHBoxLayout()
@@ -707,17 +707,17 @@ class Settings(QtWidgets.QFrame):
         lay_checkbox = QtWidgets.QHBoxLayout()
         lay_checkbox.addWidget(keep_pictures)
         lay_checkbox.addStretch(1)
-        lay_checkbox.addWidget(QtWidgets.QLabel('Omit last picture:'))
+        lay_checkbox.addWidget(QtWidgets.QLabel(_('Omit last picture:')))
         lay_checkbox.addWidget(skip_last)
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow('Number of shots per picture:', lay_num)
-        layout.addRow('Size of assembled picture [px]:', lay_size)
-        layout.addRow('Min. distance between shots [px]:', lay_dist)
-        layout.addRow('Output directory (strftime possible):', lay_dir)
-        layout.addRow('Basename of files (strftime possible):', basename)
-        layout.addRow('Keep single shots:', lay_checkbox)
-        layout.addRow('Background image:', lay_file)
+        layout.addRow(_('Number of shots per picture:'), lay_num)
+        layout.addRow(_('Size of assembled picture [px]:'), lay_size)
+        layout.addRow(_('Min. distance between shots [px]:'), lay_dist)
+        layout.addRow(_('Output directory (strftime possible):'), lay_dir)
+        layout.addRow(_('Basename of files (strftime possible):'), basename)
+        layout.addRow(_('Keep single shots:'), lay_checkbox)
+        layout.addRow(_('Background image:'), lay_file)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -747,10 +747,10 @@ class Settings(QtWidgets.QFrame):
         self.add('Gpio', 'lamp_pin', lamp_pin)
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow('Enable GPIO:', enable)
-        layout.addRow('Exit button pin (BCM numbering):', exit_pin)
-        layout.addRow('Trigger button pin (BCM numbering):', trig_pin)
-        layout.addRow('Idle lamp pin (BCM numbering):', lamp_pin)
+        layout.addRow(_('Enable GPIO:'), enable)
+        layout.addRow(_('Exit button pin (BCM numbering):'), exit_pin)
+        layout.addRow(_('Trigger button pin (BCM numbering):'), trig_pin)
+        layout.addRow(_('Idle lamp pin (BCM numbering):'), lamp_pin)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -791,11 +791,11 @@ class Settings(QtWidgets.QFrame):
         lay_size.addWidget(height)
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow('Enable printing:', enable)
-        layout.addRow('Module:', module)
-        layout.addRow('Print to PDF (for debugging):', pdf)
-        layout.addRow('Ask for confirmation before printing:', confirmation)
-        layout.addRow('Paper size [mm]:', lay_size)
+        layout.addRow(_('Enable printing:'), enable)
+        layout.addRow(_('Module:'), module)
+        layout.addRow(_('Print to PDF (for debugging):'), pdf)
+        layout.addRow(_('Ask for confirmation before printing:'), confirmation)
+        layout.addRow(_('Paper size [mm]:'), lay_size)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)

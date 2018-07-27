@@ -17,12 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+# Provide installed photobooth version
 from pkg_resources import get_distribution, DistributionNotFound
 try:
     __version__ = get_distribution('photobooth').version
 except DistributionNotFound:
     __version__ = 'unknown'
 
+import gettext
 import logging
 import logging.handlers
 import multiprocessing as mp
@@ -34,6 +36,9 @@ from .util import lookup_and_import
 from .StateMachine import Context, ErrorEvent
 from .Threading import Communicator, Workers
 from .worker import Worker
+
+# Globally install gettext for I18N
+gettext.install('photobooth')
 
 
 class CameraProcess(mp.Process):
