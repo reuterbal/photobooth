@@ -61,7 +61,7 @@ class PictureList:
             pictures.sort()
             last_picture = pictures[-1]
             self.counter = int(last_picture[
-                -(self.count_width+len(self.suffix)):-len(self.suffix)])
+                -(self.count_width + len(self.suffix)):-len(self.suffix)])
 
         # Print initial infos
         logging.info('Number of last existing file: %d', self.counter)
