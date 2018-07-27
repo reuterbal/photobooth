@@ -146,8 +146,14 @@ class PyQt5Gui(GuiSkeleton):
 
         logging.error('%s: %s', state.origin, state.message)
 
+        err_msg = self._cfg.get('Photobooth', 'overwrite_error_message')
+        if len(err_msg) > 0:
+            message = err_msg
+        else:
+            message = 'Error: ' + state.message
+
         reply = QtWidgets.QMessageBox.critical(
-            self._gui, state.origin, 'Error: ' + state.message,
+            self._gui, state.origin, message,
             QtWidgets.QMessageBox.Retry | QtWidgets.QMessageBox.Cancel,
             QtWidgets.QMessageBox.Cancel)
 
