@@ -316,22 +316,22 @@ class CountdownMessage(QtWidgets.QFrame):
 
 class PostprocessMessage(Widgets.TransparentOverlay):
 
-    def __init__(self, parent, tasks, idle_handle, timeout=None,
-                 timeout_handle=None):
+    def __init__(self, parent, tasks, worker, idle_handle,
+                 timeout=None, timeout_handle=None):
 
         if timeout_handle is None:
             timeout_handle = idle_handle
 
         super().__init__(parent, timeout, timeout_handle)
         self.setObjectName('PostprocessMessage')
-        self.initFrame(tasks, idle_handle)
+        self.initFrame(tasks, idle_handle, worker)
 
-    def initFrame(self, tasks, idle_handle):
+    def initFrame(self, tasks, idle_handle, worker):
 
         def disableAndCall(button, handle):
             button.setEnabled(False)
             button.update()
-            handle()
+            worker.put(handle)
 
         def createButton(task):
             button = QtWidgets.QPushButton(task.label)

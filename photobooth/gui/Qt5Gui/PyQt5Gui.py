@@ -36,6 +36,7 @@ from ..GuiPostprocessor import GuiPostprocessor
 from . import styles
 from . import Frames
 from . import Receiver
+from . import Worker
 
 
 class PyQt5Gui(GuiSkeleton):
@@ -49,6 +50,7 @@ class PyQt5Gui(GuiSkeleton):
         is_start, unparsed_args = self._parseArgs()
         self._initUI(argv[:1] + unparsed_args)
         self._initReceiver()
+        self._initWorker()
 
         self._picture = None
         self._postprocess = GuiPostprocessor(self._cfg)
@@ -101,6 +103,12 @@ class PyQt5Gui(GuiSkeleton):
         self._receiver.notify.connect(self.handleState)
         self._receiver.start()
 
+    def _initWorker(self):
+
+        # Create worker thread for time consuming tasks to keep gui responsive
+        self._worker = Worker.Worker(self._comm)
+        self._worker.start()
+
     def _enableEscape(self):
 
         self._is_escape = True
@@ -131,6 +139,7 @@ class PyQt5Gui(GuiSkeleton):
         if state.target == TeardownEvent.WELCOME:
             self._comm.send(Workers.MASTER, GuiEvent('welcome'))
         elif state.target in (TeardownEvent.EXIT, TeardownEvent.RESTART):
+            self._worker.put(None)
             self._app.exit(0)
 
     def showError(self, state):
@@ -229,7 +238,7 @@ class PyQt5Gui(GuiSkeleton):
         postproc_t = self._cfg.getInt('Photobooth', 'postprocess_time')
 
         Frames.PostprocessMessage(
-            self._gui.centralWidget(), tasks,
+            self._gui.centralWidget(), tasks, self._worker,
             lambda: self._comm.send(Workers.MASTER, GuiEvent('idle')),
             postproc_t * 1000)
 
