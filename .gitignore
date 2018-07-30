@@ -1,9 +1,9 @@
 photobooth.cfg
-photobooth/__pycache__
-photobooth/*/__pycache__
-photobooth/*/*/__pycache__
+**/__pycache__
 .eggs
 .venv
 photobooth.egg-info
 *.log
-*.log.*
+*.log.20??-??-??
+print_*.pdf
+20??-??-??
