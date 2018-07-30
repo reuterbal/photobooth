@@ -473,6 +473,7 @@ class Settings(QtWidgets.QFrame):
         tabs.addTab(self.createPhotoboothSettings(), _('Photobooth'))
         tabs.addTab(self.createCameraSettings(), _('Camera'))
         tabs.addTab(self.createPictureSettings(), _('Picture'))
+        tabs.addTab(self.createStorageSettings(), _('Storage'))
         tabs.addTab(self.createGpioSettings(), _('GPIO'))
         tabs.addTab(self.createPrinterSettings(), _('Printer'))
         return tabs
@@ -653,15 +654,6 @@ class Settings(QtWidgets.QFrame):
         min_dist_y.setValue(self._cfg.getInt('Picture', 'min_dist_y'))
         self.add('Picture', 'min_dist_y', min_dist_y)
 
-        basedir = QtWidgets.QLineEdit(self._cfg.get('Picture', 'basedir'))
-        basename = QtWidgets.QLineEdit(self._cfg.get('Picture', 'basename'))
-        self.add('Picture', 'basedir', basedir)
-        self.add('Picture', 'basename', basename)
-
-        keep_pictures = QtWidgets.QCheckBox()
-        keep_pictures.setChecked(self._cfg.getBool('Picture', 'keep_pictures'))
-        self.add('Picture', 'keep_pictures', keep_pictures)
-
         skip_last = QtWidgets.QCheckBox()
         skip_last.setChecked(self._cfg.getBool('Picture', 'skip_last'))
         self.add('Picture', 'skip_last', skip_last)
@@ -684,23 +676,10 @@ class Settings(QtWidgets.QFrame):
         lay_dist.addWidget(QtWidgets.QLabel('x'))
         lay_dist.addWidget(min_dist_y)
 
-        def directory_dialog():
-            dialog = QtWidgets.QFileDialog.getExistingDirectory
-            basedir.setText(dialog(self, _('Select directory'),
-                                   os.path.expanduser('~'),
-                                   QtWidgets.QFileDialog.ShowDirsOnly))
-
         def file_dialog():
             dialog = QtWidgets.QFileDialog.getOpenFileName
             bg.setText(dialog(self, _('Select file'), os.path.expanduser('~'),
                               'Images (*.jpg *.png)')[0])
-
-        dir_button = QtWidgets.QPushButton(_('Select directory'))
-        dir_button.clicked.connect(directory_dialog)
-
-        lay_dir = QtWidgets.QHBoxLayout()
-        lay_dir.addWidget(basedir)
-        lay_dir.addWidget(dir_button)
 
         file_button = QtWidgets.QPushButton(_('Select file'))
         file_button.clicked.connect(file_dialog)
@@ -709,20 +688,47 @@ class Settings(QtWidgets.QFrame):
         lay_file.addWidget(bg)
         lay_file.addWidget(file_button)
 
-        lay_checkbox = QtWidgets.QHBoxLayout()
-        lay_checkbox.addWidget(keep_pictures)
-        lay_checkbox.addStretch(1)
-        lay_checkbox.addWidget(QtWidgets.QLabel(_('Omit last picture:')))
-        lay_checkbox.addWidget(skip_last)
-
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Number of shots per picture:'), lay_num)
         layout.addRow(_('Size of assembled picture [px]:'), lay_size)
         layout.addRow(_('Min. distance between shots [px]:'), lay_dist)
+        layout.addRow(_('Omit last picture:'), skip_last)
+        layout.addRow(_('Background image:'), lay_file)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        return widget
+
+    def createStorageSettings(self):
+
+        self.init('Storage')
+
+        basedir = QtWidgets.QLineEdit(self._cfg.get('Storage', 'basedir'))
+        basename = QtWidgets.QLineEdit(self._cfg.get('Storage', 'basename'))
+        self.add('Storage', 'basedir', basedir)
+        self.add('Storage', 'basename', basename)
+
+        keep_pictures = QtWidgets.QCheckBox()
+        keep_pictures.setChecked(self._cfg.getBool('Storage', 'keep_pictures'))
+        self.add('Storage', 'keep_pictures', keep_pictures)
+
+        def directory_dialog():
+            dialog = QtWidgets.QFileDialog.getExistingDirectory
+            basedir.setText(dialog(self, _('Select directory'),
+                                   os.path.expanduser('~'),
+                                   QtWidgets.QFileDialog.ShowDirsOnly))
+
+        dir_button = QtWidgets.QPushButton(_('Select directory'))
+        dir_button.clicked.connect(directory_dialog)
+
+        lay_dir = QtWidgets.QHBoxLayout()
+        lay_dir.addWidget(basedir)
+        lay_dir.addWidget(dir_button)
+
+        layout = QtWidgets.QFormLayout()
         layout.addRow(_('Output directory (strftime possible):'), lay_dir)
         layout.addRow(_('Basename of files (strftime possible):'), basename)
-        layout.addRow(_('Keep single shots:'), lay_checkbox)
-        layout.addRow(_('Background image:'), lay_file)
+        layout.addRow(_('Keep single shots:'), keep_pictures)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -867,16 +873,17 @@ class Settings(QtWidgets.QFrame):
                       self.get('Picture', 'min_dist_x').text())
         self._cfg.set('Picture', 'min_dist_y',
                       self.get('Picture', 'min_dist_y').text())
-        self._cfg.set('Picture', 'basedir',
-                      self.get('Picture', 'basedir').text())
-        self._cfg.set('Picture', 'basename',
-                      self.get('Picture', 'basename').text())
-        self._cfg.set('Picture', 'keep_pictures',
-                      str(self.get('Picture', 'keep_pictures').isChecked()))
         self._cfg.set('Picture', 'skip_last',
                       str(self.get('Picture', 'skip_last').isChecked()))
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())
+
+        self._cfg.set('Storage', 'basedir',
+                      self.get('Storage', 'basedir').text())
+        self._cfg.set('Storage', 'basename',
+                      self.get('Storage', 'basename').text())
+        self._cfg.set('Storage', 'keep_pictures',
+                      str(self.get('Storage', 'keep_pictures').isChecked()))
 
         self._cfg.set('Gpio', 'enable',
                       str(self.get('Gpio', 'enable').isChecked()))

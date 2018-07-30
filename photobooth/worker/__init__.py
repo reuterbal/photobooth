@@ -67,8 +67,8 @@ class Worker:
         self._postprocess_tasks = []
 
         # PictureSaver for assembled pictures
-        path = os.path.join(config.get('Picture', 'basedir'),
-                            config.get('Picture', 'basename'))
+        path = os.path.join(config.get('Storage', 'basedir'),
+                            config.get('Storage', 'basename'))
         basename = strftime(path, localtime())
         self._postprocess_tasks.append(PictureSaver(basename))
 
@@ -77,8 +77,8 @@ class Worker:
         self._picture_tasks = []
 
         # PictureSaver for single shots
-        path = os.path.join(config.get('Picture', 'basedir'),
-                            config.get('Picture', 'basename') + '_shot_')
+        path = os.path.join(config.get('Storage', 'basedir'),
+                            config.get('Storage', 'basename') + '_shot_')
         basename = strftime(path, localtime())
         self._picture_tasks.append(PictureSaver(basename))
 
