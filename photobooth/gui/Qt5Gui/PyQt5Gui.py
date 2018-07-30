@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import logging
 import os
 
@@ -41,38 +40,24 @@ from . import Worker
 
 class PyQt5Gui(GuiSkeleton):
 
-    def __init__(self, argv, config, communicator):
+    def __init__(self, argv, config, comm):
 
-        super().__init__(communicator)
+        super().__init__(comm)
 
         self._cfg = config
 
-        is_start, unparsed_args = self._parseArgs()
-        self._initUI(argv[:1] + unparsed_args)
+        self._initUI(argv)
         self._initReceiver()
         self._initWorker()
 
         self._picture = None
         self._postprocess = GuiPostprocessor(self._cfg)
 
-        if is_start:
-            self._comm.send(Workers.MASTER, GuiEvent('start'))
-
     def run(self):
 
         exit_code = self._app.exec_()
         self._gui = None
         return exit_code
-
-    def _parseArgs(self):
-
-        # Add parameter for direct startup
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--run', action='store_true',
-                            help='omit welcome screen and run photobooth')
-        parsed_args, unparsed_args = parser.parse_known_args()
-
-        return (parsed_args.run, unparsed_args)
 
     def _initUI(self, argv):
 

@@ -24,6 +24,7 @@ try:
 except DistributionNotFound:
     __version__ = 'unknown'
 
+import argparse
 import gettext
 import logging
 import logging.handlers
@@ -53,6 +54,8 @@ class CameraProcess(mp.Process):
 
     def run(self):
 
+        logging.info('Start CameraProcess')
+
         CameraModule = lookup_and_import(
             camera.modules, self._cfg.get('Camera', 'module'), 'camera')
         cap = camera.Camera(self._cfg, self._comm, CameraModule)
@@ -64,22 +67,27 @@ class CameraProcess(mp.Process):
             except Exception as e:
                 self._comm.send(Workers.MASTER, ErrorEvent('Camera', str(e)))
 
+        logging.debug('Exit CameraProcess')
+
 
 class GuiProcess(mp.Process):
 
-    def __init__(self, argv, config, communicator):
+    def __init__(self, argv, config, comm):
 
         super().__init__()
 
         self._argv = argv
         self._cfg = config
-        self._comm = communicator
+        self._comm = comm
 
     def run(self):
 
+        logging.debug('Start GuiProcess')
         Gui = lookup_and_import(gui.modules, self._cfg.get('Gui', 'module'),
                                 'gui')
-        return Gui(self._argv, self._cfg, self._comm).run()
+        retval = Gui(self._argv, self._cfg, self._comm).run()
+        logging.debug('Exit GuiProcess')
+        return retval
 
 
 class WorkerProcess(mp.Process):
@@ -94,12 +102,16 @@ class WorkerProcess(mp.Process):
 
     def run(self):
 
+        logging.debug('Start WorkerProcess')
+
         while True:
             try:
                 if Worker(self._cfg, self._comm).run():
                     break
             except Exception as e:
                 self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
+
+        logging.debug('Exit WorkerProcess')
 
 
 class GpioProcess(mp.Process):
@@ -114,6 +126,8 @@ class GpioProcess(mp.Process):
 
     def run(self):
 
+        logging.debug('Start GpioProcess')
+
         while True:
             try:
                 if Gpio(self._cfg, self._comm).run():
@@ -121,8 +135,21 @@ class GpioProcess(mp.Process):
             except Exception as e:
                 self._comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
 
+        logging.debug('Exit GpioProcess')
 
-def run(argv):
+
+def parseArgs(argv):
+
+    # Add parameter for direct startup
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--run', action='store_true',
+                        help='omit welcome screen and run photobooth')
+    parser.add_argument('--debug', action='store_true',
+                        help='enable additional debug output')
+    return parser.parse_known_args()
+
+
+def run(argv, is_run):
 
     logging.info('Photobooth version: %s', __version__)
 
@@ -130,7 +157,7 @@ def run(argv):
     config = Config('photobooth.cfg')
 
     comm = Communicator()
-    context = Context(comm)
+    context = Context(comm, is_run)
 
     # Initialize processes: We use five processes here:
     # 1. Master that collects events and distributes state changes
@@ -161,8 +188,15 @@ def run(argv):
 
 def main(argv):
 
+    # Parse command line arguments
+    parsed_args, unparsed_args = parseArgs(argv)
+    argv = argv[:1] + unparsed_args
+
     # Setup log level and format
-    log_level = logging.INFO
+    if parsed_args.debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -190,7 +224,7 @@ def main(argv):
     while status_code in known_status_codes:
         logging.info(known_status_codes[status_code])
 
-        status_code = run(argv)
+        status_code = run(argv, parsed_args.run)
 
     logging.info('Exiting photobooth with status code %d', status_code)
 
