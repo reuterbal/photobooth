@@ -26,14 +26,23 @@ If applicable, add screenshots to help explain your problem.
 
 OR
 
-Attach a session recording using https://asciinema.org/
+Attach a session recording using [asciinema](https://asciinema.org/).
 To use it:
-```sudo apt install -y asciinema && asciinema rec # start session recording
-```commandToInstall # To install photobooth if you encounter issue during install process
-```   OR
-```.venv/bin/python -m photobooth # To start photobooth if you encounter issue during usage
-```Ctrl+D # stop recording
-```y # yes to upload and get URL to paste here
+```bash
+sudo apt install -y asciinema && asciinema rec # start session recording
+```
+Reproduce the issue:
+```bash
+pip install -e .[...] # Install command if you encounter issues during install process
+```   
+OR
+```bash
+.venv/bin/python -m photobooth # To start photobooth if you encounter issue during usage
+```
+Stop recording and upload:
+```
+Ctrl+D # stop recording
+y # yes to upload and get URL to paste here
 ```
 
 **Hardware (please complete the following information)**
@@ -54,6 +63,8 @@ To use it:
  ```
 
 **Photobooth log**
+
+Run the application as `.venv/bin/python -m photobooth --debug` and paste the logfile here:
 
 ```
 Insert the content of photobooth.log here
