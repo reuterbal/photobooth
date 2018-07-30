@@ -54,7 +54,7 @@ class CameraProcess(mp.Process):
 
     def run(self):
 
-        logging.info('Start CameraProcess')
+        logging.debug('Start CameraProcess')
 
         CameraModule = lookup_and_import(
             camera.modules, self._cfg.get('Camera', 'module'), 'camera')
