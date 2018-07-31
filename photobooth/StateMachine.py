@@ -19,6 +19,8 @@
 
 import logging
 
+from . import util
+
 
 class Context:
 
@@ -167,16 +169,12 @@ class TeardownEvent(Event):
 
 class GuiEvent(Event):
 
-    def __init__(self, name):
-
-        super().__init__(name)
+    pass
 
 
 class GpioEvent(Event):
 
-    def __init__(self, name):
-
-        super().__init__(name)
+    pass
 
 
 class CameraEvent(Event):
@@ -184,19 +182,17 @@ class CameraEvent(Event):
     def __init__(self, name, picture=None):
 
         super().__init__(name)
-        self._picture = picture
+        self._picture = util.pickle_image(picture)
 
     @property
     def picture(self):
 
-        return self._picture
+        return util.unpickle_image(self._picture)
 
 
 class WorkerEvent(Event):
 
-    def __init__(self, name):
-
-        super().__init__(name)
+    pass
 
 
 class State:
@@ -205,6 +201,10 @@ class State:
 
         super().__init__()
         self.update()
+
+    def __str__(self):
+
+        return type(self).__name__
 
     def update(self):
 
@@ -224,10 +224,6 @@ class ErrorState(State):
         self.old_state = old_state
         self.is_running = is_running
         super().__init__()
-
-    def __str__(self):
-
-        return 'ErrorState'
 
     @property
     def origin(self):
@@ -302,10 +298,6 @@ class TeardownState(State):
         super().__init__()
         self._target = target
 
-    def __str__(self):
-
-        return 'TeardownState'
-
     @property
     def target(self):
 
@@ -328,10 +320,6 @@ class WelcomeState(State):
 
         super().__init__()
 
-    def __str__(self):
-
-        return 'WelcomeState'
-
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent):
@@ -349,10 +337,6 @@ class StartupState(State):
 
         super().__init__()
 
-    def __str__(self):
-
-        return 'StartupState'
-
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'ready':
@@ -368,10 +352,6 @@ class IdleState(State):
 
         super().__init__()
 
-    def __str__(self):
-
-        return 'IdleState'
-
     def handleEvent(self, event, context):
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
@@ -386,10 +366,6 @@ class GreeterState(State):
     def __init__(self):
 
         super().__init__()
-
-    def __str__(self):
-
-        return 'GreeterState'
 
     def handleEvent(self, event, context):
 
@@ -407,10 +383,6 @@ class CountdownState(State):
         super().__init__()
 
         self._num_picture = num_picture
-
-    def __str__(self):
-
-        return 'CountdownState'
 
     @property
     def num_picture(self):
@@ -435,10 +407,6 @@ class CaptureState(State):
 
         self._num_picture = num_picture
 
-    def __str__(self):
-
-        return 'CaptureState'
-
     @property
     def num_picture(self):
 
@@ -460,10 +428,6 @@ class AssembleState(State):
 
         super().__init__()
 
-    def __str__(self):
-
-        return 'AssembleState'
-
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'review':
@@ -477,16 +441,12 @@ class ReviewState(State):
     def __init__(self, picture):
 
         super().__init__()
-        self._picture = picture
-
-    def __str__(self):
-
-        return 'ReviewState'
+        self._picture = util.pickle_image(picture)
 
     @property
     def picture(self):
 
-        return self._picture
+        return util.unpickle_image(self._picture)
 
     def handleEvent(self, event, context):
 
@@ -501,10 +461,6 @@ class PostprocessState(State):
     def __init__(self):
 
         super().__init__()
-
-    def __str__(self):
-
-        return 'PostprocessState'
 
     def handleEvent(self, event, context):
 
