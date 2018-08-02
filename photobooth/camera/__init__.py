@@ -50,7 +50,7 @@ class Camera:
         self._pic_dims = None
 
         self._is_preview = self._cfg.getBool('Photobooth', 'show_preview')
-        self._is_keep_pictures = self._cfg.getBool('Picture', 'keep_pictures')
+        self._is_keep_pictures = self._cfg.getBool('Storage', 'keep_pictures')
 
     def startup(self):
 
