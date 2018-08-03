@@ -176,7 +176,7 @@ setup(
         'pyqt': ['PyQt5'],
         'picamera': ['picamera'],
         'gphoto2-cffi': ['gphoto2-cffi'],
-        'dev': ['setuptools', 'wheel', 'twine', ],
+        'dev': ['setuptools', 'wheel', 'twine', 'Babel',],
     },
 
     python_requires='>=3.5',
