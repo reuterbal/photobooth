@@ -28,7 +28,7 @@ Screenshots produced using `CameraDummy` that produces unicolor images.
 
 ### Technical specifications
 * Many camera models supported, thanks to interfaces to [gPhoto2](http://www.gphoto.org/), [OpenCV](https://opencv.org/),  [Raspberry Pi camera module](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera)
-* Tested on Standard x86 hardware and [Raspberry Pi](https://raspberrypi.org/) models 1B+, 3B, 3B+
+* Tested on Standard x86 hardware and [Raspberry Pi](https://raspberrypi.org/) models 1B+, 2B, 3B, and 3B+
 * Flexible, modular design: Easy to add features or customize the appearance
 * Multi-threaded for responsive GUI and fast processing
 * Based on [Python 3](https://www.python.org/), [Pillow](https://pillow.readthedocs.io), and [Qt5](https://www.qt.io/developers/)
