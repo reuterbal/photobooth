@@ -121,6 +121,7 @@ class Camera:
         if self._is_preview:
             while self._comm.empty(Workers.CAMERA):
                 picture = ImageOps.mirror(self._cap.getPreview())
+                picture = picture.resize(self._pic_dims.previewSize)
                 self._comm.send(Workers.GUI,
                                 StateMachine.CameraEvent('preview', picture))
 

@@ -37,6 +37,8 @@ class PictureDimensions:
 
         self.computeThumbnailDimensions()
 
+        self.computePreviewDimensions(config)
+
     def computeThumbnailDimensions(self):
 
         resize_factor = min((((self.outputSize[i] - (self.numPictures[i] + 1) *
@@ -57,6 +59,17 @@ class PictureDimensions:
             self._thumb_offsets.append(tuple((pos[j] + 1) * thumb_dist[j] +
                                              pos[j] * self.thumbnailSize[j]
                                              for j in range(2)))
+
+    def computePreviewDimensions(self, config):
+
+        gui_size = (config.getInt('Gui', 'width'),
+                    config.getInt('Gui', 'height'))
+
+        resize_factor = min(min((gui_size[i] / self.captureSize[i]
+                                 for i in range(2))), 1)
+
+        self._preview_size = tuple(int(self.captureSize[i] * resize_factor)
+                                   for i in range(2))
 
     @property
     def numPictures(self):
@@ -98,3 +111,8 @@ class PictureDimensions:
     def thumbnailOffset(self):
 
         return self._thumb_offsets
+
+    @property
+    def previewSize(self):
+
+        return self._preview_size
