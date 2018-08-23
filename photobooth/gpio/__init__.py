@@ -125,7 +125,7 @@ class Gpio:
     def rgbBlink(self):
 
         if self._is_enabled:
-            self._gpio.rgbBlink(self._rgb, 0.4, 0.4, 0.1, 0.1, (1, 0, 0),
+            self._gpio.rgbBlink(self._rgb, 0.5, 0.5, 0.1, 0.1, (1, 0, 0),
                                 (0, 0, 0), self._countdown_time)
 
     def trigger(self):
@@ -226,7 +226,7 @@ class Entities:
         try:
             led = self.RGBLED(*bcm_pins)
             for l in led._leds:
-                l.frequency = 120
+                l.frequency = 140
             self._rgb.append(led)
             return len(self._rgb) - 1
         except self.GPIOPinInUse:
