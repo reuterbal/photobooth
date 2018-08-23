@@ -52,6 +52,10 @@ class Camera:
         self._is_preview = self._cfg.getBool('Photobooth', 'show_preview')
         self._is_keep_pictures = self._cfg.getBool('Storage', 'keep_pictures')
 
+        rot_vals = {0: None, 90: Image.ROTATE_90, 180: Image.ROTATE_180,
+                    270: Image.ROTATE_270}
+        self._rotation = rot_vals[self._cfg.getInt('Camera', 'rotation')]
+
     def startup(self):
 
         self._cap = self._cam()
@@ -59,8 +63,11 @@ class Camera:
         logging.info('Using camera {} preview functionality'.format(
             'with' if self._is_preview else 'without'))
 
-        self._pic_dims = PictureDimensions(self._cfg,
-                                           self._cap.getPicture().size)
+        test_picture = self._cap.getPicture()
+        if self._rotation is not None:
+            test_picture = test_picture.transpose(self._rotation)
+
+        self._pic_dims = PictureDimensions(self._cfg, test_picture.size)
         self._is_preview = self._is_preview and self._cap.hasPreview
 
         background = self._cfg.get('Picture', 'background')
@@ -120,8 +127,11 @@ class Camera:
 
         if self._is_preview:
             while self._comm.empty(Workers.CAMERA):
-                picture = ImageOps.mirror(self._cap.getPreview())
+                picture = self._cap.getPreview()
+                if self._rotation is not None:
+                    picture = picture.transpose(self._rotation)
                 picture = picture.resize(self._pic_dims.previewSize)
+                picture = ImageOps.mirror(picture)
                 self._comm.send(Workers.GUI,
                                 StateMachine.CameraEvent('preview', picture))
 
@@ -129,6 +139,8 @@ class Camera:
 
         self.setIdle()
         picture = self._cap.getPicture()
+        if self._rotation is not None:
+            picture = picture.transpose(self._rotation)
         self._pictures.append(picture)
         self.setActive()
 

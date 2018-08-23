@@ -613,8 +613,25 @@ class Settings(QtWidgets.QFrame):
                                            self._cfg.get('Camera', 'module'))
         self.add('Camera', 'module', module)
 
+        self.rot_vals_ = (0, 90, 180, 270)
+        cur_rot = self._cfg.getInt('Camera', 'rotation')
+
+        rotation = QtWidgets.QComboBox()
+        for r in self.rot_vals_:
+            rotation.addItem(str(r))
+
+        idx = [x for x, r in enumerate(self.rot_vals_) if r == cur_rot]
+        rotation.setCurrentIndex(idx[0] if len(idx) > 0 else -1)
+
+        # Fix bug in Qt to allow changing the items in a stylesheet
+        delegate = QtWidgets.QStyledItemDelegate()
+        rotation.setItemDelegate(delegate)
+
+        self.add('Camera', 'rotation', rotation)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Camera module:'), module)
+        layout.addRow(_('Camera rotation:'), rotation)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -862,6 +879,8 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Camera', 'module',
                       camera.modules[self.get('Camera',
                                               'module').currentIndex()][0])
+        self._cfg.set('Camera', 'rotation', str(
+            self.rot_vals_[self.get('Camera', 'rotation').currentIndex()]))
 
         self._cfg.set('Picture', 'num_x', self.get('Picture', 'num_x').text())
         self._cfg.set('Picture', 'num_y', self.get('Picture', 'num_y').text())
