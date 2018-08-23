@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: photobooth 0.4.dev34+gcecdf5b.d20180803\n"
+"Project-Id-Version: photobooth 0.4.dev48+g8241189.d20180823\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-08-03 10:06+0200\n"
+"POT-Creation-Date: 2018-08-23 16:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -165,87 +165,91 @@ msgstr ""
 msgid "Overwrite displayed error message:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:617
+#: photobooth/gui/Qt5Gui/Frames.py:633
 msgid "Camera module:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:681 photobooth/gui/Qt5Gui/Frames.py:684
+#: photobooth/gui/Qt5Gui/Frames.py:634
+msgid "Camera rotation:"
+msgstr ""
+
+#: photobooth/gui/Qt5Gui/Frames.py:698 photobooth/gui/Qt5Gui/Frames.py:701
 msgid "Select file"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:692
+#: photobooth/gui/Qt5Gui/Frames.py:709
 msgid "Number of shots per picture:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:693
+#: photobooth/gui/Qt5Gui/Frames.py:710
 msgid "Size of assembled picture [px]:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:694
+#: photobooth/gui/Qt5Gui/Frames.py:711
 msgid "Min. distance between shots [px]:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:695
+#: photobooth/gui/Qt5Gui/Frames.py:712
 msgid "Omit last picture:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:696
+#: photobooth/gui/Qt5Gui/Frames.py:713
 msgid "Background image:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:717 photobooth/gui/Qt5Gui/Frames.py:721
+#: photobooth/gui/Qt5Gui/Frames.py:734 photobooth/gui/Qt5Gui/Frames.py:738
 msgid "Select directory"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:729
+#: photobooth/gui/Qt5Gui/Frames.py:746
 msgid "Output directory (strftime possible):"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:730
+#: photobooth/gui/Qt5Gui/Frames.py:747
 msgid "Basename of files (strftime possible):"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:731
+#: photobooth/gui/Qt5Gui/Frames.py:748
 msgid "Keep single shots:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:781
+#: photobooth/gui/Qt5Gui/Frames.py:798
 msgid "Enable GPIO:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:782
+#: photobooth/gui/Qt5Gui/Frames.py:799
 msgid "Exit button pin (BCM numbering):"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:783
+#: photobooth/gui/Qt5Gui/Frames.py:800
 msgid "Trigger button pin (BCM numbering):"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:784
+#: photobooth/gui/Qt5Gui/Frames.py:801
 msgid "Idle lamp pin (BCM numbering):"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:785
+#: photobooth/gui/Qt5Gui/Frames.py:802
 msgid "RGB LED pins (BCM numbering):"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:826
+#: photobooth/gui/Qt5Gui/Frames.py:843
 msgid "Enable printing:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:827
+#: photobooth/gui/Qt5Gui/Frames.py:844
 msgid "Module:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:828
+#: photobooth/gui/Qt5Gui/Frames.py:845
 msgid "Print to PDF (for debugging):"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:829
+#: photobooth/gui/Qt5Gui/Frames.py:846
 msgid "Ask for confirmation before printing:"
 msgstr ""
 
-#: photobooth/gui/Qt5Gui/Frames.py:830
+#: photobooth/gui/Qt5Gui/Frames.py:847
 msgid "Paper size [mm]:"
 msgstr ""
 

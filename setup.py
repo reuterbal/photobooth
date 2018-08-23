@@ -60,7 +60,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     # version='dev',  # Required
     use_scm_version=True,
-    setup_requires=['setuptools_scm'],
+    setup_requires=['setuptools_scm', 'Babel'],
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
