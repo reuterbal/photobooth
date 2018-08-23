@@ -28,8 +28,20 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
+# To compile message catalogs
+from setuptools.command.sdist import sdist
 
 here = path.abspath(path.dirname(__file__))
+
+
+class Sdist(sdist):
+    """Custom ``sdist`` command to ensure that mo files are always created."""
+
+    def run(self):
+        self.run_command('compile_catalog')
+        # sdist is an old style class so super cannot be used.
+        sdist.run(self)
+
 
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
@@ -196,6 +208,7 @@ setup(
     #
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
     # data_files=[('my_data', ['data/data_file'])],  # Optional
+    
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
