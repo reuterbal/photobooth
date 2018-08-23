@@ -27,20 +27,34 @@ with relevant changes in place.
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
-from os import path
+from os import path, listdir
 # To compile message catalogs
 from setuptools.command.sdist import sdist
+from distutils.command.build import build
 
 here = path.abspath(path.dirname(__file__))
 
 
-class Sdist(sdist):
-    """Custom ``sdist`` command to ensure that mo files are always created."""
+class CustomBuild(build):
+    """Custom ``build`` class to include additional build steps."""
 
-    def run(self):
-        self.run_command('compile_catalog')
-        # sdist is an old style class so super cannot be used.
-        sdist.run(self)
+    sub_commands = [
+        ('compile_catalog', None),  # Run ``compile_catalog`` to create mo files
+    ] + build.sub_commands
+
+
+def get_mo_files(basedir, installdir):
+    """Function to find all the .mo files for installation."""
+
+    data_files = []
+
+    for d in listdir(basedir):
+        if path.isdir(path.join(basedir, d)):
+            data_files.append((path.join(installdir, d, 'LC_MESSAGES'),
+                               [path.join(basedir, d, 'LC_MESSAGES',
+                                          'photobooth.mo')]))
+
+    return data_files
 
 
 # Get the long description from the README file
@@ -208,7 +222,9 @@ setup(
     #
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
     # data_files=[('my_data', ['data/data_file'])],  # Optional
-    
+    data_files=[] + 
+        get_mo_files(path.join(here, 'photobooth', 'locale'),
+                     path.join('usr', 'share', 'locale')),
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
@@ -235,5 +251,9 @@ setup(
     project_urls={  # Optional
         'Bug Reports': 'https://github.com/reuterbal/photobooth/issues',
         'Source': 'https://github.com/reuterbal/photobooth/',
+    },
+
+    cmdclass={
+        'build': CustomBuild,
     },
 )

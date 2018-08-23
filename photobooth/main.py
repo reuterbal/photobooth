@@ -39,7 +39,7 @@ from .Threading import Communicator, Workers
 from .worker import Worker
 
 # Globally install gettext for I18N
-gettext.install('photobooth')
+gettext.install('photobooth', 'photobooth/locale')
 
 
 class CameraProcess(mp.Process):
