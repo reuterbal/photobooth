@@ -24,7 +24,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-from PIL import ImageQt
+from PIL import Image, ImageQt
 
 from ...StateMachine import GuiEvent, TeardownEvent
 from ...Threading import Workers
@@ -198,7 +198,8 @@ class PyQt5Gui(GuiSkeleton):
 
     def updateCountdown(self, event):
 
-        self._gui.centralWidget().picture = ImageQt.ImageQt(event.picture)
+        picture = Image.open(event.picture)
+        self._gui.centralWidget().picture = ImageQt.ImageQt(picture)
         self._gui.centralWidget().update()
 
     def showCapture(self, state):
@@ -215,7 +216,8 @@ class PyQt5Gui(GuiSkeleton):
 
     def showReview(self, state):
 
-        self._picture = ImageQt.ImageQt(state.picture)
+        picture = Image.open(state.picture)
+        self._picture = ImageQt.ImageQt(picture)
         review_time = self._cfg.getInt('Photobooth', 'display_time') * 1000
         self._setWidget(Frames.PictureMessage(self._picture))
         QtCore.QTimer.singleShot(

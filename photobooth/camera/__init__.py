@@ -20,6 +20,7 @@
 import logging
 
 from PIL import Image, ImageOps
+from io import BytesIO
 
 from .PictureDimensions import PictureDimensions
 from .. import StateMachine
@@ -132,8 +133,10 @@ class Camera:
                     picture = picture.transpose(self._rotation)
                 picture = picture.resize(self._pic_dims.previewSize)
                 picture = ImageOps.mirror(picture)
+                byte_data = BytesIO()
+                picture.save(byte_data, format='jpeg')
                 self._comm.send(Workers.GUI,
-                                StateMachine.CameraEvent('preview', picture))
+                                StateMachine.CameraEvent('preview', byte_data))
 
     def capturePicture(self, state):
 
@@ -141,12 +144,14 @@ class Camera:
         picture = self._cap.getPicture()
         if self._rotation is not None:
             picture = picture.transpose(self._rotation)
-        self._pictures.append(picture)
+        byte_data = BytesIO()
+        picture.save(byte_data, format='jpeg')
+        self._pictures.append(byte_data)
         self.setActive()
 
         if self._is_keep_pictures:
             self._comm.send(Workers.WORKER,
-                            StateMachine.CameraEvent('capture', picture))
+                            StateMachine.CameraEvent('capture', byte_data))
 
         if state.num_picture < self._pic_dims.totalNumPictures:
             self._comm.send(Workers.MASTER,
@@ -161,9 +166,12 @@ class Camera:
 
         picture = self._template.copy()
         for i in range(self._pic_dims.totalNumPictures):
-            resized = self._pictures[i].resize(self._pic_dims.thumbnailSize)
+            shot = Image.open(self._pictures[i])
+            resized = shot.resize(self._pic_dims.thumbnailSize)
             picture.paste(resized, self._pic_dims.thumbnailOffset[i])
 
+        byte_data = BytesIO()
+        picture.save(byte_data, format='jpeg')
         self._comm.send(Workers.MASTER,
-                        StateMachine.CameraEvent('review', picture))
+                        StateMachine.CameraEvent('review', byte_data))
         self._pictures = []

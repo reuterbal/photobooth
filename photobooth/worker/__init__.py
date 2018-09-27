@@ -50,7 +50,8 @@ class PictureSaver(WorkerTask):
 
         filename = self._pic_list.getNext()
         logging.info('Saving picture as %s', filename)
-        picture.save(filename, 'JPEG')
+        with open(filename, 'wb') as f:
+            f.write(picture.getbuffer())
 
 
 class Worker:

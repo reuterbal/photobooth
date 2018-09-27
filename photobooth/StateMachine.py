@@ -182,12 +182,12 @@ class CameraEvent(Event):
     def __init__(self, name, picture=None):
 
         super().__init__(name)
-        self._picture = util.pickle_image(picture)
+        self._picture = picture
 
     @property
     def picture(self):
 
-        return util.unpickle_image(self._picture)
+        return self._picture
 
 
 class WorkerEvent(Event):
@@ -441,12 +441,12 @@ class ReviewState(State):
     def __init__(self, picture):
 
         super().__init__()
-        self._picture = util.pickle_image(picture)
+        self._picture = picture
 
     @property
     def picture(self):
 
-        return util.unpickle_image(self._picture)
+        return self._picture
 
     def handleEvent(self, event, context):
 
