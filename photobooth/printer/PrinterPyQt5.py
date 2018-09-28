@@ -53,7 +53,7 @@ class PrinterPyQt5(Printer):
 
         logging.info('Printing picture')
 
-        picture = picture.scaled(self._printer.pageRect().size(),
+        picture = picture.scaled(self._printer.paperRect().size(),
                                  QtCore.Qt.KeepAspectRatio,
                                  QtCore.Qt.SmoothTransformation)
 
