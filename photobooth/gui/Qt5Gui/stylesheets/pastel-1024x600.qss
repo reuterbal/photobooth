@@ -30,7 +30,7 @@ QPushButton:pressed {
 /* Idle Screen */
 
 QFrame#IdleMessage {
-    background-image: url(photobooth/gui/Qt5Gui/images/arrow.png);
+    background-image: url(photobooth/gui/Qt5Gui/images/arrow-1024x600.png);
     background-repeat: no-repeat;
     padding: 80px 400px 120px 80px;
 }
@@ -96,7 +96,7 @@ QFrame#CountdownMessage {
 /* Pose Screen */
 
 QFrame#PoseMessage {
-    background-image: url(photobooth/gui/Qt5Gui/images/camera.png);
+    background-image: url(photobooth/gui/Qt5Gui/images/camera-1024x600.png);
     background-repeat: no-repeat;
     padding: 380px 80px 80px 80px;
 }
