@@ -106,13 +106,19 @@ class CameraGphoto2Cffi(CameraInterface):
 
     def setActive(self):
 
-        self._cap._get_config()['actions']['viewfinder'].set(True)
-        self._cap._get_config()['settings']['output'].set('PC')
+        try:
+            self._cap._get_config()['actions']['viewfinder'].set(True)
+            self._cap._get_config()['settings']['output'].set('PC')
+        except BaseException as e:
+            logging.warn('Error while setting camera output to active: {}.'.format(e))
 
     def setIdle(self):
 
-        self._cap._get_config()['actions']['viewfinder'].set(False)
-        self._cap._get_config()['settings']['output'].set('Off')
+        try:
+            self._cap._get_config()['actions']['viewfinder'].set(False)
+            self._cap._get_config()['settings']['output'].set('Off')
+        except BaseException as e:
+            logging.warn('Error while setting camera output to idle: {}.'.format(e))
 
     def getPreview(self):
 
