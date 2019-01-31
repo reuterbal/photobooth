@@ -26,7 +26,6 @@ class Webserver(object):
 
     #As we may have only one server we can declare those variables globally
     root = os.path.dirname(os.path.abspath(__file__))
-    p = Path(__file__).parents[2]
     picture_dir = None
 
     def __init__(self, config, comm):
