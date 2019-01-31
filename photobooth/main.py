@@ -37,6 +37,7 @@ from .util import lookup_and_import
 from .StateMachine import Context, ErrorEvent
 from .Threading import Communicator, Workers
 from .worker import Worker
+from .webserver import Webserver
 
 # Globally install gettext for I18N
 gettext.install('photobooth', 'photobooth/locale')
@@ -137,6 +138,22 @@ class GpioProcess(mp.Process):
 
         logging.debug('Exit GpioProcess')
 
+class WebServerProcess(mp.Process):
+    def __init__(self, argv, config, comm):
+        logging.debug(argv)
+        logging.debug(config)
+        logging.debug(comm)
+
+        super().__init__()
+        self._argv = argv
+        self.daemon = True
+        self._cfg = config
+        self._comm = comm
+
+    def run(self):
+        logging.debug("Start Webserver")
+        ws = Webserver(self._cfg, self._comm).run()
+
 
 def parseArgs(argv):
 
@@ -165,7 +182,8 @@ def run(argv, is_run):
     # 3. GUI
     # 4. Postprocessing worker
     # 5. GPIO handler
-    proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess)
+    proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess, WebServerProcess)
+    #proc_classes = (CameraProcess, WorkerProcess, WebServerProcess)
     procs = [P(argv, config, comm) for P in proc_classes]
 
     for proc in procs:
