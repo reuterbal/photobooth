@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import logging
 import os, fnmatch
 from simple_http_server import request_map
@@ -70,3 +71,6 @@ class Webserver(object):
     def run(self):
         server.start()
         return True
+=======
+#init
+>>>>>>> 539ad3e539f9fdc8d5dbe3befe9a2e6d791561b5
