@@ -15,20 +15,5 @@
   <p>This is some text2.</p>
   <p>[load_images_from_directory]</p>
 </div>
-
-<script>
-var folder = "[load_images_from_directory]";
-
-$.ajax({
-    url : folder,
-    success: function (data) {
-        $(data).find("a").attr("href", function (i, val) {
-            if( val.match(/\.(jpe?g|png|gif)$/) ) {
-                $("body").append( "<img src='"+ folder + val +"'>" );
-            }
-        });
-    }
-});
-</script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+#Thanks to: https://github.com/keijack/python-simple-http-server
 import logging
 import os, fnmatch
 from simple_http_server import request_map
