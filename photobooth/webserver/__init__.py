@@ -18,7 +18,7 @@ from simple_http_server import PathValue
 
 from pathlib import Path
 from time import localtime, strftime
-import glob
+import datetime
 
 import simple_http_server.server as server
 
@@ -51,7 +51,7 @@ class Webserver(object):
         image_list=fnmatch.filter(os.listdir(Webserver.picture_dir), '*.jpg')
         str_image_list = ""
         for i in image_list:
-            str_image_list += "<img src='%s' width='100px' />" % i
+            str_image_list += "<img src='pictures/%s' width='100px' class='hidden' />" % i
             logging.debug(i)
         logging.debug(str_image_list)
 
@@ -60,12 +60,52 @@ class Webserver(object):
 
         return my_html_stream
 
-    @request_map("{picture}")
+    @request_map("pictures/{picture}")
     def return_picture(picture=PathValue()):
         my_pictures_path = "%s" %(Webserver.picture_dir)
         my_picture = "%s/%s" % (my_pictures_path, picture)
         logging.debug("Loading picture from: %s" %my_picture)
         return StaticFile(my_picture, "image/jpg")
+
+    @request_map("api/get_new_pictures/{last_picture_timestamp}")
+    def return_new_pictures(last_picture_timestamp=PathValue()):
+        logging.debug("URL Timeparam: %s" %last_picture_timestamp)
+        my_last_picture_timestamp = datetime.datetime.now()
+        try:
+            if last_picture_timestamp == 'undefined':
+                my_last_picture_timestamp = datetime.datetime.now()
+            else:
+                my_last_picture_timestamp = datetime.datetime.fromtimestamp(int(last_picture_timestamp))
+        except:
+            my_last_picture_timestamp = datetime.datetime.now()
+            logging.warn("No valid timestamp")
+
+        image_list = []
+        new_pictures = []
+        image_list=fnmatch.filter(os.listdir(Webserver.picture_dir), '*.jpg')
+        image_list.sort()
+        for i in image_list:
+            current_file = "%s/%s" %(Webserver.picture_dir,i)
+            stat = os.stat(current_file)
+            current_picture_timestamp = None
+            try:
+                current_picture_timestamp = stat.st_birthtime
+            except AttributeError:
+                # We're probably on Linux. No easy way to get creation dates here,
+                # so we'll settle for when its content was last modified.
+                current_picture_timestamp = stat.st_mtime
+            logging.debug(current_picture_timestamp)
+            current_picture_timestamp = datetime.datetime.fromtimestamp(current_picture_timestamp)
+            print("current picture timestamp %s vs last picture timestamp %s" %(current_picture_timestamp, my_last_picture_timestamp))
+            if current_picture_timestamp > my_last_picture_timestamp:
+                logging.debug("Send picture")
+                new_pictures.append(i)
+
+        thisdict =	{
+                "last_picture_timestamp": str(my_last_picture_timestamp),
+                "new_pictures": new_pictures
+                }
+        return thisdict
 
     def run(self):
         server.start()

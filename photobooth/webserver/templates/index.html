@@ -11,9 +11,41 @@
 <body>
 
 <div class="container">
-  <h1>My First Bootstrap Page</h1>
-  <p>This is some text2.</p>
+  <h1>Photobooth</h1>
   <p>[load_images_from_directory]</p>
 </div>
+
+<script>
+
+t="all";
+
+window.setInterval(function(){
+  /// call your function here
+  t = execute_call(t)
+}, 5000);
+
+
+function execute_call(timestamp)
+{
+  url = "http://localhost:9090/api/get_new_pictures/" + timestamp;
+  var jqxhr = $.getJSON( url, function() {
+    console.log( "success" );
+  })
+    .done(function() {
+      console.log( "second success" );
+    })
+    .fail(function() {
+      console.log( "error" );
+    })
+    .always(function(data) {
+
+      console.log( "complete" );
+      console.log(data);
+      return data.last_picture_timestamp;
+    });
+}
+
+
+</script>
 </body>
 </html>
