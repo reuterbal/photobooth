@@ -51,7 +51,12 @@ class Webserver(object):
         image_list=fnmatch.filter(os.listdir(Webserver.picture_dir), '*.jpg')
         str_image_list = ""
         for i in image_list:
-            str_image_list += "<img src='pictures/%s' width='100px' class='hidden' />" % i
+            str_image_list += """<div class='picture_box'>
+            <img src='show/picture/%s' class='picture' />
+            <a href='download/picture/%s' class='btn btn-primary picture-btn download'>Download Picture</a>
+            <a href='delete/picture/%s' class='btn btn-danger picture-btn delete'>Delete Picture</a>
+            </div>
+            """ %(i,i,i)
             logging.debug(i)
         logging.debug(str_image_list)
 
@@ -60,12 +65,34 @@ class Webserver(object):
 
         return my_html_stream
 
-    @request_map("pictures/{picture}")
-    def return_picture(picture=PathValue()):
+    @request_map("slideshow")
+    def start_slideshow():
+        my_html_file = "%s/templates/slideshow.html" %Webserver.root
+        my_html_stream = open(my_html_file, 'r').read()
+        return my_html_stream
+
+    @request_map("{function}/picture/{picture}")
+    def return_picture(picture=PathValue(), function=PathValue()):
+        logging.debug(function)
         my_pictures_path = "%s" %(Webserver.picture_dir)
         my_picture = "%s/%s" % (my_pictures_path, picture)
-        logging.debug("Loading picture from: %s" %my_picture)
-        return StaticFile(my_picture, "image/jpg")
+        logging.debug("Download picture from: %s" %my_picture)
+        if function == 'download':
+            return StaticFile(my_picture, "application/octet-stream")
+        if function == 'show':
+            return StaticFile(my_picture, "image/jpg")
+        if function == 'delete':
+            os.remove(my_picture)
+            return Redirect("/")
+        if function == '':
+            return Redirect("/")
+
+    # @request_map("pictures/{picture}")
+    # def return_picture(picture=PathValue()):
+    #     my_pictures_path = "%s" %(Webserver.picture_dir)
+    #     my_picture = "%s/%s" % (my_pictures_path, picture)
+    #     logging.debug("Loading picture from: %s" %my_picture)
+    #     return StaticFile(my_picture, "image/jpg")
 
     @request_map("api/get_new_pictures/{last_picture_timestamp}")
     def return_new_pictures(last_picture_timestamp=PathValue()):

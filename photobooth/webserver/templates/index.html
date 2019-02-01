@@ -7,23 +7,66 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+  <style>
+.picture{
+  width: 400px;
+  border: 2px solid black;
+  border-radius: 4px;
+}
+
+div.picture_box {
+    vertical-align: top;
+    display: inline-block;
+    text-align: center;
+    margin: 10px 20px;
+}
+
+img {
+    background-color: grey;
+}
+
+.picture-btn{
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.download {
+
+}
+
+.delete{
+
+}
+
+.picture-container {
+    margin: auto auto;
+    width: 100%
+}
+
+</style>
+
+
 </head>
 <body>
 
 <div class="container">
   <h1>Photobooth</h1>
-  <p>[load_images_from_directory]</p>
+  <h2>Gallery by Oele Geirnaert</h2>
+  <div><a href="slideshow" class='btn btn-success'>Start Slideshow</a></div>
+  <div class='picture-container'>[load_images_from_directory]</div>
 </div>
 
 <script>
 
 t="all";
-
+/*
 window.setInterval(function(){
   /// call your function here
   t = execute_call(t)
 }, 5000);
-
+*/
 
 function execute_call(timestamp)
 {

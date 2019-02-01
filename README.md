@@ -1,6 +1,9 @@
 # photobooth
 
 [![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](https://www.buymeacoffee.com/reuterbal)
+[![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](http://buymeacoff.ee/E5F8fyz)
+I'm thirsty as well!
+
 
 A flexible Photobooth software.
 
@@ -34,7 +37,7 @@ Screenshots produced using `CameraDummy` that produces unicolor images.
 * Based on [Python 3](https://www.python.org/), [Pillow](https://pillow.readthedocs.io), and [Qt5](https://www.qt.io/developers/)
 
 ### History
-I started this project for my own wedding in 2015. 
+I started this project for my own wedding in 2015.
 See [Version 0.1](https://github.com/reuterbal/photobooth/tree/v0.1) for the original version.
 Github user [hackerb9](https://github.com/hackerb9/photobooth) forked this version and added a print functionality.
 However, I was not happy with the original software design and the limited options provided by the previously used [pygame](https://www.pygame.org) GUI library and thus abandoned the original version.
