@@ -10,6 +10,8 @@ I'm thirsty as well!
 ## Edits by Oele Geirnaert:
 
 ### Webinterface features
+* When a new picture has been taken, it's automatically added to the Gallery & Slideshow via an API.
+  * A notification will popup in the gallery/slideshow that a new picture has been taken to motivate the people to take a selfie.
 * Mail functionality via Mailgun
 * Delete picture
 * Generate QR code with links:
@@ -17,14 +19,20 @@ I'm thirsty as well!
   * QR code to mail the picture
   * QR code to download the picture
 * Keyboard shortcuts:
-  * g: Go to gallery
-  * s: Start slideshow
-  * esc: Go to index
+  * **'g'**: Go to gallery
+  * **'s'**: Start slideshow
+  * **'esc'**: Go to index
+* Added rand() function to safely store the picture on the webserver
+
+- [ ] NFC
+- [ ] Photobooth status (Free or Available with movement detector & GPIO)
+- [ ] Other Improvements
 
 ### Screenshots
-<img alt="Example of gallery" title="Idle screen" src="screenshots/photobooth_gallery.png" width="280" />
-<img alt="Example of slideshow" title="Idle screen" src="screenshots/photobooth_slideshow.png" width="280" />
-<img alt="Example of mailform" title="Idle screen" src="screenshots/photobooth_mail_form.png" width="280" />
+<img alt="Example of gallery" title="Idle screen" src="screenshots/photobooth_gallery.png" width="400" />
+<img alt="Example of slideshow" title="Idle screen" src="screenshots/photobooth_slideshow.png" width="400" />
+<img alt="Example of mailform" title="Idle screen" src="screenshots/photobooth_mail_form.png" width="400" />
+<img alt="Example of random picture names" title="Idle screen" src="screenshots/photobooth_rand_picture.png" width="400" />
 
 A flexible Photobooth software.
 
