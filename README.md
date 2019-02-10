@@ -7,19 +7,19 @@ Forker:
 
 I'm thirsty as well!
 
-##Edits by Oele Geirnaert:
+## Edits by Oele Geirnaert:
 
 ### Webinterface features
 * Mail functionality via Mailgun
 * Delete picture
 * Generate QR code with links:
-** QR code to show link
-** QR code to mail the picture
-** QR code to download the picture
+  * QR code to show link
+  * QR code to mail the picture
+  * QR code to download the picture
 * Keyboard shortcuts:
-** g: Go to gallery
-** s: Start slideshow
-** esc: Go to index
+  * g: Go to gallery
+  * s: Start slideshow
+  * esc: Go to index
 
 ### Screenshots
 <img alt="Example of gallery" title="Idle screen" src="screenshots/photobooth_gallery.png" width="280" />
