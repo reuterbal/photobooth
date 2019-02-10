@@ -1,26 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Photobooth</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<div id='new_pictures_added'></div>
 
-  <style>
+<div id='fullscreen_info'>
+  <div id='picture_name' class='d-none'>Loading pictures</div>
+  <div class='footer infoblock middle'>
+    <div id='picture_datetime' class='datetimestamp'></div>
+  </div>
 
+  <div class='header infoblock middle'>
+    <div id='picture_number'></div>
+  </div>
 
-</style>
-
-
-</head>
-<body>
-
-<div class="container">
-  <h1>Slideshow</h1>
-  <p>[load_images_from_directory]</p>
+  <div id="photobooth_status" class='footer infoblock left'></div>
+  <div id='clock' class='footer infoblock right '></div>
 </div>
 
-</body>
-</html>
+<div class="slideshow-container slideshow" id="picture_list"></div>
+
+
+<script>
+view = "slideshow";
+prepare_window(view, true);
+execute_api_call_get_new_pictures(t, view);
+</script>

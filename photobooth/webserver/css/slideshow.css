@@ -1,0 +1,49 @@
+.slideshow #new_pictures_added{
+  font-size: 3em;
+  text-align: center;
+  margin-top: 45vh;
+  display: block;
+  position: absolute;
+  width: 100vw;
+  background-color: white;
+  color: black;
+}
+
+.slideshow #photobooth_status .free{
+  color: green;
+}
+
+.slideshow .infoblock{
+  position: absolute;
+  display: block;
+  padding: 20px;
+  font-weight: bold;
+  width: 240px;
+  text-align: center;
+}
+
+.slideshow .infoblock .big{
+  font-size: 2em;
+  font-weight: normal;
+  text-transform: uppercase;
+}
+
+.slideshow .infoblock.right{
+  right: 0px;
+}
+
+.slideshow .infoblock.middle{
+  margin: 0px auto;
+  width: 100%;
+}
+
+.slideshow #new_pictures_added p{
+  font-size: 0.5em;
+  color: red;
+  font-weight: bold;
+}
+
+.slideshow .footer{
+  bottom: 0px;
+  font-size: 1.2em;
+}

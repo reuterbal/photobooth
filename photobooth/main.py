@@ -82,11 +82,16 @@ class GuiProcess(mp.Process):
         self._comm = comm
 
     def run(self):
+        retval = None
+        parsed_args, unparsed_args = parseArgs(self._argv)
+        if parsed_args.gui:
+            logging.debug('Start GuiProcess')
+            Gui = lookup_and_import(gui.modules, self._cfg.get('Gui', 'module'),
+                                    'gui')
+            retval = Gui(self._argv, self._cfg, self._comm).run()
+        else:
+            logging.debug("Gui process disabled.")
 
-        logging.debug('Start GuiProcess')
-        Gui = lookup_and_import(gui.modules, self._cfg.get('Gui', 'module'),
-                                'gui')
-        retval = Gui(self._argv, self._cfg, self._comm).run()
         logging.debug('Exit GuiProcess')
         return retval
 
@@ -152,7 +157,13 @@ class WebServerProcess(mp.Process):
 
     def run(self):
         logging.debug("Start Webserver")
-        ws = Webserver(self._cfg, self._comm).run()
+        parsed_args, unparsed_args = parseArgs(self._argv)
+
+        if parsed_args.webserver:
+            logging.debug("Run webserver")
+            ws = Webserver(self._cfg, self._comm).run()
+        else:
+            logging.debug("Webserver disabled")
 
 
 def parseArgs(argv):
@@ -163,6 +174,8 @@ def parseArgs(argv):
                         help='omit welcome screen and run photobooth')
     parser.add_argument('--debug', action='store_true',
                         help='enable additional debug output')
+    parser.add_argument('--webserver', '-w', action='store_true', help='start the webserver')
+    parser.add_argument('--gui', '-g', action='store_true', help='start gui')
     return parser.parse_known_args()
 
 
@@ -182,6 +195,7 @@ def run(argv, is_run):
     # 3. GUI
     # 4. Postprocessing worker
     # 5. GPIO handler
+
     proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess, WebServerProcess)
     #proc_classes = (CameraProcess, WorkerProcess, WebServerProcess)
     procs = [P(argv, config, comm) for P in proc_classes]

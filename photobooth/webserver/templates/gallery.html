@@ -1,0 +1,18 @@
+<div id='new_pictures_added'></div>
+
+  <h1>Photobooth</h1>
+
+  <h2>Gallery by Oele Geirnaert</h2>
+  <div><a href="slideshow" class='btn btn-success'>Start Slideshow</a></div>
+  <div id="last_picture">Loading last picture...</div>
+  <div class="gallery-container gallery container" id="picture_list"></div>
+
+
+  <span class="glyphicon glyphicon-envelope"></span>
+
+
+<script>
+view = "gallery";
+prepare_window(view, false);
+execute_api_call_get_new_pictures(t, view);
+</script>
