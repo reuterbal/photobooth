@@ -24,6 +24,7 @@ I'm thirsty as well!
   * **'esc'**: Go to index
 * Added rand() function to safely store the picture on the webserver
 
+- [ ] Security (That not everybody is able to get the gallery via the webserver)
 - [ ] NFC
 - [ ] Photobooth status (Free or Available with movement detector & GPIO)
 - [ ] Other Improvements
