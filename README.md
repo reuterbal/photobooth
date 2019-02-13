@@ -38,10 +38,11 @@ I'm thirsty as well!
 
 
 ### Screenshots
-<img alt="Example of gallery" title="Idle screen" src="screenshots/photobooth_gallery.png" width="400" />
-<img alt="Example of slideshow" title="Idle screen" src="screenshots/photobooth_slideshow.png" width="400" />
-<img alt="Example of mailform" title="Idle screen" src="screenshots/photobooth_mail_form.png" width="400" />
-<img alt="Example of random picture names" title="Idle screen" src="screenshots/photobooth_rand_picture.png" width="400" />
+<img alt="Example of gallery" title="Idle screen" src="screenshots/photobooth_gallery.png" width="500" />
+<img alt="Example of slideshow" title="Idle screen" src="screenshots/photobooth_slideshow.png" width="500" />
+<img alt="Example of mailform" title="Idle screen" src="screenshots/photobooth_mail_form.png" width="500" />
+<img alt="Example of random picture names" title="Idle screen" src="screenshots/photobooth_rand_picture.png" width="500" />
+<img alt="Example of random picture names" title="Idle screen" src="screenshots/photobooth_last_picture.png" width="500" />
 
 A flexible Photobooth software.
 
