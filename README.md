@@ -23,11 +23,19 @@ I'm thirsty as well!
   * **'s'**: Start slideshow
   * **'esc'**: Go to index
 * Added rand() function to safely store the picture on the webserver
+* Web Views:
+  * Gallery-mode: This view is for administration purposes to view, mail, download, show qr codes to download/mail, print, delete a picture
+  * Slideshow-mode: This view may be used to show all the pictures on a projector in a room.
+  * Show only last picture mode: Last taken picture is shown + two QR codes to download/mail the picture) - This view may be set at the outside of the photobooth.
 
 - [ ] Security (That not everybody is able to get the gallery via the webserver)
 - [ ] NFC
 - [ ] Photobooth status (Free or Available with movement detector & GPIO)
 - [ ] Other Improvements
+- [ ] As this program becomes bigger and complexer, unit- & functional tests should be written.
+- [ ] Inverse the default startup params (--gui must be set right now in orde to show the gui. -w activates the webserver. The way I run it the most: **python -m photobooth -w --gui** and while developing the webserver: **python -m photobooth --debug -w**)
+
+
 
 ### Screenshots
 <img alt="Example of gallery" title="Idle screen" src="screenshots/photobooth_gallery.png" width="400" />

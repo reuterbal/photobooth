@@ -1,12 +1,16 @@
 .gallery #new_pictures_added{
   position: fixed;
-  bottom: 0px;
-  right: 0px;
-  margin: 10px;
-  background-color: black;
-  color: white;
-  padding: 10px;
-  z-index: 2;
+      bottom: 0px;
+      right: 0px;
+      margin: 10px;
+      background-color: #cecece;
+      color: black;
+      padding: 10px;
+      z-index: 2;
+      border-radius: 4px;
+      border: 1px solid black;
+      box-shadow: 2px 5px 20px black;
+      text-align: center;
 }
 
 .gallery .col{
@@ -14,7 +18,8 @@
   padding: 5px;
   border: 1px solid black;
   margin: 15px;
-  background-color: #e2e2e2;
+  background-color: #cecece;
+  box-shadow: 2px 5px 20px black;
 }
 
 .gallery .col img{
@@ -48,4 +53,5 @@
 .gallery .action_links li .fas {
     color: black;
     font-size: 1.3em;
+    text-shadow: 1px 1px white;
 }

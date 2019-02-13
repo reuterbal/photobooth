@@ -125,6 +125,11 @@ class Webserver(object):
         logging.debug("Webserver root is: %s" % Webserver.root)
         return Webserver.get_full_html_stream("index")
 
+    @request_map("last")
+    def return_last_picture():
+        Webserver.html_header = Webserver.get_html_stream("header")
+        return Webserver.get_full_html_stream("last_picture")
+
     @request_map("show_qrs")
     def return_qrs():
         Webserver.html_header = Webserver.get_html_stream("header")

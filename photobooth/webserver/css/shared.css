@@ -1,6 +1,6 @@
-
-<style>
-
+.box-shadow{
+  box-shadow: 2px 5px 20px black;
+}
 .picture{
 width: 400px;
 border: 2px solid black;
@@ -156,6 +156,3 @@ body.slideshow{
 body.slideshow, html.slideshow {
   height: 100vh;
 }
-
-
-</style>

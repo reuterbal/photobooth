@@ -1,0 +1,60 @@
+body.last_picture {
+    background-size: auto 100vh;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-color: black;
+}
+
+.pos-footer{
+  position: fixed;
+  bottom: 20px;
+  display: block;
+  text-align: center;
+}
+
+.pos-left{
+  left: 20px;
+}
+
+.pos-right{
+  right: 20px;
+}
+
+.pos-middle{
+  width: 100%;
+  margin: auto;
+  left: 0px;
+}
+
+.qr {
+    width: 100%;
+}
+
+.qr-box {
+    background-color: white;
+    width: 25vw;
+    border-radius: 4px;
+    border: 2px solid black;
+}
+
+.qr-box{
+  font-weight: bold;
+}
+
+.event-title{
+  text-align: center;
+  font-weight: bold;
+}
+
+.picture-timestamp-box{
+  background-color: black;
+  display: inline;
+  padding: 10px;
+  color: white;
+  z-index: -1;
+  margin-bottom: 20px;
+}
+
+.timestamp{
+  font-weight: bold;
+}
