@@ -20,7 +20,11 @@
 import logging
 
 from . import util
-
+from .Threading import Workers
+from .gui.GuiPostprocessor import GuiPostprocessor
+#from .printer.PrinterPyCups import PrinterPyCups
+from . import printer
+from .util import lookup_and_import
 
 class Context:
 
@@ -88,19 +92,21 @@ class Context:
 
 class Event:
 
-    def __init__(self, name):
+    def __init__(self, name, config=None):
 
         super().__init__()
         self.name = name
-
-    def __str__(self):
-
-        return self.name
+        self.config = config
 
     @property
     def name(self):
 
         return self._name
+        
+    @property
+    def config(self):
+
+        return self._config
 
     @name.setter
     def name(self, name):
@@ -109,6 +115,11 @@ class Event:
             raise TypeError('name must be a str')
 
         self._name = name
+        
+    @config.setter
+    def config(self, config):
+
+        self._config = config
 
 
 class ErrorEvent(Event):
@@ -398,6 +409,10 @@ class CountdownState(State):
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
+class PrintState(State):
+    
+    print("Print")
+    pass
 
 class CaptureState(State):
 
@@ -451,18 +466,35 @@ class ReviewState(State):
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'postprocess':
-            context.state = PostprocessState()
+            context.state = PostprocessState(self._picture)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
-
+class ShowPrintProcess(State):
+    def __init_(self):
+        super().__init__()
+        
 class PostprocessState(State):
 
-    def __init__(self):
+    def __init__(self, picture = None):
 
         super().__init__()
-
+        self._picture = picture
+               
     def handleEvent(self, event, context):
+        module = event.config.get('Printer', 'module')
+        if module == "PyQt5":
+            context.state = TeardownState(TeardownEvent.EXIT)
+            raise Exception("The trigger button can only be used with the PyCups module - Please configure this in the settings.")
+        if isinstance(event, GpioEvent) and event.name == 'print_trigger':
+            if self._picture is not None:
+                
+                print(module)
+                Printer = lookup_and_import(printer.modules, module, 'printer')
+                paper_size = (event.config.getInt('Printer', 'width'), event.config.getInt('Printer', 'height'))
+                is_pdf = event.config.getBool('Printer', 'pdf')
+                self._printer = Printer(paper_size, is_pdf, config=event.config, comm=context._comm)
+                self._printer.print(self._picture)
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'idle'):

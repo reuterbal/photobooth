@@ -21,16 +21,22 @@ import logging
 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtPrintSupport import QPrinter
+from .. import StateMachine
+from ..Threading import Workers
+import time
 
 from . import Printer
 
 
 class PrinterPyQt5(Printer):
 
-    def __init__(self, page_size, print_pdf=False):
+    def __init__(self, page_size, print_pdf=False, config=None, comm=None):
 
-        super().__init__(page_size)
+        super().__init__(page_size, config=config, comm=comm)
 
+        self._config = config
+        self._comm = comm
+        
         self._printer = QPrinter(QPrinter.HighResolution)
         self._printer.setPageSize(QtGui.QPageSize(QtCore.QSizeF(*page_size),
                                                   QtGui.QPageSize.Millimeter))
@@ -46,7 +52,12 @@ class PrinterPyQt5(Printer):
             self._printer.setFullPage(True)
 
     def print(self, picture):
-
+        
+        self.show_print_progress_screen = self._config.getBool('Printer', 'show_print_screen_progress')
+		
+        if self.show_print_progress_screen:
+            self._comm.send(Workers.GUI, StateMachine.ShowPrintProcess())
+            
         if self._print_pdf:
             self._printer.setOutputFileName('print_%d.pdf' % self._counter)
             self._counter += 1
@@ -64,3 +75,7 @@ class PrinterPyQt5(Printer):
         painter = QtGui.QPainter(self._printer)
         painter.drawImage(QtCore.QPoint(*origin), picture)
         painter.end()
+        
+        time.sleep(3)
+        self._comm.send(
+			Workers.GUI, StateMachine.IdleState())

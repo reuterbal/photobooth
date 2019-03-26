@@ -51,7 +51,7 @@ class PyQt5Gui(GuiSkeleton):
         self._initWorker()
 
         self._picture = None
-        self._postprocess = GuiPostprocessor(self._cfg)
+        self._postprocess = GuiPostprocessor(self._cfg, comm)
 
     def run(self):
 
@@ -234,6 +234,9 @@ class PyQt5Gui(GuiSkeleton):
             self._gui.centralWidget(), tasks, self._worker,
             lambda: self._comm.send(Workers.MASTER, GuiEvent('idle')),
             postproc_t * 1000)
+            
+    def showPrintProcess(self, state):
+        self._setWidget(Frames.ShowPrintProcess())
 
     def _handleKeypressEvent(self, event):
 

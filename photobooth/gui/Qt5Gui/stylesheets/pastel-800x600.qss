@@ -122,6 +122,11 @@ QFrame#PictureMessage {
     margin: 30px;
 }
 
+QFrame#ShowPrintProcess QLabel{
+    font-size: 70px;
+    qproperty-alignment: AlignCenter;
+}
+
 /* Overlay message */
 
 QWidget#TransparentOverlay {

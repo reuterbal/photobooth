@@ -74,6 +74,10 @@ class GuiSkeleton:
     def teardown(self, state):
 
         raise NotImplementedError()
+        
+    def showPrintProcess(self, state):
+        
+        raise NotImplementedError()
 
     def handleState(self, state):
 
@@ -101,3 +105,5 @@ class GuiSkeleton:
             self.showPostprocess(state)
         elif isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
+        elif isinstance(state, StateMachine.ShowPrintProcess):
+            self.showPrintProcess(state)

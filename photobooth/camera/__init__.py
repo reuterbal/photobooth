@@ -170,8 +170,16 @@ class Camera:
             resized = shot.resize(self._pic_dims.thumbnailSize)
             picture.paste(resized, self._pic_dims.thumbnailOffset[i])
 
+        new_image = Image.new('RGB', (self._pic_dims.outputSize[0]*2, self._pic_dims.outputSize[1]),(255,255,255))
+        new_image.paste(picture,(0,0))
+        new_image.paste(picture, (self._pic_dims.outputSize[0],0))
+        
         byte_data = BytesIO()
-        picture.save(byte_data, format='jpeg')
+        
+        #picture.save(byte_data, format='jpeg')
+        
+        new_image.save(byte_data, format='jpeg')
+        
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('review', byte_data))
         self._pictures = []
