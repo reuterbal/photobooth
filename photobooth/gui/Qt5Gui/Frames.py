@@ -67,7 +67,7 @@ class Welcome(QtWidgets.QFrame):
 
         title = QtWidgets.QLabel(_('photobooth'))
 
-        url = 'https://github.com/reuterbal/photobooth'
+        url = 'OeleGeirnaert'
         link = QtWidgets.QLabel('<a href="{0}">{0}</a>'.format(url))
 
         lay = QtWidgets.QVBoxLayout()
@@ -329,6 +329,7 @@ class PostprocessMessage(Widgets.TransparentOverlay):
     def initFrame(self, tasks, idle_handle, worker):
 
         def disableAndCall(button, handle):
+            logging.debug(button)
             button.setEnabled(False)
             button.update()
             worker.put(handle)
@@ -351,6 +352,21 @@ class PostprocessMessage(Widgets.TransparentOverlay):
         layout.addWidget(QtWidgets.QLabel(_('Happy?')))
         layout.addLayout(button_lay)
         self.setLayout(layout)
+        
+class ShowPrintProcess(QtWidgets.QFrame):
+        def __init__(self):
+                
+                super().__init__()
+                self.setObjectName('ShowPrintProcess')
+                self.initFrame()
+        
+        def initFrame(self):
+
+                lbl = QtWidgets.QLabel("Please Wait...\nWe're printing your picture")
+                lay = QtWidgets.QVBoxLayout()
+                lay.addWidget(lbl)
+                self.setLayout(lay)
+        
 
 
 class SetDateTime(QtWidgets.QFrame):
@@ -768,6 +784,11 @@ class Settings(QtWidgets.QFrame):
         trig_pin.setRange(1, 40)
         trig_pin.setValue(self._cfg.getInt('Gpio', 'trigger_pin'))
         self.add('Gpio', 'trigger_pin', trig_pin)
+        
+        print_trig_pin = QtWidgets.QSpinBox()
+        print_trig_pin.setRange(1, 40)
+        print_trig_pin.setValue(self._cfg.getInt('Gpio', 'print_trigger_pin'))
+        self.add('Gpio', 'print_trigger_pin', print_trig_pin)
 
         lamp_pin = QtWidgets.QSpinBox()
         lamp_pin.setRange(1, 40)
@@ -798,6 +819,7 @@ class Settings(QtWidgets.QFrame):
         layout.addRow(_('Enable GPIO:'), enable)
         layout.addRow(_('Exit button pin (BCM numbering):'), exit_pin)
         layout.addRow(_('Trigger button pin (BCM numbering):'), trig_pin)
+        layout.addRow(_('Print trigger button pin (BCM numbering):'), print_trig_pin)
         layout.addRow(_('Idle lamp pin (BCM numbering):'), lamp_pin)
         layout.addRow(_('RGB LED pins (BCM numbering):'), lay_rgb)
 
@@ -820,6 +842,10 @@ class Settings(QtWidgets.QFrame):
         confirmation = QtWidgets.QCheckBox()
         confirmation.setChecked(self._cfg.getBool('Printer', 'confirmation'))
         self.add('Printer', 'confirmation', confirmation)
+        
+        print_screen_progress = QtWidgets.QCheckBox()
+        print_screen_progress.setChecked(self._cfg.getBool('Printer', 'show_print_screen_progress'))
+        self.add('Printer', 'show_print_screen_progress', print_screen_progress)
 
         module = self.createModuleComboBox(printer.modules,
                                            self._cfg.get('Printer', 'module'))
@@ -833,6 +859,11 @@ class Settings(QtWidgets.QFrame):
         height.setValue(self._cfg.getInt('Printer', 'height'))
         self.add('Printer', 'width', width)
         self.add('Printer', 'height', height)
+        
+        
+        cups_printer_name = QtWidgets.QLineEdit(
+            self._cfg.get('Printer', 'cups_printer_name'))
+        self.add('Printer', 'cups_printer_name', cups_printer_name)
 
         lay_size = QtWidgets.QHBoxLayout()
         lay_size.addWidget(width)
@@ -844,8 +875,10 @@ class Settings(QtWidgets.QFrame):
         layout.addRow(_('Module:'), module)
         layout.addRow(_('Print to PDF (for debugging):'), pdf)
         layout.addRow(_('Ask for confirmation before printing:'), confirmation)
+        layout.addRow(_('Show print progress screen:'), print_screen_progress)
         layout.addRow(_('Paper size [mm]:'), lay_size)
-
+        layout.addRow(_('Cups printer name:'), cups_printer_name)
+        
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
@@ -909,6 +942,8 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Gpio', 'exit_pin', self.get('Gpio', 'exit_pin').text())
         self._cfg.set('Gpio', 'trigger_pin',
                       self.get('Gpio', 'trigger_pin').text())
+        self._cfg.set('Gpio', 'print_trigger_pin',
+                      self.get('Gpio', 'print_trigger_pin').text())
         self._cfg.set('Gpio', 'lamp_pin', self.get('Gpio', 'lamp_pin').text())
         self._cfg.set('Gpio', 'chan_r_pin',
                       self.get('Gpio', 'chan_r_pin').text())
@@ -923,6 +958,10 @@ class Settings(QtWidgets.QFrame):
                       str(self.get('Printer', 'pdf').isChecked()))
         self._cfg.set('Printer', 'confirmation',
                       str(self.get('Printer', 'confirmation').isChecked()))
+        self._cfg.set('Printer', 'show_print_screen_progress',
+                      str(self.get('Printer', 'show_print_screen_progress').isChecked()))
+        self._cfg.set('Printer', 'cups_printer_name',
+                      self.get('Printer', 'cups_printer_name').text())
         self._cfg.set('Printer', 'module',
                       printer.modules[self.get('Printer',
                                                'module').currentIndex()][0])

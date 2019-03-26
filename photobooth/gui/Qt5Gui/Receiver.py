@@ -20,6 +20,7 @@
 from PyQt5 import QtCore
 
 from ...Threading import Workers
+from ...StateMachine import PrintState
 
 
 class Receiver(QtCore.QThread):
@@ -32,9 +33,9 @@ class Receiver(QtCore.QThread):
         self._comm = comm
 
     def handle(self, state):
-
+        
         self.notify.emit(state)
-
+        
     def run(self):
 
         for state in self._comm.iter(Workers.GUI):

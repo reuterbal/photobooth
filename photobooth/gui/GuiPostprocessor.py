@@ -23,12 +23,14 @@ from ..util import lookup_and_import
 
 class GuiPostprocessor:
 
-    def __init__(self, config):
+    def __init__(self, config, comm):
 
         super().__init__()
 
         self._get_task_list = []
         self._do_task_list = []
+        self._config = config
+        self._comm = comm
 
         if config.getBool('Printer', 'enable'):
             module = config.get('Printer', 'module')
@@ -37,10 +39,10 @@ class GuiPostprocessor:
             pdf = config.getBool('Printer', 'pdf')
             if config.getBool('Printer', 'confirmation'):
                 self._get_task_list.append(
-                    PrintPostprocess(module, paper_size, pdf))
+                    PrintPostprocess(module, paper_size, pdf, config, comm))
             else:
                 self._do_task_list.append(
-                    PrintPostprocess(module, paper_size, pdf))
+                    PrintPostprocess(module, paper_size, pdf, config, comm))
 
     def get(self, picture):
 
@@ -100,13 +102,13 @@ class PostprocessItem:
 
 class PrintPostprocess(PostprocessTask):
 
-    def __init__(self, printer_module, paper_size, is_pdf, **kwargs):
+    def __init__(self, printer_module, paper_size, is_pdf, config=None, comm=None, **kwargs):
 
         super().__init__(**kwargs)
 
         Printer = lookup_and_import(printer.modules, printer_module, 'printer')
-        self._printer = Printer(paper_size, is_pdf)
+        self._printer = Printer(paper_size, is_pdf, config=config, comm=comm)
 
     def get(self, picture):
-
+        
         return PostprocessItem('Print', lambda: self._printer.print(picture))
