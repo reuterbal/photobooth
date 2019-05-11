@@ -56,6 +56,7 @@ In a terminal, enter the following commands
 sudo apt install python3-dev python3-pip virtualenv  
 sudo apt install qt5-default pyqt5-dev pyqt5-dev-tools # for PyQt5-GUI
 sudo apt install gphoto2 libgphoto2-dev # to use gphoto2
+sudo apt install libcups2-dev # to use pycups
 ```
 
 If you want to use the gphoto2-cffi bindings you have to install the following packages:

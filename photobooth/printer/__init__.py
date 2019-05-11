@@ -19,7 +19,8 @@
 
 # Available printer modules as tuples of (config name, module name, class name)
 modules = (
-    ('PyQt5', 'PrinterPyQt5', 'PrinterPyQt5'), )
+    ('PyQt5', 'PrinterPyQt5', 'PrinterPyQt5'),
+    ('PyCUPS', 'PrinterPyCups', 'PrinterPyCups'))
 
 
 class Printer:
