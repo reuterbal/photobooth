@@ -146,6 +146,7 @@ QWidget#PostprocessMessage QLabel {
 QWidget#PostprocessMessage QPushButton {
     color: #333333;
     border-color: #333333;
+    background-color: #cceeeeee;
     margin: 20px;
 }
 
@@ -154,9 +155,9 @@ QWidget#PostprocessMessage QPushButton:pressed {
 }
 
 QWidget#PostprocessMessage QPushButton:disabled {
-    background-color: #66eeeeee;
-    color: #33eeeeee;
-    border-color: #33eeeeee;
+    background-color: #33eeeeee;
+    color: #11eeeeee;
+    border-color: #11eeeeee;
 }
 
 /* Customizing settings */
