@@ -32,6 +32,7 @@ class PrinterPyQt5(Printer):
         super().__init__(page_size)
 
         self._printer = QPrinter(QPrinter.HighResolution)
+        self._printer.setFullPage(True)
         self._printer.setPageSize(QtGui.QPageSize(QtCore.QSizeF(*page_size),
                                                   QtGui.QPageSize.Millimeter))
         self._printer.setColorMode(QPrinter.Color)
@@ -43,7 +44,6 @@ class PrinterPyQt5(Printer):
             logging.info('Using PDF printer')
             self._counter = 0
             self._printer.setOutputFormat(QPrinter.PdfFormat)
-            self._printer.setFullPage(True)
 
     def print(self, picture):
 
@@ -52,15 +52,10 @@ class PrinterPyQt5(Printer):
             self._counter += 1
 
         logging.info('Printing picture')
-
-        picture = picture.scaled(self._printer.pageRect().size(),
-                                 QtCore.Qt.KeepAspectRatio,
-                                 QtCore.Qt.SmoothTransformation)
-
-        printable_size = self._printer.pageRect(QPrinter.DevicePixel)
-        origin = ((printable_size.width() - picture.width()) // 2,
-                  (printable_size.height() - picture.height()) // 2)
+        logging.debug('Page Size: {}, Print Size: {}, PictureSize: {} '.format(
+            self._printer.paperRect(), self._printer.pageRect(), picture.rect()))
 
         painter = QtGui.QPainter(self._printer)
-        painter.drawImage(QtCore.QPoint(*origin), picture)
+        painter.drawImage(self._printer.pageRect(), picture, picture.rect())
         painter.end()
+
