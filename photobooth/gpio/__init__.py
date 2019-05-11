@@ -126,7 +126,9 @@ class Gpio:
 
         if self._is_enabled:
             self._gpio.rgbBlink(self._rgb, 0.5, 0.5, 0.1, 0.1, (1, 0, 0),
-                                (0, 0, 0), self._countdown_time)
+                                (0, 0, 0), None)  # self._countdown_time)
+            # Note: blinking forever instead of countdown_time to overcome
+            # the issue of too slow preview
 
     def trigger(self):
 
@@ -226,7 +228,7 @@ class Entities:
         try:
             led = self.RGBLED(*bcm_pins)
             for l in led._leds:
-                l.frequency = 140
+                l.frequency = 3000
             self._rgb.append(led)
             return len(self._rgb) - 1
         except self.GPIOPinInUse:
