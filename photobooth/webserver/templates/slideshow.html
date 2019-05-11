@@ -1,0 +1,24 @@
+<div id='new_pictures_added'></div>
+
+<div id='fullscreen_info'>
+  <div id='picture_name' class='d-none'>Loading pictures</div>
+  <div class='footer infoblock middle'>
+    <div id='picture_datetime' class='datetimestamp'></div>
+  </div>
+
+  <div class='header infoblock middle'>
+    <div id='picture_number'></div>
+  </div>
+
+  <div id="photobooth_status" class='footer infoblock left'></div>
+  <div id='clock' class='footer infoblock right '></div>
+</div>
+
+<div class="slideshow-container slideshow" id="picture_list"></div>
+
+
+<script>
+view = "slideshow";
+prepare_window(view, true);
+execute_api_call_get_new_pictures(t, view);
+</script>

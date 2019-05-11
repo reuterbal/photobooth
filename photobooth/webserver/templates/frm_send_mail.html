@@ -1,0 +1,24 @@
+<h1>Mail your picture</h1>
+<img class='mail_picture' src="/f/show/picture/[picture_id]" />
+<form action="/send/picture/[picture_id]" method='post'>
+
+  <div class="form-group">
+    <label for="txtName">Your Name</label>
+    <input type="text" class="form-control" name="txt_name" id="EmailAddress" aria-describedby="emailHelp" placeholder="Enter your name">
+  </div>
+
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input type="email" class="form-control" name="txt_email" id="EmailAddress" aria-describedby="emailHelp" placeholder="Enter email">
+    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+  </div>
+
+  <div class="form-group">
+    <label for="exampleFormControlTextarea1">Message</label>
+    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="txt_message"></textarea>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Verzenden</button>
+  <button type="reset" class="btn btn-secondary">Restart</button>
+</form>
+  

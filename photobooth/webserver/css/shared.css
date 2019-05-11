@@ -1,0 +1,158 @@
+.box-shadow{
+  box-shadow: 2px 5px 20px black;
+}
+.picture{
+width: 400px;
+border: 2px solid black;
+border-radius: 4px;
+}
+
+div.picture_box {
+  vertical-align: top;
+  display: inline-block;
+  text-align: center;
+  margin: 10px 20px;
+}
+
+img {
+  background-color: grey;
+}
+
+.picture-btn{
+display: block;
+margin-top: 10px;
+font-weight: bold;
+}
+
+.download {
+
+}
+
+.delete{
+
+}
+
+.picture-container {
+  margin: auto auto;
+  width: 100%
+}
+
+.mail_picture{
+  width: 30%;
+  margin:auto;
+  text-align: center;
+}
+
+/* SlideShow CSS */
+
+#picture_list.slideshow img{
+  width: 30%;
+}
+
+.slideshow{
+  cursor: none;
+}
+
+/* Fading animation */
+.myFade {
+  -webkit-animation-name: myFade;
+  -webkit-animation-duration: 3s;
+  animation-name: myFade;
+  animation-duration: 3s;
+}
+
+@-webkit-keyframes myFade {
+  from {opacity: .4}
+  to {opacity: 1}
+}
+
+@keyframes myFade {
+  from {opacity: .4}
+  to {opacity: 1}
+}
+
+/* Gallery  */
+.gallery .mySlides {
+    display: block;
+}
+
+/* Slideshow container */
+.slideshow-container {
+  max-width: 1000px;
+  position: relative;
+  margin: auto;
+}
+
+.slideshow .numbertext{
+  background-color: black;
+  font-size: 2em;
+  color: white;
+  width: 50px;
+  height: 50px;
+  display: block;
+  position: relative;
+  bottom:10px;
+  left:10px;
+  border-radius: 50%;
+  text-align: center;
+  padding-bottom: 5px;
+  border: 2px solid white;
+  z-index: 1;
+}
+
+* {box-sizing: border-box;}
+body {font-family: Verdana, sans-serif;}
+.mySlides {display: none;}
+img {vertical-align: middle;}
+
+/* Caption text */
+.slideshow .text {
+  color: #f2f2f2;
+  background-color: black;
+  font-size: 2em;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: -56px;
+  width: 100%;
+  text-align: center;
+}
+
+body.slideshow{
+  background-color: black;
+  color: white;
+  /* Full height */
+  height: 100vh;
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  /* background-size: cover; */
+  background-size: auto 100%;
+
+  transition: background .25s ease-in-out;
+  -moz-transition: background .25s ease-in-out;
+  -webkit-transition: background .25s ease-in-out;
+}
+
+.slideshow h1{
+
+}
+
+.slideshow #clock{
+
+}
+
+.infoblock.middle .datetimestamp, #picture_number{
+  background-color: black;
+  display: inline-block;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.header.infoblock{
+  top: 0px;
+}
+
+body.slideshow, html.slideshow {
+  height: 100vh;
+}

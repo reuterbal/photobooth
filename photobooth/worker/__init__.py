@@ -19,6 +19,7 @@
 
 import logging
 import os.path
+import random, string
 
 from time import localtime, strftime
 
@@ -49,7 +50,16 @@ class PictureSaver(WorkerTask):
     def do(self, picture):
 
         filename = self._pic_list.getNext()
+
         logging.info('Saving picture as %s', filename)
+
+
+        random_string = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6))
+        if "rand()" in filename:
+            logging.info("Changing name with random string: %s..." %random_string)
+            filename = filename.replace('rand()', random_string)
+
+
         with open(filename, 'wb') as f:
             f.write(picture.getbuffer())
 

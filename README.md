@@ -1,6 +1,48 @@
 # photobooth
-
+Initiator:
 [![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](https://www.buymeacoffee.com/reuterbal)
+
+Forker:
+[![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](http://buymeacoff.ee/oelegeirnaert)
+
+I'm thirsty as well!
+
+## Edits by Oele Geirnaert:
+
+### Webinterface features
+* When a new picture has been taken, it's automatically added to the Gallery & Slideshow via an API.
+  * A notification will popup in the gallery/slideshow that a new picture has been taken to motivate the people to take a selfie.
+* Mail functionality via Mailgun
+* Delete picture
+* Generate QR code with links:
+  * QR code to show link
+  * QR code to mail the picture
+  * QR code to download the picture
+* Keyboard shortcuts:
+  * **'g'**: Go to gallery
+  * **'s'**: Start slideshow
+  * **'esc'**: Go to index
+* Added rand() function to safely store the picture on the webserver
+* Web Views:
+  * Gallery-mode: This view is for administration purposes to view, mail, download, show qr codes to download/mail, print, delete a picture
+  * Slideshow-mode: This view may be used to show all the pictures on a projector in a room.
+  * Show only last picture mode: Last taken picture is shown + two QR codes to download/mail the picture) - This view may be set at the outside of the photobooth.
+
+- [ ] Security (That not everybody is able to get the gallery via the webserver)
+- [ ] NFC
+- [ ] Photobooth status (Free or Available with movement detector & GPIO)
+- [ ] Other Improvements
+- [ ] As this program becomes bigger and complexer, unit- & functional tests should be written.
+- [ ] Inverse the default startup params (--gui must be set right now in orde to show the gui. -w activates the webserver. The way I run it the most: **python -m photobooth -w --gui** and while developing the webserver: **python -m photobooth --debug -w**)
+
+
+
+### Screenshots
+<img alt="Example of gallery" title="Idle screen" src="screenshots/photobooth_gallery.png" width="500" />
+<img alt="Example of slideshow" title="Idle screen" src="screenshots/photobooth_slideshow.png" width="500" />
+<img alt="Example of mailform" title="Idle screen" src="screenshots/photobooth_mail_form.png" width="500" />
+<img alt="Example of random picture names" title="Idle screen" src="screenshots/photobooth_rand_picture.png" width="500" />
+<img alt="Example of random picture names" title="Idle screen" src="screenshots/photobooth_last_picture.png" width="500" />
 
 A flexible Photobooth software.
 
@@ -34,7 +76,7 @@ Screenshots produced using `CameraDummy` that produces unicolor images.
 * Based on [Python 3](https://www.python.org/), [Pillow](https://pillow.readthedocs.io), and [Qt5](https://www.qt.io/developers/)
 
 ### History
-I started this project for my own wedding in 2015. 
+I started this project for my own wedding in 2015.
 See [Version 0.1](https://github.com/reuterbal/photobooth/tree/v0.1) for the original version.
 Github user [hackerb9](https://github.com/hackerb9/photobooth) forked this version and added a print functionality.
 However, I was not happy with the original software design and the limited options provided by the previously used [pygame](https://www.pygame.org) GUI library and thus abandoned the original version.
