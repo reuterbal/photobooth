@@ -19,8 +19,6 @@
 
 import logging
 
-from . import util
-
 
 class Context:
 

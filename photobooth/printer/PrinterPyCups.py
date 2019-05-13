@@ -64,4 +64,3 @@ class PrinterPyCups(Printer):
                 picture.save(self._tmp_filename, format='JPEG')
             self._conn.printFile(self._printer, self._tmp_filename,
                                  "photobooth", {})
-
