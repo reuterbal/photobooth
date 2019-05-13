@@ -17,41 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import os.path
 
 from time import localtime, strftime
 
-from .PictureList import PictureList
 from .. import StateMachine
 from ..Threading import Workers
 
-
-class WorkerTask:
-
-    def __init__(self, **kwargs):
-
-        assert not kwargs
-
-    def do(self, picture):
-
-        raise NotImplementedError()
-
-
-class PictureSaver(WorkerTask):
-
-    def __init__(self, basename):
-
-        super().__init__()
-
-        self._pic_list = PictureList(basename)
-
-    def do(self, picture):
-
-        filename = self._pic_list.getNext()
-        logging.info('Saving picture as %s', filename)
-        with open(filename, 'wb') as f:
-            f.write(picture.getbuffer())
+from .PictureMailer import PictureMailer
+from .PictureSaver import PictureSaver
 
 
 class Worker:
@@ -72,6 +46,10 @@ class Worker:
                             config.get('Storage', 'basename'))
         basename = strftime(path, localtime())
         self._postprocess_tasks.append(PictureSaver(basename))
+
+        # PictureMailer for assembled pictures
+        if config.getBool('Mailer', 'enabled'):
+            self._postprocess_tasks.append(PictureMailer(config))
 
     def initPictureTasks(self, config):
 
