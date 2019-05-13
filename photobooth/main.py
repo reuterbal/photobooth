@@ -36,6 +36,7 @@ from .gpio import Gpio
 from .util import lookup_and_import
 from .StateMachine import Context, ErrorEvent
 from .Threading import Communicator, Workers
+from .webserver import Webserver
 from .worker import Worker
 
 # Globally install gettext for I18N
@@ -138,6 +139,30 @@ class GpioProcess(mp.Process):
         logging.debug('Exit GpioProcess')
 
 
+class WebserverProcess(mp.Process):
+
+    def __init__(self, argv, config, comm):
+
+        super().__init__()
+        self.daemon = True
+
+        self._cfg = config
+        self._comm = comm
+
+    def run(self):
+
+        logging.debug('Start WebserverProcess')
+
+        while True:
+            try:
+                if Webserver(self._cfg, self._comm).run():
+                    break
+            except Exception as e:
+                self._comm.send(Workers.MASTER, ErrorEvent('Webserver', str(e)))
+
+        logging.debug('Exit WebserverProcess')
+
+
 def parseArgs(argv):
 
     # Add parameter for direct startup
@@ -146,10 +171,12 @@ def parseArgs(argv):
                         help='omit welcome screen and run photobooth')
     parser.add_argument('--debug', action='store_true',
                         help='enable additional debug output')
+    parser.add_argument('--webserver', '-w', action='store_true',
+                        help='start a webserver in the background')
     return parser.parse_known_args()
 
 
-def run(argv, is_run):
+def run(argv, is_run, is_webserver):
 
     logging.info('Photobooth version: %s', __version__)
 
@@ -159,13 +186,17 @@ def run(argv, is_run):
     comm = Communicator()
     context = Context(comm, is_run)
 
-    # Initialize processes: We use five processes here:
+    # Initialize processes: We use five or six processes here:
     # 1. Master that collects events and distributes state changes
     # 2. Camera handling
     # 3. GUI
     # 4. Postprocessing worker
     # 5. GPIO handler
-    proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess)
+    # 6. Webserver (if enabled)
+    if is_webserver:
+        proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess, WebserverProcess)
+    else:
+        proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess)
     procs = [P(argv, config, comm) for P in proc_classes]
 
     for proc in procs:
@@ -224,7 +255,7 @@ def main(argv):
     while status_code in known_status_codes:
         logging.info(known_status_codes[status_code])
 
-        status_code = run(argv, parsed_args.run)
+        status_code = run(argv, parsed_args.run, parsed_args.webserver)
 
     logging.info('Exiting photobooth with status code %d', status_code)
 

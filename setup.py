@@ -188,7 +188,8 @@ setup(
         'Pillow',
         'gpiozero',
         'gphoto2',
-        'pycups'
+        'pycups',
+        'simple_http_server'
         ],
 
     # List additional groups of dependencies here (e.g. development
