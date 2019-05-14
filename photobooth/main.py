@@ -105,12 +105,13 @@ class WorkerProcess(mp.Process):
 
         logging.debug('Start WorkerProcess')
 
-        while True:
-            try:
-                if Worker(self._cfg, self._comm).run():
-                    break
-            except Exception as e:
-                self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
+        # while True:
+        try:
+            if Worker(self._cfg, self._comm).run():
+                # break
+                pass
+        except Exception as e:
+            self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
 
         logging.debug('Exit WorkerProcess')
 

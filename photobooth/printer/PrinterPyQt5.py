@@ -53,9 +53,9 @@ class PrinterPyQt5(Printer):
 
         logging.info('Printing picture')
         logging.debug('Page Size: {}, Print Size: {}, PictureSize: {} '.format(
-            self._printer.paperRect(), self._printer.pageRect(), picture.rect()))
+            self._printer.paperRect(), self._printer.pageRect(),
+            picture.rect()))
 
         painter = QtGui.QPainter(self._printer)
         painter.drawImage(self._printer.pageRect(), picture, picture.rect())
         painter.end()
-
