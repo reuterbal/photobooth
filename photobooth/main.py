@@ -172,12 +172,10 @@ def parseArgs(argv):
                         help='omit welcome screen and run photobooth')
     parser.add_argument('--debug', action='store_true',
                         help='enable additional debug output')
-    parser.add_argument('--webserver', '-w', action='store_true',
-                        help='start a webserver in the background')
     return parser.parse_known_args()
 
 
-def run(argv, is_run, is_webserver):
+def run(argv, is_run):
 
     logging.info('Photobooth version: %s', __version__)
 
@@ -194,10 +192,10 @@ def run(argv, is_run, is_webserver):
     # 4. Postprocessing worker
     # 5. GPIO handler
     # 6. Webserver (if enabled)
-    if is_webserver:
-        proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess, WebserverProcess)
-    else:
-        proc_classes = (CameraProcess, WorkerProcess, GuiProcess, GpioProcess)
+    proc_classes = [CameraProcess, WorkerProcess, GuiProcess, GpioProcess]
+    if config.getBool('Webserver', 'enabled'):
+        proc_classes += [WebserverProcess]
+
     procs = [P(argv, config, comm) for P in proc_classes]
 
     for proc in procs:
@@ -256,7 +254,7 @@ def main(argv):
     while status_code in known_status_codes:
         logging.info(known_status_codes[status_code])
 
-        status_code = run(argv, parsed_args.run, parsed_args.webserver)
+        status_code = run(argv, parsed_args.run)
 
     logging.info('Exiting photobooth with status code %d', status_code)
 
