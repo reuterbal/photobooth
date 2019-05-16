@@ -1,0 +1,115 @@
+*PPD-Adobe: "4.3"
+*% PPD created by ipp2ppd (v2:Feb  1 2018)
+*FormatVersion: "4.3"
+*FileVersion: "2.0"
+*LanguageVersion: English
+*LanguageEncoding: ISOLatin1
+*PSVersion: "(3010.000) 0"
+*LanguageLevel: "3"
+*FileSystem: False
+*cupsVersion: 2.0
+*cupsModelNumber: 0
+*cupsSNMPSupplies: False
+*APAirPrint: True
+*APAirPrintVersion: 1.4
+*APURFVersion: 1.4
+*APPrinterFWVersion: "IPP:2.0"
+*cupsLanguages: "en"
+*cupsIdentifyActions: "flash"
+*APAcceptsMixedURF: True
+*PCFileName: "APCANONS.PPD"
+*ModelName: "Canon SELPHY CP1300 HTTP"
+*Product: (Canon SELPHY CP1300 HTTP)
+*ShortNickName: "Canon SELPHY CP1300 HTTP"
+*Manufacturer: "Canon"
+*NickName: "Canon SELPHY CP1300 HTTP-AirPrint"
+*Throughput: 1
+*APSupplies: "http://192.168.1.108:8008/supply/ink_content.html"
+*cupsSingleFile: True
+*cupsFilter2: "image/urf image/urf 10 -"
+*cupsFilter: "image/urf 10 -"
+*cupsFilter2: "image/jpeg image/jpeg 0 maxsize(33554432) -"
+*cupsFilter: "image/jpeg 0 -"
+*cupsMaxCopies: 99
+*ColorDevice: True
+*APColorSpaces: true
+*DefaultColorSpace: RGB
+*%cupsICCProfile Gray../Grayscale: "/System/Library/ColorSync/Profiles/Generic Gray Gamma 2.2 Profile.icc"
+*%cupsICCProfile RGB../Color: "/System/Library/ColorSync/Profiles/sRGB Profile.icc"
+*OpenUI *ColorModel/Color Mode: PickOne
+*OrderDependency: 10 AnySetup *ColorModel
+*DefaultColorModel: RGB
+*ColorModel Gray/Grayscale: "<</cupsColorSpace 18/cupsBitsPerColor 8/cupsColorOrder 0/cupsCompression 0>>setpagedevice"
+*ColorModel RGB/Color: "<</cupsColorSpace 19/cupsBitsPerColor 8/cupsColorOrder 0/cupsCompression 0>>setpagedevice"
+*CloseUI: *ColorModel
+*LandscapeOrientation: Minus90
+*DefaultResolution: 300x300dpi
+*OpenUI *cupsPrintQuality/Quality: PickOne
+*OrderDependency: 10 AnySetup *cupsPrintQuality
+*DefaultcupsPrintQuality: Normal
+*cupsPrintQuality Normal: "<</cupsInteger1 4 /HWResolution[300 300]>>setpagedevice"
+*CloseUI: *cupsPrintQuality
+*cupsBackSide: Normal
+*DefaultOutputOrder: Reverse
+*APHasMediaReady: True
+*OpenUI *PageSize/Media Size: PickOne
+*OrderDependency: 10 AnySetup *PageSize
+*DefaultPageSize: Postcard
+*PageSize 54x86mm: "<</PageSize[153.0709 243.7795]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageSize 54x86mm.Fullbleed: "<</PageSize[153.0709 243.7795]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageSize 89x119mm: "<</PageSize[252.2835 337.3228]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageSize 89x119mm.Fullbleed: "<</PageSize[252.2835 337.3228]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageSize Postcard: "<</PageSize[283.4646 419.5276]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageSize Postcard.Fullbleed: "<</PageSize[283.4646 419.5276]/ImagingBBox null/Orientation 0>>setpagedevice"
+*CloseUI: *PageSize
+*OpenUI *PageRegion/Media Size: PickOne
+*OrderDependency: 10 AnySetup *PageRegion
+*DefaultPageRegion: Postcard
+*PageRegion 54x86mm: "<</PageSize[153.0709 243.7795]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageRegion 54x86mm.Fullbleed: "<</PageSize[153.0709 243.7795]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageRegion 89x119mm: "<</PageSize[252.2835 337.3228]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageRegion 89x119mm.Fullbleed: "<</PageSize[252.2835 337.3228]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageRegion Postcard: "<</PageSize[283.4646 419.5276]/ImagingBBox null/Orientation 0>>setpagedevice"
+*PageRegion Postcard.Fullbleed: "<</PageSize[283.4646 419.5276]/ImagingBBox null/Orientation 0>>setpagedevice"
+*CloseUI: *PageRegion
+*DefaultImageableArea: Postcard
+*DefaultPaperDimension: Postcard
+*PaperDimension 54x86mm: "153.0709 243.7795"
+*ImageableArea 54x86mm: "7.0866 18.1417 145.9843 225.6378"
+*PaperDimension 54x86mm.Fullbleed: "153.0709 243.7795"
+*ImageableArea 54x86mm.Fullbleed: "0.0000 0.0000 153.0709 243.7795"
+*PaperDimension 89x119mm: "252.2835 337.3228"
+*ImageableArea 89x119mm: "7.0866 9.6378 245.1969 327.6850"
+*PaperDimension 89x119mm.Fullbleed: "252.2835 337.3228"
+*ImageableArea 89x119mm.Fullbleed: "0.0000 0.0000 252.2835 337.3228"
+*PaperDimension Postcard: "283.4646 419.5276"
+*ImageableArea Postcard: "7.0866 10.4882 276.3780 409.0394"
+*PaperDimension Postcard.Fullbleed: "283.4646 419.5276"
+*ImageableArea Postcard.Fullbleed: "0.0000 0.0000 283.4646 419.5276"
+*ParamCustomPageSize Width: 1 points 150 289
+*ParamCustomPageSize Height: 2 points 241 434
+*ParamCustomPageSize WidthOffset: 3 points 0 0
+*ParamCustomPageSize HeightOffset: 4 points 0 0
+*ParamCustomPageSize Orientation: 5 int 0 3
+*CustomPageSize True: ""
+*OpenUI *MediaType/MediaType: PickOne
+*OrderDependency: 10 AnySetup *MediaType
+*MediaType photographic/Photo: ""
+*MediaType any/Any: ""
+*DefaultMediaType: any
+*CloseUI: *MediaType
+*APPrinterPreset Gray_with_Paper_Auto-Detect/Black and White: "
+	*cupsPrintQuality Normal
+	*ColorModel Gray
+	com.apple.print.preset.graphicsType General
+	com.apple.print.preset.quality mid
+	com.apple.print.preset.media-front-coating autodetect
+	com.apple.print.preset.output-mode monochrome"
+*End
+*APPrinterPreset Color_with_Paper_Auto-Detect/Color: "
+	*cupsPrintQuality Normal
+	*ColorModel RGB
+	com.apple.print.preset.graphicsType General
+	com.apple.print.preset.quality mid
+	com.apple.print.preset.media-front-coating autodetect"
+*End
