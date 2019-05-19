@@ -54,7 +54,7 @@ class CameraProcess(mp.Process):
 
     def run(self):
 
-        logging.debug('Start CameraProcess')
+        logging.debug('CameraProcess: Initializing...')
 
         CameraModule = lookup_and_import(
             camera.modules, self._cfg.get('Camera', 'module'), 'camera')
@@ -62,12 +62,14 @@ class CameraProcess(mp.Process):
 
         while True:
             try:
+                logging.debug('CameraProcess: Running...')
                 if cap.run():
                     break
             except Exception as e:
+                logging.error('CameraProcess: Exception "{}"'.format(e))
                 self._comm.send(Workers.MASTER, ErrorEvent('Camera', str(e)))
 
-        logging.debug('Exit CameraProcess')
+        logging.debug('CameraProcess: Exit')
 
 
 class GuiProcess(mp.Process):
@@ -82,11 +84,12 @@ class GuiProcess(mp.Process):
 
     def run(self):
 
-        logging.debug('Start GuiProcess')
+        logging.debug('GuiProcess: Initializing...')
         Gui = lookup_and_import(gui.modules, self._cfg.get('Gui', 'module'),
                                 'gui')
+        logging.debug('GuiProcess: Running...')
         retval = Gui(self._argv, self._cfg, self._comm).run()
-        logging.debug('Exit GuiProcess')
+        logging.debug('GuiProcess: Exit')
         return retval
 
 
@@ -102,17 +105,18 @@ class WorkerProcess(mp.Process):
 
     def run(self):
 
-        logging.debug('Start WorkerProcess')
+        logging.debug('WorkerProcess: Initializing...')
 
-        # while True:
-        try:
-            if Worker(self._cfg, self._comm).run():
-                # break
-                pass
-        except Exception as e:
-            self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
+        while True:
+            try:
+                logging.debug('WorkerProcess: Running...')
+                if Worker(self._cfg, self._comm).run():
+                    break
+            except Exception as e:
+                logging.error('WorkerProcess: Exception "{}"'.format(e))
+                self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
 
-        logging.debug('Exit WorkerProcess')
+        logging.debug('WorkerProcess: Exit')
 
 
 class GpioProcess(mp.Process):
@@ -127,16 +131,18 @@ class GpioProcess(mp.Process):
 
     def run(self):
 
-        logging.debug('Start GpioProcess')
+        logging.debug('GpioProcess: Initializing...')
 
         while True:
             try:
+                logging.debug('GpioProcess: Running...')
                 if Gpio(self._cfg, self._comm).run():
                     break
             except Exception as e:
+                logging.error('GpioProcess: Exception "{}"'.format(e))
                 self._comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
 
-        logging.debug('Exit GpioProcess')
+        logging.debug('GpioProcess: Exit')
 
 
 def parseArgs(argv):
@@ -148,6 +154,19 @@ def parseArgs(argv):
     parser.add_argument('--debug', action='store_true',
                         help='enable additional debug output')
     return parser.parse_known_args()
+
+
+def mainloop(comm, context):
+
+    while True:
+        try:
+            for event in comm.iter(Workers.MASTER):
+                    exit_code = context.handleEvent(event)
+                    if exit_code in (0, 123):
+                        return exit_code
+        except Exception as e:
+            logging.error('Main: Exception "{}"'.format(e))
+            comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
 
 
 def run(argv, is_run):
@@ -173,10 +192,7 @@ def run(argv, is_run):
         proc.start()
 
     # Enter main loop
-    for event in comm.iter(Workers.MASTER):
-        exit_code = context.handleEvent(event)
-        if exit_code in (0, 123):
-            break
+    exit_code = mainloop(comm, context)
 
     # Wait for processes to finish
     for proc in procs:

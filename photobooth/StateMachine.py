@@ -56,7 +56,7 @@ class Context:
         if not isinstance(new_state, State):
             raise TypeError('state must implement State')
 
-        logging.debug('New state is "{}"'.format(new_state))
+        logging.debug('Context: New state is "{}"'.format(new_state))
 
         self._state = new_state
         self._comm.bcast(self._state)
@@ -66,7 +66,7 @@ class Context:
         if not isinstance(event, Event):
             raise TypeError('event must implement Event')
 
-        logging.debug('Handling event "{}"'.format(event))
+        logging.debug('Context: Handling event "{}"'.format(event))
 
         if isinstance(event, ErrorEvent):
             self.state = ErrorState(event.origin, event.message, self.state,
