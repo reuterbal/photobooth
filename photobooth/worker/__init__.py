@@ -48,7 +48,7 @@ class Worker:
         self._postprocess_tasks.append(PictureSaver(basename))
 
         # PictureMailer for assembled pictures
-        if config.getBool('Mailer', 'enabled'):
+        if config.getBool('Mailer', 'enable'):
             self._postprocess_tasks.append(PictureMailer(config))
 
     def initPictureTasks(self, config):

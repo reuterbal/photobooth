@@ -476,6 +476,7 @@ class Settings(QtWidgets.QFrame):
         tabs.addTab(self.createStorageSettings(), _('Storage'))
         tabs.addTab(self.createGpioSettings(), _('GPIO'))
         tabs.addTab(self.createPrinterSettings(), _('Printer'))
+        tabs.addTab(self.createMailerSettings(), _('Mailer'))
         return tabs
 
     def createButtons(self):
@@ -850,6 +851,69 @@ class Settings(QtWidgets.QFrame):
         widget.setLayout(layout)
         return widget
 
+    def createMailerSettings(self):
+
+        self.init('Mailer')
+
+        enable = QtWidgets.QCheckBox()
+        enable.setChecked(self._cfg.getBool('Mailer', 'enable'))
+        self.add('Mailer', 'enable', enable)
+
+        sender = QtWidgets.QLineEdit(self._cfg.get('Mailer', 'sender'))
+        self.add('Mailer', 'sender', sender)
+        recipient = QtWidgets.QLineEdit(self._cfg.get('Mailer', 'recipient'))
+        self.add('Mailer', 'recipient', recipient)
+
+        subject = QtWidgets.QLineEdit(self._cfg.get('Mailer', 'subject'))
+        self.add('Mailer', 'subject', subject)
+        message = QtWidgets.QLineEdit(self._cfg.get('Mailer', 'message'))
+        self.add('Mailer', 'message', message)
+
+        server = QtWidgets.QLineEdit(self._cfg.get('Mailer', 'server'))
+        self.add('Mailer', 'server', server)
+        port = QtWidgets.QSpinBox()
+        port.setRange(1, 999999)
+        port.setValue(self._cfg.getInt('Mailer', 'port'))
+        self.add('Mailer', 'port', port)
+        use_tls = QtWidgets.QCheckBox()
+        use_tls.setChecked(self._cfg.getBool('Mailer', 'use_tls'))
+        self.add('Mailer', 'use_tls', use_tls)
+
+        use_auth = QtWidgets.QCheckBox()
+        use_auth.setChecked(self._cfg.getBool('Mailer', 'use_auth'))
+        self.add('Mailer', 'use_auth', use_auth)
+        user = QtWidgets.QLineEdit(self._cfg.get('Mailer', 'user'))
+        self.add('Mailer', 'user', user)
+        password = QtWidgets.QLineEdit(self._cfg.get('Mailer', 'password'))
+        self.add('Mailer', 'password', password)
+
+        lay_server = QtWidgets.QHBoxLayout()
+        lay_server.addWidget(server)
+        lay_server.addWidget(QtWidgets.QLabel('Port:'))
+        lay_server.addWidget(port)
+        lay_server.addWidget(QtWidgets.QLabel('Use TLS:'))
+        lay_server.addWidget(use_tls)
+
+        lay_auth = QtWidgets.QHBoxLayout()
+        lay_auth.addWidget(use_auth)
+        lay_auth.addWidget(QtWidgets.QLabel('Username:'))
+        lay_auth.addWidget(user)
+        lay_auth.addWidget(QtWidgets.QLabel('Password:'))
+        lay_auth.addWidget(password)
+
+        layout = QtWidgets.QFormLayout()
+        layout.addRow(_('Enable Mailer:'), enable)
+        layout.addRow(_('Sender mail address:'), sender)
+        layout.addRow(_('Recipient mail address:'), recipient)
+        layout.addRow(_('Mail subject'), subject)
+        layout.addRow(_('Mail message:'), message)
+        layout.addRow(_('SMTP server:'), lay_server)
+        layout.addRow(_('Server requires auth:'), lay_auth)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        return widget
+
     def storeConfigAndRestart(self):
 
         self._cfg.set('Gui', 'fullscreen',
@@ -929,6 +993,29 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Printer', 'width', self.get('Printer', 'width').text())
         self._cfg.set('Printer', 'height',
                       self.get('Printer', 'height').text())
+
+        self._cfg.set('Mailer', 'enable',
+                      str(self.get('Mailer', 'enable').isChecked()))
+        self._cfg.set('Mailer', 'sender',
+                      self.get('Mailer', 'sender').text())
+        self._cfg.set('Mailer', 'recipient',
+                      self.get('Mailer', 'recipient').text())
+        self._cfg.set('Mailer', 'subject',
+                      self.get('Mailer', 'subject').text())
+        self._cfg.set('Mailer', 'message',
+                      self.get('Mailer', 'message').text())
+        self._cfg.set('Mailer', 'server',
+                      self.get('Mailer', 'server').text())
+        self._cfg.set('Mailer', 'port',
+                      self.get('Mailer', 'port').text())
+        self._cfg.set('Mailer', 'use_auth',
+                      str(self.get('Mailer', 'use_auth').isChecked()))
+        self._cfg.set('Mailer', 'use_tls',
+                      str(self.get('Mailer', 'use_tls').isChecked()))
+        self._cfg.set('Mailer', 'user',
+                      self.get('Mailer', 'user').text())
+        self._cfg.set('Mailer', 'password',
+                      self.get('Mailer', 'password').text())
 
         self._cfg.write()
         self._restartAction()
