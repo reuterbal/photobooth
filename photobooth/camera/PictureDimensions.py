@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 
 class PictureDimensions:
 
@@ -33,7 +35,9 @@ class PictureDimensions:
         self._min_distance = (config.getInt('Picture', 'min_dist_x'),
                               config.getInt('Picture', 'min_dist_y'))
 
-        self._skip_last = config.getBool('Picture', 'skip_last')
+        self._skip = [i for i in config.getIntList('Picture', 'skip')
+                      if 1 <= i and
+                      i <= self._num_pictures[0] * self._num_pictures[1]]
 
         self.computeThumbnailDimensions()
 
@@ -54,11 +58,18 @@ class PictureDimensions:
                            for i in range(2))
 
         self._thumb_offsets = []
-        for i in range(self.totalNumPictures):
+        thumbs = [i for i in range(self.numPictures[0] * self.numPictures[1])
+                  if i + 1 not in self._skip]
+        for i in thumbs:
             pos = (i % self.numPictures[0], i // self.numPictures[0])
             self._thumb_offsets.append(tuple((pos[j] + 1) * thumb_dist[j] +
                                              pos[j] * self.thumbnailSize[j]
                                              for j in range(2)))
+
+        logging.debug(('Assembled picture will contain {} ({}x{}) pictures '
+                       'in positions {}').format(self.totalNumPictures,
+                                                 self.numPictures[0],
+                                                 self.numPictures[1], thumbs))
 
     def computePreviewDimensions(self, config):
 
@@ -80,7 +91,7 @@ class PictureDimensions:
     def totalNumPictures(self):
 
         return max(self._num_pictures[0] * self._num_pictures[1] -
-                   int(self._skip_last), 1)
+                   len(self._skip), 1)
 
     @property
     def skipLast(self):

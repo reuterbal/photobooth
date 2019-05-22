@@ -75,6 +75,10 @@ class Config:
 
         return self._cfg.getboolean(section, key)
 
+    def getIntList(self, section, key):
+
+        return [int(i) for i in self._cfg[section][key].split(',')]
+
     def set(self, section, key, value):
 
         self._cfg[section][key] = value

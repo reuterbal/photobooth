@@ -103,7 +103,7 @@ class IdleMessage(QtWidgets.QFrame):
 
 class GreeterMessage(QtWidgets.QFrame):
 
-    def __init__(self, num_x, num_y, skip_last, countdown_action):
+    def __init__(self, num_x, num_y, skip, countdown_action):
 
         super().__init__()
         self.setObjectName('GreeterMessage')
@@ -111,7 +111,7 @@ class GreeterMessage(QtWidgets.QFrame):
         self._text_title = _('Get ready!')
         self._text_button = _('Start countdown')
 
-        num_pictures = max(num_x * num_y - int(skip_last), 1)
+        num_pictures = max(num_x * num_y - len(skip), 1)
         if num_pictures > 1:
             self._text_label = _('for {} pictures...').format(num_pictures)
         else:
@@ -138,12 +138,12 @@ class GreeterMessage(QtWidgets.QFrame):
 
 class CaptureMessage(QtWidgets.QFrame):
 
-    def __init__(self, num_picture, num_x, num_y, skip_last):
+    def __init__(self, num_picture, num_x, num_y, skip):
 
         super().__init__()
         self.setObjectName('PoseMessage')
 
-        num_pictures = max(num_x * num_y - int(skip_last), 1)
+        num_pictures = max(num_x * num_y - len(skip), 1)
         if num_pictures > 1:
             self._text = _('Picture {} of {}...').format(num_picture,
                                                          num_pictures)
@@ -672,9 +672,8 @@ class Settings(QtWidgets.QFrame):
         min_dist_y.setValue(self._cfg.getInt('Picture', 'min_dist_y'))
         self.add('Picture', 'min_dist_y', min_dist_y)
 
-        skip_last = QtWidgets.QCheckBox()
-        skip_last.setChecked(self._cfg.getBool('Picture', 'skip_last'))
-        self.add('Picture', 'skip_last', skip_last)
+        skip = QtWidgets.QLineEdit(self._cfg.get('Picture', 'skip'))
+        self.add('Picture', 'skip', skip)
 
         bg = QtWidgets.QLineEdit(self._cfg.get('Picture', 'background'))
         self.add('Picture', 'background', bg)
@@ -710,7 +709,7 @@ class Settings(QtWidgets.QFrame):
         layout.addRow(_('Number of shots per picture:'), lay_num)
         layout.addRow(_('Size of assembled picture [px]:'), lay_size)
         layout.addRow(_('Min. distance between shots [px]:'), lay_dist)
-        layout.addRow(_('Omit last picture:'), skip_last)
+        layout.addRow(_('Skip pictures:'), skip)
         layout.addRow(_('Background image:'), lay_file)
 
         widget = QtWidgets.QWidget()
@@ -956,8 +955,7 @@ class Settings(QtWidgets.QFrame):
                       self.get('Picture', 'min_dist_x').text())
         self._cfg.set('Picture', 'min_dist_y',
                       self.get('Picture', 'min_dist_y').text())
-        self._cfg.set('Picture', 'skip_last',
-                      str(self.get('Picture', 'skip_last').isChecked()))
+        self._cfg.set('Picture', 'skip', self.get('Picture', 'skip').text())
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())
 
@@ -996,24 +994,20 @@ class Settings(QtWidgets.QFrame):
 
         self._cfg.set('Mailer', 'enable',
                       str(self.get('Mailer', 'enable').isChecked()))
-        self._cfg.set('Mailer', 'sender',
-                      self.get('Mailer', 'sender').text())
+        self._cfg.set('Mailer', 'sender', self.get('Mailer', 'sender').text())
         self._cfg.set('Mailer', 'recipient',
                       self.get('Mailer', 'recipient').text())
         self._cfg.set('Mailer', 'subject',
                       self.get('Mailer', 'subject').text())
         self._cfg.set('Mailer', 'message',
                       self.get('Mailer', 'message').text())
-        self._cfg.set('Mailer', 'server',
-                      self.get('Mailer', 'server').text())
-        self._cfg.set('Mailer', 'port',
-                      self.get('Mailer', 'port').text())
+        self._cfg.set('Mailer', 'server', self.get('Mailer', 'server').text())
+        self._cfg.set('Mailer', 'port', self.get('Mailer', 'port').text())
         self._cfg.set('Mailer', 'use_auth',
                       str(self.get('Mailer', 'use_auth').isChecked()))
         self._cfg.set('Mailer', 'use_tls',
                       str(self.get('Mailer', 'use_tls').isChecked()))
-        self._cfg.set('Mailer', 'user',
-                      self.get('Mailer', 'user').text())
+        self._cfg.set('Mailer', 'user', self.get('Mailer', 'user').text())
         self._cfg.set('Mailer', 'password',
                       self.get('Mailer', 'password').text())
 
