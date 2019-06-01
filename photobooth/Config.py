@@ -77,7 +77,10 @@ class Config:
 
     def getIntList(self, section, key):
 
-        return [int(i) for i in self._cfg[section][key].split(',')]
+        if len(self._cfg[section][key].strip()) > 0:
+            return [int(i) for i in self._cfg[section][key].split(',')]
+        else:
+            return []
 
     def set(self, section, key, value):
 
