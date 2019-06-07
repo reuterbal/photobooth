@@ -109,4 +109,4 @@ class PrintPostprocess(PostprocessTask):
 
     def get(self, picture):
 
-        return PostprocessItem('Print', lambda: self._printer.print(picture))
+        return PostprocessItem(_('Print'), lambda: self._printer.print(picture))

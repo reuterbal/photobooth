@@ -34,7 +34,7 @@ Screenshots produced using `CameraDummy` that produces unicolor images.
 * Based on [Python 3](https://www.python.org/), [Pillow](https://pillow.readthedocs.io), and [Qt5](https://www.qt.io/developers/)
 
 ### History
-I started this project for my own wedding in 2015. 
+I started this project for my own wedding in 2015.
 See [Version 0.1](https://github.com/reuterbal/photobooth/tree/v0.1) for the original version.
 Github user [hackerb9](https://github.com/hackerb9/photobooth) forked this version and added a print functionality.
 However, I was not happy with the original software design and the limited options provided by the previously used [pygame](https://www.pygame.org) GUI library and thus abandoned the original version.
@@ -57,6 +57,25 @@ Default settings are stored in [`defaults.cfg`](photobooth/defaults.cfg) and can
 The software design is very modular.
 Feel free to add new postprocessing components, a GUI based on some other library, etc.
 
+## Adding new strings to translate
+
+```
+$ python setup.py extract_messages --output-file photobooth/locale/messages.pot
+$ python setup.py update_catalog -l en -i photobooth/locale/messages.pot -o photobooth/locale/en/LC_MESSAGES/photobooth.po
+$ python setup.py update_catalog -l es -i photobooth/locale/messages.pot -o photobooth/locale/es/LC_MESSAGES/photobooth.po
+$ python setup.py update_catalog -l de -i photobooth/locale/messages.pot -o photobooth/locale/de/LC_MESSAGES/photobooth.po
+$ python setup.py update_catalog -l fr -i photobooth/locale/messages.pot -o photobooth/locale/fr/LC_MESSAGES/photobooth.po
+```
+
+## Update translations
+
+```
+$ python setup.py compile_catalog --directory photobooth/locale --locale fr
+$ python setup.py compile_catalog --directory photobooth/locale --locale es
+$ python setup.py compile_catalog --directory photobooth/locale --locale en
+$ python setup.py compile_catalog --directory photobooth/locale --locale de
+```
+
 ## Feedback and bugs
 I appreciate any feedback or bug reports.
 Please submit them via the [Issue tracker](https://github.com/reuterbal/photobooth/issues/new?template=bug_report.md) and always include your `photobooth.log` file (is created automatically in the top folder) and a description of your hardware and software setup.
@@ -64,7 +83,6 @@ Please submit them via the [Issue tracker](https://github.com/reuterbal/photoboo
 I am also happy to hear any success stories! Feel free to [submit them here](https://github.com/reuterbal/photobooth/issues/new?template=success-story.md)
 
 If you find this application useful, please consider [buying me a coffee](https://www.buymeacoffee.com/reuterbal).
-
 
 ## License
 I provide this code under AGPL v3. See [LICENSE](https://github.com/reuterbal/photobooth/blob/master/LICENSE.txt).
