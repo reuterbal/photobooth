@@ -66,7 +66,7 @@ class CameraProcess(mp.Process):
                 if cap.run():
                     break
             except Exception as e:
-                logging.error('CameraProcess: Exception "{}"'.format(e))
+                logging.exception('CameraProcess: Exception "{}"'.format(e))
                 self._comm.send(Workers.MASTER, ErrorEvent('Camera', str(e)))
 
         logging.debug('CameraProcess: Exit')
@@ -113,7 +113,7 @@ class WorkerProcess(mp.Process):
                 if Worker(self._cfg, self._comm).run():
                     break
             except Exception as e:
-                logging.error('WorkerProcess: Exception "{}"'.format(e))
+                logging.exception('WorkerProcess: Exception "{}"'.format(e))
                 self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
 
         logging.debug('WorkerProcess: Exit')
@@ -139,7 +139,7 @@ class GpioProcess(mp.Process):
                 if Gpio(self._cfg, self._comm).run():
                     break
             except Exception as e:
-                logging.error('GpioProcess: Exception "{}"'.format(e))
+                logging.exception('GpioProcess: Exception "{}"'.format(e))
                 self._comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
 
         logging.debug('GpioProcess: Exit')
@@ -165,7 +165,7 @@ def mainloop(comm, context):
                     if exit_code in (0, 123):
                         return exit_code
         except Exception as e:
-            logging.error('Main: Exception "{}"'.format(e))
+            logging.exception('Main: Exception "{}"'.format(e))
             comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
 
 
