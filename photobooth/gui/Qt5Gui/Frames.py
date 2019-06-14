@@ -662,15 +662,25 @@ class Settings(QtWidgets.QFrame):
         size_y.setValue(self._cfg.getInt('Picture', 'size_y'))
         self.add('Picture', 'size_y', size_y)
 
-        min_dist_x = QtWidgets.QSpinBox()
-        min_dist_x.setRange(0, 999999)
-        min_dist_x.setValue(self._cfg.getInt('Picture', 'min_dist_x'))
-        self.add('Picture', 'min_dist_x', min_dist_x)
+        inner_dist_x = QtWidgets.QSpinBox()
+        inner_dist_x.setRange(0, 999999)
+        inner_dist_x.setValue(self._cfg.getInt('Picture', 'inner_dist_x'))
+        self.add('Picture', 'inner_dist_x', inner_dist_x)
 
-        min_dist_y = QtWidgets.QSpinBox()
-        min_dist_y.setRange(0, 999999)
-        min_dist_y.setValue(self._cfg.getInt('Picture', 'min_dist_y'))
-        self.add('Picture', 'min_dist_y', min_dist_y)
+        inner_dist_y = QtWidgets.QSpinBox()
+        inner_dist_y.setRange(0, 999999)
+        inner_dist_y.setValue(self._cfg.getInt('Picture', 'inner_dist_y'))
+        self.add('Picture', 'inner_dist_y', inner_dist_y)
+
+        outer_dist_x = QtWidgets.QSpinBox()
+        outer_dist_x.setRange(0, 999999)
+        outer_dist_x.setValue(self._cfg.getInt('Picture', 'outer_dist_x'))
+        self.add('Picture', 'outer_dist_x', outer_dist_x)
+
+        outer_dist_y = QtWidgets.QSpinBox()
+        outer_dist_y.setRange(0, 999999)
+        outer_dist_y.setValue(self._cfg.getInt('Picture', 'outer_dist_y'))
+        self.add('Picture', 'outer_dist_y', outer_dist_y)
 
         skip = QtWidgets.QLineEdit(self._cfg.get('Picture', 'skip'))
         self.add('Picture', 'skip', skip)
@@ -688,10 +698,15 @@ class Settings(QtWidgets.QFrame):
         lay_size.addWidget(QtWidgets.QLabel('x'))
         lay_size.addWidget(size_y)
 
-        lay_dist = QtWidgets.QHBoxLayout()
-        lay_dist.addWidget(min_dist_x)
-        lay_dist.addWidget(QtWidgets.QLabel('x'))
-        lay_dist.addWidget(min_dist_y)
+        lay_inner_dist = QtWidgets.QHBoxLayout()
+        lay_inner_dist.addWidget(inner_dist_x)
+        lay_inner_dist.addWidget(QtWidgets.QLabel('x'))
+        lay_inner_dist.addWidget(inner_dist_y)
+
+        lay_outer_dist = QtWidgets.QHBoxLayout()
+        lay_outer_dist.addWidget(outer_dist_x)
+        lay_outer_dist.addWidget(QtWidgets.QLabel('x'))
+        lay_outer_dist.addWidget(outer_dist_y)
 
         def file_dialog():
             dialog = QtWidgets.QFileDialog.getOpenFileName
@@ -708,7 +723,8 @@ class Settings(QtWidgets.QFrame):
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Number of shots per picture:'), lay_num)
         layout.addRow(_('Size of assembled picture [px]:'), lay_size)
-        layout.addRow(_('Min. distance between shots [px]:'), lay_dist)
+        layout.addRow(_('Min. distance between shots [px]:'), lay_inner_dist)
+        layout.addRow(_('Min. distance border to shots [px]:'), lay_outer_dist)
         layout.addRow(_('Skip pictures:'), skip)
         layout.addRow(_('Background image:'), lay_file)
 
@@ -951,10 +967,14 @@ class Settings(QtWidgets.QFrame):
                       self.get('Picture', 'size_x').text())
         self._cfg.set('Picture', 'size_y',
                       self.get('Picture', 'size_y').text())
-        self._cfg.set('Picture', 'min_dist_x',
-                      self.get('Picture', 'min_dist_x').text())
-        self._cfg.set('Picture', 'min_dist_y',
-                      self.get('Picture', 'min_dist_y').text())
+        self._cfg.set('Picture', 'inner_dist_x',
+                      self.get('Picture', 'inner_dist_x').text())
+        self._cfg.set('Picture', 'inner_dist_y',
+                      self.get('Picture', 'inner_dist_y').text())
+        self._cfg.set('Picture', 'outer_dist_x',
+                      self.get('Picture', 'outer_dist_x').text())
+        self._cfg.set('Picture', 'outer_dist_y',
+                      self.get('Picture', 'outer_dist_y').text())
         self._cfg.set('Picture', 'skip', self.get('Picture', 'skip').text())
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())

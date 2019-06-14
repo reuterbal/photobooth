@@ -61,13 +61,13 @@ class CameraProcess(mp.Process):
         cap = camera.Camera(self._cfg, self._comm, CameraModule)
 
         while True:
-            try:
+            # try:
                 logging.debug('CameraProcess: Running...')
                 if cap.run():
                     break
-            except Exception as e:
-                logging.error('CameraProcess: Exception "{}"'.format(e))
-                self._comm.send(Workers.MASTER, ErrorEvent('Camera', str(e)))
+            # except Exception as e:
+                # logging.error('CameraProcess: Exception "{}"'.format(e))
+                # self._comm.send(Workers.MASTER, ErrorEvent('Camera', str(e)))
 
         logging.debug('CameraProcess: Exit')
 
