@@ -44,6 +44,6 @@ class PictureUploadWebdav(WorkerTask):
         logging.info('Uploading picture as %s', url)
 
         r = requests.put(url, data=picture.getbuffer(), auth=self._auth)
-        if r.status_code != requests.codes.created:
+        if r.status_code in range(200, 300):
             logging.warn(('PictureUploadWebdav: Upload failed with '
                           'status code {}').format(r.status_code))
