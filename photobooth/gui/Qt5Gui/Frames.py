@@ -477,6 +477,7 @@ class Settings(QtWidgets.QFrame):
         tabs.addTab(self.createGpioSettings(), _('GPIO'))
         tabs.addTab(self.createPrinterSettings(), _('Printer'))
         tabs.addTab(self.createMailerSettings(), _('Mailer'))
+        tabs.addTab(self.createUploadSettings(), _('Upload'))
         return tabs
 
     def createButtons(self):
@@ -929,6 +930,42 @@ class Settings(QtWidgets.QFrame):
         widget.setLayout(layout)
         return widget
 
+    def createUploadSettings(self):
+
+        self.init('UploadWebdav')
+
+        enable = QtWidgets.QCheckBox()
+        enable.setChecked(self._cfg.getBool('UploadWebdav', 'enable'))
+        self.add('UploadWebdav', 'enable', enable)
+
+        url = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav', 'url'))
+        self.add('UploadWebdav', 'url', url)
+
+        use_auth = QtWidgets.QCheckBox()
+        use_auth.setChecked(self._cfg.getBool('UploadWebdav', 'use_auth'))
+        self.add('UploadWebdav', 'use_auth', use_auth)
+        user = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav', 'user'))
+        self.add('UploadWebdav', 'user', user)
+        password = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav',
+                                                     'password'))
+        self.add('UploadWebdav', 'password', password)
+
+        lay_auth = QtWidgets.QHBoxLayout()
+        lay_auth.addWidget(use_auth)
+        lay_auth.addWidget(QtWidgets.QLabel('Username:'))
+        lay_auth.addWidget(user)
+        lay_auth.addWidget(QtWidgets.QLabel('Password:'))
+        lay_auth.addWidget(password)
+
+        layout = QtWidgets.QFormLayout()
+        layout.addRow(_('Enable WebDAV upload:'), enable)
+        layout.addRow(_('URL (folder must exist):'), url)
+        layout.addRow(_('Server requires auth:'), lay_auth)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        return widget
+
     def storeConfigAndRestart(self):
 
         self._cfg.set('Gui', 'fullscreen',
@@ -1030,6 +1067,17 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Mailer', 'user', self.get('Mailer', 'user').text())
         self._cfg.set('Mailer', 'password',
                       self.get('Mailer', 'password').text())
+
+        self._cfg.set('UploadWebdav', 'enable',
+                      str(self.get('UploadWebdav', 'enable').isChecked()))
+        self._cfg.set('UploadWebdav', 'url',
+                      self.get('UploadWebdav', 'url').text())
+        self._cfg.set('UploadWebdav', 'use_auth',
+                      str(self.get('UploadWebdav', 'use_auth').isChecked()))
+        self._cfg.set('UploadWebdav', 'user',
+                      self.get('UploadWebdav', 'user').text())
+        self._cfg.set('UploadWebdav', 'password',
+                      self.get('UploadWebdav', 'password').text())
 
         self._cfg.write()
         self._restartAction()
