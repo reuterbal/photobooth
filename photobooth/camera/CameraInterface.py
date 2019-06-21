@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import configparser
+import logging
+import os
+
 
 class CameraInterface:
 
@@ -24,6 +28,7 @@ class CameraInterface:
 
         self.hasPreview = False
         self.hasIdle = False
+        self._initConfig()
 
     def __enter__(self):
 
@@ -63,6 +68,10 @@ class CameraInterface:
 
         self._has_idle = value
 
+    @property
+    def config(self):
+        return self._cfg
+
     def setActive(self):
 
         if not self.hasIdle:
@@ -87,3 +96,17 @@ class CameraInterface:
     def getPicture(self):
 
         raise NotImplementedError()
+
+    def _initConfig(self):
+
+        self._cfg = configparser.ConfigParser(interpolation=None)
+        filename = os.path.join(os.path.dirname(__file__), 'models',
+                                'defaults.cfg')
+        self._cfg.read(filename)
+
+    def loadConfig(self, model):
+
+        name = ''.join(c for c in model.lower() if c.isalnum()) + '.cfg'
+        filename = os.path.join(os.path.dirname(__file__), 'models', name)
+        logging.info('Loading camera config "{}"'.format(name))
+        self._cfg.read(filename)

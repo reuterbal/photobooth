@@ -43,18 +43,7 @@ class CameraGphoto2(CameraInterface):
 
     def cleanup(self):
 
-        try:
-            config = self._cap.get_config()
-            config.get_child_by_name('imageformat').set_value(
-                self._imageformat)
-            config.get_child_by_name('imageformatsd').set_value(
-                self._imageformat)
-            # config.get_child_by_name('autopoweroff').set_value(
-            #     self._autopoweroff)
-            self._cap.set_config(config)
-        except BaseException as e:
-            logging.warn('Error while changing camera settings: {}.'.format(e))
-
+        self._changeConfig('Shutdown')
         self._cap.exit(self._ctxt)
 
     def _setupLogging(self):
@@ -71,33 +60,14 @@ class CameraGphoto2(CameraInterface):
         logging.info('Camera summary: %s',
                      str(self._cap.get_summary(self._ctxt)))
 
-        try:
-            # get configuration tree
-            config = self._cap.get_config()
+        # read model specific configuration
+        config = self._cap.get_config()
+        self.loadConfig(config.get_child_by_name('cameramodel').get_value())
 
-            # make sure camera format is not set to raw
-            imageformat = config.get_child_by_name('imageformat')
-            self._imageformat = imageformat.get_value()
-            if 'raw' in self._imageformat.lower():
-                imageformat.set_value('Large Fine JPEG')
-            imageformatsd = config.get_child_by_name('imageformatsd')
-            self._imageformatsd = imageformatsd.get_value()
-            if 'raw' in self._imageformatsd.lower():
-                imageformatsd.set_value('Large Fine JPEG')
+        # set startup configuration
+        self._changeConfig('Startup')
 
-            # make sure autopoweroff is disabled
-            # this doesn't seem to work
-            # autopoweroff = config.get_child_by_name('autopoweroff')
-            # self._autopoweroff = autopoweroff.get_value()
-            # logging.info('autopoweroff: {}'.format(self._autopoweroff))
-            # if int(self._autopoweroff) > 0:
-            #     autopoweroff.set_value('0')
-
-            # apply configuration and print current config
-            self._cap.set_config(config)
-        except BaseException as e:
-            logging.warn('Error while changing camera settings: {}.'.format(e))
-
+        #  print current config
         self._printConfig(self._cap.get_config())
 
     @staticmethod
@@ -130,27 +100,34 @@ class CameraGphoto2(CameraInterface):
 
     @staticmethod
     def _printConfig(config):
+
         config_txt = 'Camera configuration:\n'
         config_txt += CameraGphoto2._configTreeToText(config)
         logging.info(config_txt)
 
+    def _changeConfig(self, state):
+
+        if self.config[state]:
+            config = self._cap.get_config()
+
+            for key in self.config[state]:
+                val = config.get_child_by_name(key)
+                if val.get_value().lower() != self.config[state][key].lower():
+                    val.set_value(self.config[state][key])
+
+            try:
+                self._cap.set_config(config)
+            except BaseException as e:
+                logging.warn(('CameraGphoto2: Applying config for state '
+                              '"{}" failed: {}').format(state, e))
+
     def setActive(self):
 
-        try:
-            config = self._cap.get_config()
-            config.get_child_by_name('output').set_value('PC')
-            self._cap.set_config(config)
-        except BaseException as e:
-            logging.warn('Cannot set camera output to active: {}.'.format(e))
+        self._changeConfig('Active')
 
     def setIdle(self):
 
-        try:
-            config = self._cap.get_config()
-            config.get_child_by_name('output').set_value('Off')
-            self._cap.set_config(config)
-        except BaseException as e:
-            logging.warn('Cannot set camera output to idle: {}.'.format(e))
+        self._changeConfig('Idle')
 
     def getPreview(self):
 
