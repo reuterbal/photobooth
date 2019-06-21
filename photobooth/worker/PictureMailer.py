@@ -26,10 +26,12 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 
+from pathlib import Path
+
 from .WorkerTask import WorkerTask
 
 
-def send_mail(send_from, send_to, subject, message, picture,
+def send_mail(send_from, send_to, subject, message, picture, filename,
               server, port, is_auth, username, password, is_tls):
     """Compose and send email with provided info and attachments.
 
@@ -41,6 +43,7 @@ def send_mail(send_from, send_to, subject, message, picture,
         subject (str): message title
         message (str): message body
         picture (jpg byte_data): ByteIO data of the JPG picture
+        filename (str): Filename of picture
         server (str): mail server host name
         port (int): port number
         is_auth (bool): server requires authentication
@@ -60,7 +63,7 @@ def send_mail(send_from, send_to, subject, message, picture,
     part.set_payload(picture.getbuffer())
     encoders.encode_base64(part)
     part.add_header('Content-Disposition',
-                    'attachment; filename="photobooth.jpg"')
+                    'attachment; filename="{}"'.format(filename))
     msg.attach(part)
 
     smtp = smtplib.SMTP(server, port)
@@ -90,9 +93,9 @@ class PictureMailer(WorkerTask):
         self._password = config.get('Mailer', 'password')
         self._is_tls = config.getBool('Mailer', 'use_tls')
 
-    def do(self, picture):
+    def do(self, picture, filename):
 
         logging.info('Sending picture to %s', self._recipient)
         send_mail(self._sender, self._recipient, self._subject, self._message,
-                  picture, self._server, self._port, self._is_auth, self._user,
-                  self._password, self._is_tls)
+                  picture, Path(filename).name, self._server, self._port,
+                  self._is_auth, self._user, self._password, self._is_tls)

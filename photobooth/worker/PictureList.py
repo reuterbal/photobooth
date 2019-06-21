@@ -18,7 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
 
 from glob import glob
 
@@ -36,14 +35,9 @@ class PictureList:
         """
 
         # Set basename and suffix
-        self.basename = basename
+        self._basename = basename
         self.suffix = '.jpg'
         self.count_width = 5
-
-        # Ensure directory exists
-        dirname = os.path.dirname(self.basename)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
 
         self.findExistingFiles()
 
@@ -67,6 +61,11 @@ class PictureList:
         logging.info('Number of last existing file: %d', self.counter)
         logging.info('Saving pictures as "%s%s.%s"', self.basename,
                      self.count_width * 'X', 'jpg')
+
+    @property
+    def basename(self):
+        """Return the basename for the files"""
+        return self._basename
 
     def getFilename(self, count):
         """Return the file name for a given file number"""
