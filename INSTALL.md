@@ -1,7 +1,7 @@
 # Installation instructions
 
 These instructions are tailored towards running the photobooth on a Raspberry Pi (tested on 1B+ and 3B+).
-However, I use my standard Ubuntu Laptop (16.04) with the built-in webcam and OpenCV for development and as such, the app should work on any other hardware just as well.
+However, I use my standard Ubuntu Laptop (18.04) with the built-in webcam and OpenCV for development and as such, the app should work on any other hardware just as well.
 Simply skip the Raspberry Pi specific installation parts.
 
 ## Install Raspbian and configure it
@@ -10,7 +10,7 @@ This is just for my own reference and maybe useful, if you have a similar hardwa
 Skip this, if you have your hardware already up and running.
 
 ### Install Raspbian Desktop
-Choose Raspbian Desktop instead of the Lite flavor, which might lack some packages required for the GUI.
+Choose Raspbian Desktop instead of the Lite flavor, which lacks some packages required for the GUI.
 
 Download and installation instructions are available at the [Raspberry Pi website](https://www.raspberrypi.org/documentation/installation/installing-images/)
 
@@ -149,88 +149,3 @@ You can trigger the countdown via space bar or an external button.
 To exit the application, use the Esc-key or an external button.
 
 You can directly startup the photobooth to the idle screen (skipping the welcome screen) by appending the parameter `--run`.
-
-## Additional setup steps for my hardware setup
-
-### Pollin LS-7T touch screen
-
-#### Install required packages
-```bash
-apt install xinput-calibrator xserver-xorg-input-evdev
-```
-
-#### Configure device
-Add the following to `/usr/share/X11/xorg.conf.d/99-eGalax.conf`:
-```
-Section "InputClass"
-    Identifier "evdev tablet catchall"
-    MatchIsTablet "on"
-    MatchDevicePath "/dev/input/event*"
-    Driver "evdev"
-EndSection
-
-Section "InputClass"
-    Identifier      "calibration"
-    MatchProduct    "eGalax Inc. Touch"
-    Option  "Calibration"   "19 1988 96 1965"
-    Option  "SwapAxes"      "0"
-EndSection
-```
-
-The calibration data can be obtained using `xinput-calibrator`.
-
-### Canon SELPHY CP1200/CP1300 printer
-
-#### Add buster/testing repository
-We need Gutenprint 5.2.13 or newer, unfortunately Raspbian Stretch includes only Gutenprint 5.2.11.
-Luckily, the next distro (Buster) includes an up-to-date version and thus we can install that one instead of compiling the drivers ourselves.
-
-For that, we add the buster repositories with a lower priority (to avoid an upgrade of all packages) and select them later manually, when installing the drivers.
-
-Create file `/etc/apt/preferences.d/stretch.pref` with content
-```
-Package: *
-Pin: release n=stretch
-Pin-Priority: 900
-```
-
-Create file `/etc/apt/preferences.d/buster.pref` with content
-```
-Package: *
-Pin: release n=buster
-Pin-Priority: 750
-```
-
-Add the following line to `/etc/apt/sources.list`:
-```
-deb http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi
-```
-
-#### Install Gutenprint printer drivers
-With the up-to-date drivers available, we install them with the following command:
-```bash
-apt update
-apt install printer-driver-gutenprint -t buster
-```
-
-#### Add user `pi` to group `lpadmin`
-To allow the current user to modify printer settings we must add it to the group `lpadmin`:
-```bash
-sudo usermod -a -G lpadmin pi
-```
-
-#### Plug in printer to USB port and add in CUPS
-* Plug in the printer.
-* Open http://localhost:631 on the Raspberry Pi.
-* Select 'Add Printer' in the Tab 'Administration'
-* When asked, enter credentials for user `pi`
-* The printer should be offered somewhere close to the top of the list in the section 'Local Printers'. Select it and click 'Continue'.
-* If you wish, you can specify a name in the next step.
-* In the last step, select the appropriate model in the list. For the Canon SELPHY CP1300 the printer for the CP1200 works fine as the CP1300 is the same printer with a larger screen and some smartphone baublery.
-* Click "Add Printer". This concludes the installation.
-* In the following dialogue, you can modify the default settings.
-
-#### Select default printer
-It is important that you set the printer as the default printer. 
-For that, go to the CUPS administration interface (http://localhost:631), open the list of printers and select your printer.
-In the drop-down menu 'Administration' select 'Set as Server Default'.

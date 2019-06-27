@@ -12,9 +12,13 @@ This is a Python application to build your own photobooth.
 ### Features
 * Capture a single or multiple pictures and assemble them in an m-by-n grid layout
 * Live preview during countdown
-* Printing of captured pictures
+* Store assembled pictures (and optionally the individual shots)
+* Printing of captured pictures (via Qt printing module or pycups)
 * Highly customizable via settings menu inside the graphical user interface
+* Custom background for assembled pictures
+* Ability to skip single pictures in the m-by-n grid (e.g., to include a logo in the background image)
 * Support for external buttons and lamps via GPIO interface
+* Rudimentary WebDAV upload functionality (saves pictures to WebDAV storage) and mailer feature (mails pictures to a fixed email address)
 * Theming support using [Qt stylesheets](https://doc.qt.io/qt-5/stylesheet-syntax.html)
 
 ### Screenshots
@@ -44,8 +48,8 @@ Since then it underwent a complete rewrite, with vastly improved performance and
 
 ### Hardware requirements
 * Some computer/SoC that is able to run Python 3.5+ as well as any of the supported camera libraries
-* Camera supported by gPhoto 2 (see [compatibility list](http://gphoto.org/doc/remote/)), OpenCV (e.g., most standard webcams), or a Raspberry Pi Camera Module.
-* Optional: External buttons and lamps (in combination with GPIO-enabled hardware)
+* Camera supported by gPhoto 2 (see [compatibility list](http://gphoto.org/proj/libgphoto2/support.php)), OpenCV (e.g., most standard webcams), or a Raspberry Pi Camera Module.
+* Optional: External buttons and lamps (in combination with gpiozero-compatible hardware)
 
 ### Installing and running the photobooth
 
@@ -61,7 +65,7 @@ Feel free to add new postprocessing components, a GUI based on some other librar
 I appreciate any feedback or bug reports.
 Please submit them via the [Issue tracker](https://github.com/reuterbal/photobooth/issues/new?template=bug_report.md) and always include your `photobooth.log` file (is created automatically in the top folder) and a description of your hardware and software setup.
 
-I am also happy to hear any success stories! Feel free to [submit them here](https://github.com/reuterbal/photobooth/issues/new?template=success-story.md)
+I am also happy to hear any success stories! Feel free to [submit them here](https://github.com/reuterbal/photobooth/issues/new?template=success-story.md).
 
 If you find this application useful, please consider [buying me a coffee](https://www.buymeacoffee.com/reuterbal).
 
