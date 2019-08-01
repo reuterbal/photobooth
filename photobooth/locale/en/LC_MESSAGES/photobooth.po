@@ -51,6 +51,10 @@ msgstr "for {} pictures..."
 msgid "Picture {} of {}..."
 msgstr "Picture {} of {}..."
 
+#: photobooth/gui/Qt5Gui/Frames.py:151
+msgid "Taking a photo..."
+msgstr "Taking a photo..."
+
 #: photobooth/gui/Qt5Gui/Frames.py:342
 msgid "Start over"
 msgstr "Start over"
