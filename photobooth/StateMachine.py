@@ -27,6 +27,7 @@ class Context:
         super().__init__()
         self._comm = communicator
         self.is_running = False
+        self.capturemode = 'static'
         if omit_welcome:
             self.state = StartupState()
         else:
@@ -44,6 +45,21 @@ class Context:
             raise TypeError('is_running must be a bool')
 
         self._is_running = running
+
+    @property
+    def capturemode(self):
+
+        return self._capturemode
+
+    @capturemode.setter
+    def capturemode(self, mode):
+
+        if (mode != 'boomerang') and (mode != 'static'):
+            raise TypeError('capturemode must be boomerang or static')
+
+        logging.debug('Context: Set capture mode to "{}"'.format(mode))
+
+        self._capturemode = mode
 
     @property
     def state(self):
@@ -354,6 +370,11 @@ class IdleState(State):
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'trigger'):
+            context.capturemode = 'static'
+            context.state = GreeterState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+                    event.name == 'triggerVideo'):
+            context.capturemode = 'boomerang'
             context.state = GreeterState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
@@ -370,6 +391,21 @@ class GreeterState(State):
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'countdown'):
             context.state = CountdownState(1)
+        else:
+            raise TypeError('Unknown Event type "{}"'.format(event))
+
+
+class GreeterVideoState(State):
+
+    def __init__(self):
+
+        super().__init__()
+
+    def handleEvent(self, event, context):
+
+        if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+                event.name == 'countdown'):
+            context.state = CountdownVideoState(1)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -392,23 +428,44 @@ class CountdownState(State):
         if isinstance(event, GuiEvent) and event.name == 'countdown':
             pass
         elif isinstance(event, GuiEvent) and event.name == 'capture':
-            context.state = CaptureState(self.num_picture)
+            context.state = CaptureState(self.num_picture, context.capturemode)
+        else:
+            raise TypeError('Unknown Event type "{}"'.format(event))
+
+class CountdownVideoState(State):
+
+    def __init__(self, num_picture):
+
+        super().__init__()
+
+    def handleEvent(self, event, context):
+
+        if isinstance(event, GuiEvent) and event.name == 'countdown':
+            pass
+        elif isinstance(event, GuiEvent) and event.name == 'capture':
+            context.state = CaptureVideoState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class CaptureState(State):
 
-    def __init__(self, num_picture):
+    def __init__(self, num_picture, capturemode):
 
         super().__init__()
 
         self._num_picture = num_picture
+        self._capturemode = capturemode
 
     @property
     def num_picture(self):
 
         return self._num_picture
+
+    @property
+    def capturemode(self):
+
+        return self._capturemode
 
     def handleEvent(self, event, context):
 
@@ -420,7 +477,44 @@ class CaptureState(State):
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
+class CaptureVideoState(State):
+
+    def __init__(self):
+
+        super().__init__()
+
+        self._num_picture = 1
+
+    @property
+    def num_picture(self):
+
+        return self._num_picture
+
+    def handleEvent(self, event, context):
+
+        if isinstance(event, CameraEvent) and event.name == 'countdown':
+            context.state = AssembleVideoState()
+        elif isinstance(event, CameraEvent) and event.name == 'assemble':
+            context.state = AssembleVideoState()
+        else:
+            raise TypeError('Unknown Event type "{}"'.format(event))
+
+
 class AssembleState(State):
+
+    def __init__(self):
+
+        super().__init__()
+
+    def handleEvent(self, event, context):
+
+        if isinstance(event, CameraEvent) and event.name == 'review':
+            context.state = ReviewState(event.picture)
+        else:
+            raise TypeError('Unknown Event type "{}"'.format(event))
+
+
+class AssembleVideoState(State):
 
     def __init__(self):
 

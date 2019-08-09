@@ -79,25 +79,29 @@ class Welcome(QtWidgets.QFrame):
 
 class IdleMessage(QtWidgets.QFrame):
 
-    def __init__(self, trigger_action):
+    def __init__(self, trigger_action, trigger_video_action):
 
         super().__init__()
         self.setObjectName('IdleMessage')
 
         self._message_label = _('Hit the')
         self._message_button = _('Button!')
+        self._message_boomerang =  ('Boomerang!')
 
-        self.initFrame(trigger_action)
+        self.initFrame(trigger_action, trigger_video_action)
 
-    def initFrame(self, trigger_action):
+    def initFrame(self, trigger_action, trigger_video_action):
 
         lbl = QtWidgets.QLabel(self._message_label)
         btn = QtWidgets.QPushButton(self._message_button)
+        btn_boomerang = QtWidgets.QPushButton(self._message_boomerang)
         btn.clicked.connect(trigger_action)
+        btn_boomerang.clicked.connect(trigger_video_action)
 
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(lbl)
         lay.addWidget(btn)
+        lay.addWidget(btn_boomerang)
         self.setLayout(lay)
 
 
@@ -149,6 +153,30 @@ class CaptureMessage(QtWidgets.QFrame):
                                                          num_pictures)
         else:
             self._text = 'Taking a photo...'
+
+        self.initFrame()
+
+    def initFrame(self):
+
+        lbl = QtWidgets.QLabel(self._text)
+        lay = QtWidgets.QVBoxLayout()
+        lay.addWidget(lbl)
+        self.setLayout(lay)
+
+
+class CaptureVideoMessage(QtWidgets.QFrame):
+
+    def __init__(self, num_picture, num_x, num_y, skip):
+
+        super().__init__()
+        self.setObjectName('PoseMessage')
+
+        num_pictures = max(num_x * num_y - len(skip), 1)
+        if num_pictures > 1:
+            self._text = _('Picturino {} of {}...').format(num_picture,
+                                                         num_pictures)
+        else:
+            self._text = 'Takerino a photo...'
 
         self.initFrame()
 

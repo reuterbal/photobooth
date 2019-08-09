@@ -105,8 +105,16 @@ class Camera:
             self.capturePreview()
         elif isinstance(state, StateMachine.CaptureState):
             self.capturePicture(state)
+        elif isinstance(state, StateMachine.GreeterVideoState):
+            self.prepareCapture()
+        elif isinstance(state, StateMachine.CountdownVideoState):
+            self.capturePreview()
+        elif isinstance(state, StateMachine.CaptureVideoState):
+            self.captureVideo(state)
         elif isinstance(state, StateMachine.AssembleState):
             self.assemblePicture()
+        elif isinstance(state, StateMachine.AssembleVideoState):
+            self.assembleGIF()
         elif isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
 
@@ -140,12 +148,60 @@ class Camera:
 
     def capturePicture(self, state):
 
+        if state.capturemode == 'static':
+            self.setIdle()
+            picture = self._cap.getPicture()
+            if self._rotation is not None:
+                picture = picture.transpose(self._rotation)
+            byte_data = BytesIO()
+            picture.save(byte_data, format='jpeg')
+            self._pictures.append(byte_data)
+            self.setActive()
+
+            if self._is_keep_pictures:
+                self._comm.send(Workers.WORKER,
+                                StateMachine.CameraEvent('capture', byte_data))
+
+            if state.num_picture < self._pic_dims.totalNumPictures:
+                self._comm.send(Workers.MASTER,
+                                StateMachine.CameraEvent('countdown'))
+            else:
+                self._comm.send(Workers.MASTER,
+                                StateMachine.CameraEvent('assemble'))
+        elif state.capturemode == 'boomerang':
+            logging.debug('entering boomerang capture')
+            # TODO handle
+            number_pictures = 0
+
+            while number_pictures < 4:
+                picture = self._cap.getPreview()
+                number_pictures += 1
+                if self._rotation is not None:
+                    picture = picture.transpose(self._rotation)
+                byte_data = BytesIO()
+                picture.save(byte_data, format='jpeg')
+                self._pictures.append(byte_data)
+                self.setActive()
+
+                if self._is_keep_pictures:
+                    self._comm.send(Workers.WORKER,
+                                     StateMachine.CameraEvent('capture', byte_data))
+                import time
+                time.sleep(0.2)
+
+            self._comm.send(Workers.MASTER,
+                                    StateMachine.CameraEvent('assemble'))
+        else:
+            raise TypeError('unknown capturemode in camera')
+
+    def captureVideo(self, state):
+
         self.setIdle()
         picture = self._cap.getPicture()
         if self._rotation is not None:
             picture = picture.transpose(self._rotation)
         byte_data = BytesIO()
-        picture.save(byte_data, format='jpeg')
+        picture.save(byte_data, format='gif')
         self._pictures.append(byte_data)
         self.setActive()
 
@@ -172,6 +228,20 @@ class Camera:
 
         byte_data = BytesIO()
         picture.save(byte_data, format='jpeg')
+        self._comm.send(Workers.MASTER,
+                        StateMachine.CameraEvent('review', byte_data))
+        self._pictures = []
+
+    def assembleGIF(self):
+
+        self.setIdle()
+
+        picture = []
+        picture.append(Image.open(self._pictures[0]))
+        picture.append(ImageOps.mirror(picture[0]))
+
+        byte_data = BytesIO()
+        picture[0].save(byte_data, format='GIF', append_images=picture[1:], save_all=True, duration=50, loop=0)
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('review', byte_data))
         self._pictures = []

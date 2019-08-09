@@ -97,6 +97,12 @@ class CameraInterface:
 
         raise NotImplementedError()
 
+    def getVideo(selfself):
+
+        # TODO capture video in highres, turn to loop, render to mp4 and gif, mp4 ein paar mal wiederholen
+
+        raise NotImplementedError()
+
     def _initConfig(self):
 
         self._cfg = configparser.ConfigParser(interpolation=None)
