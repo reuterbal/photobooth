@@ -59,10 +59,6 @@ class GuiSkeleton:
 
         raise NotImplementedError()
 
-    def showCaptureVideo(self, state):
-
-        raise NotImplementedError()
-
     def showAssemble(self, state):
 
         raise NotImplementedError()
@@ -93,16 +89,10 @@ class GuiSkeleton:
             self.showIdle(state)
         elif isinstance(state, StateMachine.GreeterState):
             self.showGreeter(state)
-        elif isinstance(state, StateMachine.GreeterVideoState):
-            self.showGreeter(state)
         elif isinstance(state, StateMachine.CountdownState):
-            self.showCountdown(state)
-        elif isinstance(state, StateMachine.CountdownVideoState):
             self.showCountdown(state)
         elif isinstance(state, StateMachine.CaptureState):
             self.showCapture(state)
-        elif isinstance(state, StateMachine.CaptureVideoState):
-            self.showCaptureVideo(state)
         elif isinstance(state, StateMachine.AssembleState):
             self.showAssemble(state)
         elif isinstance(state, StateMachine.ReviewState):

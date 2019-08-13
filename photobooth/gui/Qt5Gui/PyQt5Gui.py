@@ -213,14 +213,6 @@ class PyQt5Gui(GuiSkeleton):
         self._setWidget(Frames.CaptureMessage(state.num_picture, *num_pic,
                                               skip))
 
-    def showCaptureVideo(self, state):
-
-        num_pic = (self._cfg.getInt('Picture', 'num_x'),
-                   self._cfg.getInt('Picture', 'num_y'))
-        skip = [i for i in self._cfg.getIntList('Picture', 'skip')
-                if 1 <= i and i <= num_pic[0] * num_pic[1]]
-        self._setWidget(Frames.CaptureVideoMessage(1, 1, 1, []))
-
     def showAssemble(self, state):
 
         self._setWidget(Frames.WaitMessage(_('Processing picture...')))

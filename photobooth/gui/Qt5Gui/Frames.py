@@ -164,30 +164,6 @@ class CaptureMessage(QtWidgets.QFrame):
         self.setLayout(lay)
 
 
-class CaptureVideoMessage(QtWidgets.QFrame):
-
-    def __init__(self, num_picture, num_x, num_y, skip):
-
-        super().__init__()
-        self.setObjectName('PoseMessage')
-
-        num_pictures = max(num_x * num_y - len(skip), 1)
-        if num_pictures > 1:
-            self._text = _('Picturino {} of {}...').format(num_picture,
-                                                         num_pictures)
-        else:
-            self._text = 'Takerino a photo...'
-
-        self.initFrame()
-
-    def initFrame(self):
-
-        lbl = QtWidgets.QLabel(self._text)
-        lay = QtWidgets.QVBoxLayout()
-        lay.addWidget(lbl)
-        self.setLayout(lay)
-
-
 class PictureMessage(QtWidgets.QFrame):
 
     def __init__(self, picture):

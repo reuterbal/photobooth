@@ -105,16 +105,8 @@ class Camera:
             self.capturePreview()
         elif isinstance(state, StateMachine.CaptureState):
             self.capturePicture(state)
-        elif isinstance(state, StateMachine.GreeterVideoState):
-            self.prepareCapture()
-        elif isinstance(state, StateMachine.CountdownVideoState):
-            self.capturePreview()
-        elif isinstance(state, StateMachine.CaptureVideoState):
-            self.captureVideo(state)
         elif isinstance(state, StateMachine.AssembleState):
             self.assemblePicture()
-        elif isinstance(state, StateMachine.AssembleVideoState):
-            self.assembleGIF()
         elif isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
 
