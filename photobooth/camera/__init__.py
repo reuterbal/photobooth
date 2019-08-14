@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import time
 
 from PIL import Image, ImageOps
 from io import BytesIO
@@ -166,23 +167,25 @@ class Camera:
             number_pictures = 0
 
             while number_pictures < 4:
-                picture = self._cap.getPreview()
+                self.setIdle()
+                # TODO select preview or picture
+                # picture = self._cap.getPreview()
+                picture = self._cap.getPicture()
                 number_pictures += 1
                 if self._rotation is not None:
                     picture = picture.transpose(self._rotation)
                 byte_data = BytesIO()
                 picture.save(byte_data, format='jpeg')
                 self._pictures.append(byte_data)
-                self.setActive()
 
+                self.setActive()
                 if self._is_keep_pictures:
                     self._comm.send(Workers.WORKER,
-                                     StateMachine.CameraEvent('capture', byte_data))
-                import time
+                                    StateMachine.CameraEvent('capture', byte_data))
                 time.sleep(0.2)
 
             self._comm.send(Workers.MASTER,
-                                    StateMachine.CameraEvent('assemble'))
+                            StateMachine.CameraEvent('assemble'))
         else:
             raise TypeError('unknown capturemode in camera')
 
