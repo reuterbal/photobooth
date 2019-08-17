@@ -19,6 +19,7 @@
 
 import logging
 
+import os.path
 from glob import glob
 
 
@@ -38,6 +39,14 @@ class PictureList:
         self._basename = basename
         self.suffix = '.jpg'
         self.count_width = 5
+
+        self.counter = 0
+        self.shot_counter = 0
+
+        # Ensure directory exists
+        dirname = os.path.dirname(self.basename)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
 
         self.findExistingFiles()
 
@@ -71,11 +80,22 @@ class PictureList:
         """Return the file name for a given file number"""
         return self.basename + str(count).zfill(self.count_width) + self.suffix
 
+    def getFilenameShot(self, count, shotCount):
+        """Return the file name for a given shot & file number"""
+        return self.getFilename(count+1)[:-len(self.suffix)] + \
+            '_shot' + str(shotCount).zfill(3) + self.suffix
+
     def getLast(self):
         """Return the current filename"""
         return self.getFilename(self.counter)
 
-    def getNext(self):
+    def getNextPic(self):
         """Update counter and return the next filename"""
         self.counter += 1
+        self.shot_counter = 0
         return self.getFilename(self.counter)
+
+    def getNextPicShot(self):
+        """Update counter and return the next filename"""
+        self.shot_counter += 1
+        return self.getFilenameShot(self.counter, self.shot_counter)
