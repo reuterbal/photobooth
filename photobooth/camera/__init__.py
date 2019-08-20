@@ -223,6 +223,7 @@ class Camera:
 
         self.setIdle()
 
+        # TODO make something like a "best of" for static output, maybe (depending on output) first, last, in between
         picture = self._template.copy()
         for i in range(self._pic_dims.totalNumPictures):
             shot = Image.open(self._pictures[i])

@@ -123,6 +123,17 @@ QFrame#PictureMessage {
     margin: 30px;
 }
 
+/* GIF Screen */
+
+QFrame#GIFMessage {
+    margin: 30px;
+}
+
+QFrame#GIFMessage QLabel {
+    font-size: 160px;
+    qproperty-alignment: AlignCenter;
+}
+
 /* Overlay message */
 
 QWidget#TransparentOverlay {
@@ -170,7 +181,7 @@ QTabWidget::pane {
     border-color: #eeeeee;
     color: #333333;
     padding: 10px;
-    margin: 0; 
+    margin: 0;
 }
 
 QTabWidget::tab-bar {

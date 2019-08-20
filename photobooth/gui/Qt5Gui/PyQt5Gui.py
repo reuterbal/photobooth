@@ -219,14 +219,24 @@ class PyQt5Gui(GuiSkeleton):
 
     def showReview(self, state):
 
-        picture = Image.open(state.picture)
-        self._picture = ImageQt.ImageQt(picture)
-        review_time = self._cfg.getInt('Photobooth', 'display_time') * 1000
-        self._setWidget(Frames.PictureMessage(self._picture))
-        QtCore.QTimer.singleShot(
-            review_time,
-            lambda: self._comm.send(Workers.MASTER, GuiEvent('postprocess')))
-        self._postprocess.do(self._picture)
+        if state.gif:
+            review_time = self._cfg.getInt('Photobooth', 'display_time') * 1000
+            self._setWidget(Frames.GIFMessage(state.gif))
+            QtCore.QTimer.singleShot(
+                review_time,
+                lambda: self._comm.send(Workers.MASTER, GuiEvent('postprocess')))
+            picture = Image.open(state.gif)
+            self._picture = ImageQt.ImageQt(picture)
+            self._postprocess.do(self._picture)
+        else:
+            picture = Image.open(state.picture)
+            self._picture = ImageQt.ImageQt(picture)
+            review_time = self._cfg.getInt('Photobooth', 'display_time') * 1000
+            self._setWidget(Frames.PictureMessage(self._picture))
+            QtCore.QTimer.singleShot(
+                review_time,
+                lambda: self._comm.send(Workers.MASTER, GuiEvent('postprocess')))
+            self._postprocess.do(self._picture)
 
     def showPostprocess(self, state):
 
