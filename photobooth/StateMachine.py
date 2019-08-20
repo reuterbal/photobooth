@@ -20,6 +20,10 @@
 import logging
 
 
+CAPMODE_STATIC = 'static'
+CAPMODE_BOOMERANG = 'boomerang'
+
+
 class Context:
 
     def __init__(self, communicator, omit_welcome=False):
@@ -27,7 +31,7 @@ class Context:
         super().__init__()
         self._comm = communicator
         self.is_running = False
-        self.capturemode = 'static'
+        self.capturemode = CAPMODE_STATIC
         if omit_welcome:
             self.state = StartupState()
         else:

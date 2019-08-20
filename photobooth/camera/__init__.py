@@ -141,7 +141,7 @@ class Camera:
 
     def capturePicture(self, state):
 
-        if state.capturemode == 'static':
+        if state.capturemode == StateMachine.CAPMODE_STATIC:
             self.setIdle()
             picture = self._cap.getPicture()
             if self._rotation is not None:
@@ -161,7 +161,7 @@ class Camera:
             else:
                 self._comm.send(Workers.MASTER,
                                 StateMachine.CameraEvent('assemble'))
-        elif state.capturemode == 'boomerang':
+        elif state.capturemode == StateMachine.CAPMODE_BOOMERANG:
             logging.debug('entering boomerang capture')
             # TODO handle
             number_pictures = 0
