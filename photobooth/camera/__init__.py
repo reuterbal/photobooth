@@ -54,6 +54,10 @@ class Camera:
         self._is_preview = self._cfg.getBool('Photobooth', 'show_preview')
         self._is_keep_pictures = self._cfg.getBool('Storage', 'keep_pictures')
 
+        self._gif_num_frames = self._cfg.getInt('GIF', 'num_frames')
+        self._gif_num_img_to_take = ((self._gif_num_frames - 2) // 2) + 2
+        self._gif_frame_duration = self._cfg.getInt('GIF', 'frame_duration')
+
         rot_vals = {0: None, 90: Image.ROTATE_90, 180: Image.ROTATE_180,
                     270: Image.ROTATE_270}
         self._rotation = rot_vals[self._cfg.getInt('Camera', 'rotation')]
@@ -177,7 +181,7 @@ class Camera:
         # TODO handle
         number_pictures = 0
 
-        while number_pictures < 4:
+        while number_pictures < self._gif_num_img_to_take:
             self.setIdle()
             # TODO select preview or picture
             picture = self._cap.getPreview()
@@ -193,7 +197,8 @@ class Camera:
             if self._is_keep_pictures:
                 self._comm.send(Workers.WORKER,
                                 StateMachine.CameraEvent('capture', byte_data))
-            time.sleep(0.2)
+            # time.sleep(0.2)
+            # TODO timing of capture
 
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('assemble'))
@@ -229,15 +234,15 @@ class Camera:
 
         picture = []
         # TODO adapt to number of frames (scale automatically) and make number of frames configurable
-        picture.append(Image.open(self._pictures[0]))
-        picture.append(Image.open(self._pictures[1]))
-        picture.append(Image.open(self._pictures[2]))
-        picture.append(Image.open(self._pictures[3]))
-        picture.append(Image.open(self._pictures[2]))
-        picture.append(Image.open(self._pictures[1]))
+        for i in range(self._gif_num_img_to_take):
+            logging.info(i)
+            picture.append(Image.open(self._pictures[i]))
+        for i in range((self._gif_num_frames - self._gif_num_img_to_take), 0, -1 ):
+            logging.info(i)
+            picture.append(Image.open(self._pictures[i]))
 
         byte_data_gif = BytesIO()
-        picture[0].save(byte_data_gif, format='GIF', append_images=picture[1:], save_all=True, duration=50, loop=0)
+        picture[0].save(byte_data_gif, format='GIF', append_images=picture[1:], save_all=True, duration=self._gif_frame_duration, loop=0)
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('review', byte_data, byte_data_gif))
         self._pictures = []
