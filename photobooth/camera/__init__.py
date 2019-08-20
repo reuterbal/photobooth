@@ -105,7 +105,12 @@ class Camera:
         elif isinstance(state, StateMachine.CountdownState):
             self.capturePreview()
         elif isinstance(state, StateMachine.CaptureState):
-            self.capturePicture(state)
+            if state.capturemode == StateMachine.CAPMODE_STATIC:
+                self.capturePicture(state)
+            elif state.capturemode == StateMachine.CAPMODE_BOOMERANG:
+                self.captureVideo(state)
+            else:
+                raise TypeError('unknown capturemode in camera')
         elif isinstance(state, StateMachine.AssembleState):
             self.assemblePicture()
         elif isinstance(state, StateMachine.TeardownState):
@@ -141,62 +146,12 @@ class Camera:
 
     def capturePicture(self, state):
 
-        if state.capturemode == StateMachine.CAPMODE_STATIC:
-            self.setIdle()
-            picture = self._cap.getPicture()
-            if self._rotation is not None:
-                picture = picture.transpose(self._rotation)
-            byte_data = BytesIO()
-            picture.save(byte_data, format='jpeg')
-            self._pictures.append(byte_data)
-            self.setActive()
-
-            if self._is_keep_pictures:
-                self._comm.send(Workers.WORKER,
-                                StateMachine.CameraEvent('capture', byte_data))
-
-            if state.num_picture < self._pic_dims.totalNumPictures:
-                self._comm.send(Workers.MASTER,
-                                StateMachine.CameraEvent('countdown'))
-            else:
-                self._comm.send(Workers.MASTER,
-                                StateMachine.CameraEvent('assemble'))
-        elif state.capturemode == StateMachine.CAPMODE_BOOMERANG:
-            logging.debug('entering boomerang capture')
-            # TODO handle
-            number_pictures = 0
-
-            while number_pictures < 4:
-                self.setIdle()
-                # TODO select preview or picture
-                # picture = self._cap.getPreview()
-                picture = self._cap.getPicture()
-                number_pictures += 1
-                if self._rotation is not None:
-                    picture = picture.transpose(self._rotation)
-                byte_data = BytesIO()
-                picture.save(byte_data, format='jpeg')
-                self._pictures.append(byte_data)
-
-                self.setActive()
-                if self._is_keep_pictures:
-                    self._comm.send(Workers.WORKER,
-                                    StateMachine.CameraEvent('capture', byte_data))
-                time.sleep(0.2)
-
-            self._comm.send(Workers.MASTER,
-                            StateMachine.CameraEvent('assemble'))
-        else:
-            raise TypeError('unknown capturemode in camera')
-
-    def captureVideo(self, state):
-
         self.setIdle()
         picture = self._cap.getPicture()
         if self._rotation is not None:
             picture = picture.transpose(self._rotation)
         byte_data = BytesIO()
-        picture.save(byte_data, format='gif')
+        picture.save(byte_data, format='jpeg')
         self._pictures.append(byte_data)
         self.setActive()
 
@@ -210,6 +165,33 @@ class Camera:
         else:
             self._comm.send(Workers.MASTER,
                             StateMachine.CameraEvent('assemble'))
+
+    def captureVideo(self, state):
+
+        logging.debug('entering boomerang capture')
+        # TODO handle
+        number_pictures = 0
+
+        while number_pictures < 4:
+            self.setIdle()
+            # TODO select preview or picture
+            picture = self._cap.getPreview()
+            # picture = self._cap.getPicture()
+            number_pictures += 1
+            if self._rotation is not None:
+                picture = picture.transpose(self._rotation)
+            byte_data = BytesIO()
+            picture.save(byte_data, format='jpeg')
+            self._pictures.append(byte_data)
+
+            self.setActive()
+            if self._is_keep_pictures:
+                self._comm.send(Workers.WORKER,
+                                StateMachine.CameraEvent('capture', byte_data))
+            time.sleep(0.2)
+
+        self._comm.send(Workers.MASTER,
+                        StateMachine.CameraEvent('assemble'))
 
     def assemblePicture(self):
 
