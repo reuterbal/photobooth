@@ -79,7 +79,7 @@ class Welcome(QtWidgets.QFrame):
 
 class IdleMessage(QtWidgets.QFrame):
 
-    def __init__(self, trigger_action, trigger_video_action):
+    def __init__(self, trigger_action, trigger_boomerang_action):
 
         super().__init__()
         self.setObjectName('IdleMessage')
@@ -88,15 +88,15 @@ class IdleMessage(QtWidgets.QFrame):
         self._message_button = _('Button!')
         self._message_boomerang = _('Boomerang!')
 
-        self.initFrame(trigger_action, trigger_video_action)
+        self.initFrame(trigger_action, trigger_boomerang_action)
 
-    def initFrame(self, trigger_action, trigger_video_action):
+    def initFrame(self, trigger_action, trigger_boomerang_action):
 
         lbl = QtWidgets.QLabel(self._message_label)
         btn = QtWidgets.QPushButton(self._message_button)
         btn_boomerang = QtWidgets.QPushButton(self._message_boomerang)
         btn.clicked.connect(trigger_action)
-        btn_boomerang.clicked.connect(trigger_video_action)
+        btn_boomerang.clicked.connect(trigger_boomerang_action)
 
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(lbl)
