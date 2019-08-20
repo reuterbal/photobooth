@@ -86,7 +86,7 @@ class IdleMessage(QtWidgets.QFrame):
 
         self._message_label = _('Hit the')
         self._message_button = _('Button!')
-        self._message_boomerang =  ('Boomerang!')
+        self._message_boomerang = _('Boomerang!')
 
         self.initFrame(trigger_action, trigger_video_action)
 
