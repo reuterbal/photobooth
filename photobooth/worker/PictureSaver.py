@@ -34,8 +34,13 @@ class PictureSaver(WorkerTask):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
-    def do(self, picture, filename):
+    def do(self, picture, filename, gif=None):
 
         logging.info('Saving picture as %s', filename)
         with open(filename, 'wb') as f:
             f.write(picture.getbuffer())
+        if gif:
+            gifname = "{file}.gif".format(file=filename)
+            logging.info('Saving GIF as {}'.format(gifname))
+            with open(gifname, 'wb') as f:
+                f.write(gif.getbuffer())

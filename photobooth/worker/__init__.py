@@ -85,7 +85,7 @@ class Worker:
         if isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
         elif isinstance(state, StateMachine.ReviewState):
-            self.doPostprocessTasks(state.picture, self._pic_list.getNext())
+            self.doPostprocessTasks(state.picture, self._pic_list.getNext(), state.gif)
         elif isinstance(state, StateMachine.CameraEvent):
             if state.name == 'capture':
                 self.doPictureTasks(state.picture, self._shot_list.getNext())
@@ -96,10 +96,10 @@ class Worker:
 
         pass
 
-    def doPostprocessTasks(self, picture, filename):
+    def doPostprocessTasks(self, picture, filename, gif=None):
 
         for task in self._postprocess_tasks:
-            task.do(picture, filename)
+            task.do(picture, filename, gif)
 
     def doPictureTasks(self, picture, filename):
 

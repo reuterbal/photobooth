@@ -112,7 +112,12 @@ class Camera:
             else:
                 raise TypeError('unknown capturemode in camera')
         elif isinstance(state, StateMachine.AssembleState):
-            self.assemblePicture()
+            if state.capturemode == StateMachine.CAPMODE_STATIC:
+                self.assemblePicture()
+            elif state.capturemode == StateMachine.CAPMODE_BOOMERANG:
+                self.assembleGIF()
+            else:
+                raise TypeError('unknown capturemode in camera')
         elif isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
 
@@ -213,12 +218,21 @@ class Camera:
 
         self.setIdle()
 
+        picture = self._template.copy()
+        for i in range(self._pic_dims.totalNumPictures):
+            shot = Image.open(self._pictures[i])
+            resized = shot.resize(self._pic_dims.thumbnailSize)
+            picture.paste(resized, self._pic_dims.thumbnailOffset[i])
+
+        byte_data = BytesIO()
+        picture.save(byte_data, format='jpeg')
+
         picture = []
         picture.append(Image.open(self._pictures[0]))
         picture.append(ImageOps.mirror(picture[0]))
 
-        byte_data = BytesIO()
-        picture[0].save(byte_data, format='GIF', append_images=picture[1:], save_all=True, duration=50, loop=0)
+        byte_data_gif = BytesIO()
+        picture[0].save(byte_data_gif, format='GIF', append_images=picture[1:], save_all=True, duration=50, loop=0)
         self._comm.send(Workers.MASTER,
-                        StateMachine.CameraEvent('review', byte_data))
+                        StateMachine.CameraEvent('review', byte_data, byte_data_gif))
         self._pictures = []

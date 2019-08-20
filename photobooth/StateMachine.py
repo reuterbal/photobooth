@@ -197,15 +197,21 @@ class GpioEvent(Event):
 
 class CameraEvent(Event):
 
-    def __init__(self, name, picture=None):
+    def __init__(self, name, picture=None, gif=None):
 
         super().__init__(name)
         self._picture = picture
+        self._gif = gif
 
     @property
     def picture(self):
 
         return self._picture
+
+    @property
+    def gif(self):
+
+        return self._gif
 
 
 class WorkerEvent(Event):
@@ -446,36 +452,51 @@ class CaptureState(State):
         if isinstance(event, CameraEvent) and event.name == 'countdown':
             context.state = CountdownState(self.num_picture + 1)
         elif isinstance(event, CameraEvent) and event.name == 'assemble':
-            context.state = AssembleState()
+            context.state = AssembleState(self.capturemode)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class AssembleState(State):
 
-    def __init__(self):
+    def __init__(self, capturemode):
 
         super().__init__()
+        self._capturemode = capturemode
+
+    @property
+    def capturemode(self):
+
+        return self._capturemode
 
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'review':
-            context.state = ReviewState(event.picture)
+            if self.capturemode == CAPMODE_BOOMERANG:
+                context.state = ReviewState(event.picture, event.gif)
+            else:
+                context.state = ReviewState(event.picture)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class ReviewState(State):
 
-    def __init__(self, picture):
+    def __init__(self, picture, gif=None):
 
         super().__init__()
         self._picture = picture
+        self._gif = gif
 
     @property
     def picture(self):
 
         return self._picture
+
+    @property
+    def gif(self):
+
+        return self._gif
 
     def handleEvent(self, event, context):
 
