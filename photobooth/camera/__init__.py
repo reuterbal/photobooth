@@ -228,8 +228,13 @@ class Camera:
         picture.save(byte_data, format='jpeg')
 
         picture = []
+        # TODO adapt to number of frames (scale automatically) and make number of frames configurable
         picture.append(Image.open(self._pictures[0]))
-        picture.append(ImageOps.mirror(picture[0]))
+        picture.append(Image.open(self._pictures[1]))
+        picture.append(Image.open(self._pictures[2]))
+        picture.append(Image.open(self._pictures[3]))
+        picture.append(Image.open(self._pictures[2]))
+        picture.append(Image.open(self._pictures[1]))
 
         byte_data_gif = BytesIO()
         picture[0].save(byte_data_gif, format='GIF', append_images=picture[1:], save_all=True, duration=50, loop=0)
