@@ -58,7 +58,7 @@ class Context:
     @capturemode.setter
     def capturemode(self, mode):
 
-        if (mode != 'boomerang') and (mode != 'static'):
+        if (mode != CAPMODE_BOOMERANG) and (mode != CAPMODE_STATIC):
             raise TypeError('capturemode must be boomerang or static')
 
         logging.debug('Context: Set capture mode to "{}"'.format(mode))
@@ -374,11 +374,11 @@ class IdleState(State):
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'trigger'):
-            context.capturemode = 'static'
+            context.capturemode = CAPMODE_STATIC
             context.state = GreeterState()
         elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
                     event.name == 'triggerVideo'):
-            context.capturemode = 'boomerang'
+            context.capturemode = CAPMODE_BOOMERANG
             context.state = GreeterState()
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
