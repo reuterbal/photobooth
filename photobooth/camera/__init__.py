@@ -57,6 +57,7 @@ class Camera:
         self._gif_num_frames = self._cfg.getInt('GIF', 'num_frames')
         self._gif_num_img_to_take = ((self._gif_num_frames - 2) // 2) + 2
         self._gif_frame_duration = self._cfg.getInt('GIF', 'frame_duration')
+        self._gif_wait_s_between_cap = self._cfg.getInt('GIF', 'ms_between_capture') // 1000
 
         rot_vals = {0: None, 90: Image.ROTATE_90, 180: Image.ROTATE_180,
                     270: Image.ROTATE_270}
@@ -181,8 +182,9 @@ class Camera:
         # TODO handle
         number_pictures = 0
 
+        self.setIdle()
         while number_pictures < self._gif_num_img_to_take:
-            self.setIdle()
+            self.setIdle()  # TODO use other method to get new image (capture is "too" fast)
             # TODO select preview or picture
             picture = self._cap.getPreview()
             # picture = self._cap.getPicture()
@@ -194,11 +196,12 @@ class Camera:
             self._pictures.append(byte_data)
 
             self.setActive()
-            if self._is_keep_pictures:
-                self._comm.send(Workers.WORKER,
-                                StateMachine.CameraEvent('capture', byte_data))
-            # time.sleep(0.2)
+            # if self._is_keep_pictures:
+            #     self._comm.send(Workers.WORKER,
+            #                     StateMachine.CameraEvent('capture', byte_data))
+            time.sleep(self._gif_wait_s_between_cap)
             # TODO timing of capture
+        self.setActive()
 
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('assemble'))
@@ -236,10 +239,10 @@ class Camera:
         picture = []
         # TODO adapt to number of frames (scale automatically) and make number of frames configurable
         for i in range(self._gif_num_img_to_take):
-            logging.info(i)
+            logging.info("appending frame {}".format(i))
             picture.append(Image.open(self._pictures[i]))
         for i in range((self._gif_num_frames - self._gif_num_img_to_take), 0, -1 ):
-            logging.info(i)
+            logging.info("appending frame {}".format(i))
             picture.append(Image.open(self._pictures[i]))
 
         byte_data_gif = BytesIO()
