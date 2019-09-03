@@ -206,36 +206,28 @@ class GIFMessage(QtWidgets.QFrame):
     def initFrame(self, gif):
 
         gif.seek(0)
-        a = QtCore.QByteArray(gif.read())
-        b = QtCore.QBuffer(a)
-        b.open(QtCore.QIODevice.ReadOnly)
-        self.movie = QtGui.QMovie(b, QtCore.QByteArray(), self)
+        self.a = QtCore.QByteArray.fromRawData(gif.getvalue())
+        self.b = QtCore.QBuffer(self.a)
+        self.b.open(QtCore.QIODevice.ReadOnly)
+        self.movie = QtGui.QMovie(self.b, b'gif', self)
+        # self.movie = QtGui.QMovie('../photos/2019-09-03/photobooth00049.jpg.gif')
 
         size = self.movie.scaledSize()
         self.setGeometry(200, 200, size.width(), size.height())
         self.movie_screen = QtWidgets.QLabel('GIF')
-        self.movie_screen.setSizePolicy(Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Expanding)
+        self.movie_screen.setSizePolicy(Qt.QSizePolicy.MinimumExpanding, Qt.QSizePolicy.MinimumExpanding)
         #self.movie_screen.setAlignment(Qt.AlignCenter)
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(self.movie_screen)
         self.setLayout(lay)
         self.movie.setCacheMode(QtGui.QMovie.CacheAll)
         self.movie_screen.setMovie(self.movie)
-        self.movie_screen.setScaledContents(True)
-        #self.movie.setBackgroundColor(Qt.QColor(0, 0, 255, 127))
-        print(self.movie.isValid())
-        print(self.movie.loopCount())
-        print(self.movie.state())
-        #print(self.movie.lastError())
-        #print(self.movie.lastErrorString())
-        #print(self.movie.supportedFormats())
-        #self.movie.loopCount()
-
-    def showEvent(self, event):
-
-        # TODO this makes it somehow crash
-        #self.movie.start()
-        print(self.movie.state())
+        self.movie_screen.setScaledContents(False)
+        # self.movie.setBackgroundColor(Qt.QColor(0, 0, 255, 127))
+        # print(self.movie.isValid())
+        # print(self.movie.loopCount())
+        # print(self.movie.state())
+        self.movie.start()
 
 
 class WaitMessage(QtWidgets.QFrame):
