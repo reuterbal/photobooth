@@ -239,10 +239,10 @@ class Camera:
         picture = []
         # TODO adapt to number of frames (scale automatically) and make number of frames configurable
         for i in range(self._gif_num_img_to_take):
-            logging.info("appending frame {}".format(i))
+            logging.debug("appending frame {}".format(i))
             picture.append(Image.open(self._pictures[i]))
         for i in range((self._gif_num_frames - self._gif_num_img_to_take), 0, -1 ):
-            logging.info("appending frame {}".format(i))
+            logging.debug("appending frame {}".format(i))
             picture.append(Image.open(self._pictures[i]))
 
         byte_data_gif = BytesIO()
