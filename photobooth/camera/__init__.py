@@ -57,7 +57,7 @@ class Camera:
         self._gif_num_frames = self._cfg.getInt('GIF', 'num_frames')
         self._gif_num_img_to_take = ((self._gif_num_frames - 2) // 2) + 2
         self._gif_frame_duration = self._cfg.getInt('GIF', 'frame_duration')
-        self._gif_wait_s_between_cap = self._cfg.getInt('GIF', 'ms_between_capture') // 1000
+        self._gif_wait_s_between_cap = self._cfg.getInt('GIF', 'ms_between_capture') / 1000
 
         rot_vals = {0: None, 90: Image.ROTATE_90, 180: Image.ROTATE_180,
                     270: Image.ROTATE_270}
