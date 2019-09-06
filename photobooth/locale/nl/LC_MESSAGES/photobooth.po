@@ -13,7 +13,7 @@ msgstr "Start fotostand"
 
 #: photobooth/gui/Qt5Gui/Frames.py:53
 msgid "Set date/time"
-msgstr "Datum/Tijd instellen"
+msgstr "Datum/tijd instellen"
 
 #: photobooth/gui/Qt5Gui/Frames.py:56
 msgid "Settings"
@@ -254,4 +254,3 @@ msgstr "Bevestig"
 #: photobooth/gui/Qt5Gui/PyQt5Gui.py:287
 msgid "Quit Photobooth?"
 msgstr "Fotostand afsluiten?"
-
