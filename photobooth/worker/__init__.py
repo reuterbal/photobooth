@@ -41,6 +41,8 @@ class Worker:
                             config.get('Storage', 'basename'))
         basename = strftime(path, localtime())
         self._pic_list = PictureList(basename)
+        # Picture list for assembled gifs
+        self._gif_list = PictureList(basename, 'gif')
 
         # Picture list for individual shots
         path = os.path.join(config.get('Storage', 'basedir'),
@@ -85,7 +87,10 @@ class Worker:
         if isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
         elif isinstance(state, StateMachine.ReviewState):
-            self.doPostprocessTasks(state.picture, self._pic_list.getNext(), state.gif)
+            if state.gif:
+                self.doPostprocessTasks(state.picture, self._gif_list.getNext())
+            else:
+                self.doPostprocessTasks(state.picture, self._pic_list.getNext())
         elif isinstance(state, StateMachine.CameraEvent):
             if state.name == 'capture':
                 self.doPictureTasks(state.picture, self._shot_list.getNext())
@@ -96,10 +101,10 @@ class Worker:
 
         pass
 
-    def doPostprocessTasks(self, picture, filename, gif=None):
+    def doPostprocessTasks(self, picture, filename):
 
         for task in self._postprocess_tasks:
-            task.do(picture, filename, gif)
+            task.do(picture, filename)
 
     def doPictureTasks(self, picture, filename):
 

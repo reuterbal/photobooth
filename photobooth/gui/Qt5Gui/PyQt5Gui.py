@@ -222,11 +222,11 @@ class PyQt5Gui(GuiSkeleton):
 
         if state.gif:
             review_time = self._cfg.getInt('Photobooth', 'display_time') * 1000
-            self._setWidget(Frames.GIFMessage(state.gif))
+            self._setWidget(Frames.GIFMessage(state.picture))
             QtCore.QTimer.singleShot(
                 review_time,
                 lambda: self._comm.send(Workers.MASTER, GuiEvent('postprocess')))
-            picture = Image.open(state.gif)
+            picture = Image.open(state.picture)
             self._picture = ImageQt.ImageQt(picture)
             self._postprocess.do(self._picture)
         else:
