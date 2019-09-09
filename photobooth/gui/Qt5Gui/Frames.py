@@ -689,6 +689,9 @@ class Settings(QtWidgets.QFrame):
         bg = QtWidgets.QLineEdit(self._cfg.get('Picture', 'background'))
         self.add('Picture', 'background', bg)
 
+        ov = QtWidgets.QLineEdit(self._cfg.get('Picture', 'overlay'))
+        self.add('Picture', 'overlay', ov)
+
         lay_num = QtWidgets.QHBoxLayout()
         lay_num.addWidget(num_x)
         lay_num.addWidget(QtWidgets.QLabel('x'))
@@ -721,6 +724,18 @@ class Settings(QtWidgets.QFrame):
         lay_file.addWidget(bg)
         lay_file.addWidget(file_button)
 
+        def ov_file_dialog():
+            dialog = QtWidgets.QFileDialog.getOpenFileName
+            ov.setText(dialog(self, _('Select file'), os.path.expanduser('~'),
+                               'Images (*.png)')[0])
+
+        ov_file_button = QtWidgets.QPushButton(_('Select file'))
+        ov_file_button.clicked.connect(ov_file_dialog)
+
+        lay_ov_file = QtWidgets.QHBoxLayout()
+        lay_ov_file.addWidget(ov)
+        lay_ov_file.addWidget(ov_file_button)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Number of shots per picture:'), lay_num)
         layout.addRow(_('Size of assembled picture [px]:'), lay_size)
@@ -728,6 +743,8 @@ class Settings(QtWidgets.QFrame):
         layout.addRow(_('Min. distance border to shots [px]:'), lay_outer_dist)
         layout.addRow(_('Skip pictures:'), skip)
         layout.addRow(_('Background image:'), lay_file)
+        layout.addRow(_('Overlay image:'), lay_ov_file)
+
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -1015,6 +1032,8 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Picture', 'skip', self.get('Picture', 'skip').text())
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())
+        self._cfg.set('Picture', 'overlay',
+                      self.get('Picture', 'overlay').text())
 
         self._cfg.set('Storage', 'basedir',
                       self.get('Storage', 'basedir').text())
