@@ -181,7 +181,6 @@ class Camera:
         logging.debug('entering boomerang capture')
         number_pictures = 0
 
-        # self.setIdle()
         counter = 0
         while number_pictures < self._gif_num_img_to_take:
             picture = self._cap.getPreview()
