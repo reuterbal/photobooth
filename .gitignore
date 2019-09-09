@@ -10,4 +10,5 @@ print_*.pdf
 20??-??-??
 build
 dist
-
+.idea/
+.vscode/
