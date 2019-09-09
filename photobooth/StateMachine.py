@@ -385,16 +385,22 @@ class IdleState(State):
         elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
                     event.name == 'triggerVideo'):
             context.capturemode = CAPMODE_BOOMERANG
-            context.state = GreeterState()
+            context.state = GreeterState(gif=True)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class GreeterState(State):
 
-    def __init__(self):
+    def __init__(self, gif=None):
 
         super().__init__()
+        self._gif = gif
+
+    @property
+    def gif(self):
+
+        return self._gif
 
     def handleEvent(self, event, context):
 
@@ -446,6 +452,14 @@ class CaptureState(State):
     def capturemode(self):
 
         return self._capturemode
+
+    @property
+    def gif(self):
+
+        gif = False
+        if self.capturemode == CAPMODE_BOOMERANG:
+            gif = True
+        return gif
 
     def handleEvent(self, event, context):
 

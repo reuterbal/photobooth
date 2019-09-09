@@ -186,7 +186,8 @@ class PyQt5Gui(GuiSkeleton):
 
         self._setWidget(Frames.GreeterMessage(
             *num_pic, skip,
-            lambda: self._comm.send(Workers.MASTER, GuiEvent('countdown'))))
+            lambda: self._comm.send(Workers.MASTER, GuiEvent('countdown')),
+            state.gif))
         QtCore.QTimer.singleShot(
             greeter_time,
             lambda: self._comm.send(Workers.MASTER, GuiEvent('countdown')))
@@ -211,7 +212,7 @@ class PyQt5Gui(GuiSkeleton):
         skip = [i for i in self._cfg.getIntList('Picture', 'skip')
                 if 1 <= i and i <= num_pic[0] * num_pic[1]]
         self._setWidget(Frames.CaptureMessage(state.num_picture, *num_pic,
-                                              skip))
+                                              skip, state.gif))
 
     def showAssemble(self, state):
 
