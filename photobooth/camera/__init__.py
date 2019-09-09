@@ -80,6 +80,15 @@ class Camera:
             self._template = Image.new('RGB', self._pic_dims.outputSize,
                                        (255, 255, 255))
 
+        overlay = self._cfg.get('Picture', 'overlay')
+        if len(overlay) > 0:
+            logging.info('Using overlay "{}"'.format(overlay))
+            ov_picture = Image.open(overlay)
+            self._overlay = ov_picture.resize(self._pic_dims.outputSize)
+        else:
+            self._overlay = Image.new('RGBA', self._pic_dims.outputSize,
+                                      (255, 255, 255, 0))
+
         self.setIdle()
         self._comm.send(Workers.MASTER, StateMachine.CameraEvent('ready'))
 
@@ -169,6 +178,7 @@ class Camera:
             shot = Image.open(self._pictures[i])
             resized = shot.resize(self._pic_dims.thumbnailSize)
             picture.paste(resized, self._pic_dims.thumbnailOffset[i])
+        picture.paste(self._overlay, (0, 0), self._overlay)
 
         byte_data = BytesIO()
         picture.save(byte_data, format='jpeg')
