@@ -229,7 +229,9 @@ class Camera:
             picture.append(Image.open(self._pictures[i]))
 
         byte_data_gif = BytesIO()
-        picture[0].save(byte_data_gif, format='GIF', append_images=picture[1:], save_all=True, duration=self._gif_frame_duration, loop=0)
+        picture[0].save(byte_data_gif, format='GIF', append_images=picture[1:],
+                        save_all=True, optimize=True, duration=self._gif_frame_duration,
+                        loop=0)
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('review', byte_data_gif, True))
         self._pictures = []
