@@ -193,6 +193,9 @@ class Camera:
                 byte_data = BytesIO()
                 picture.save(byte_data, format='jpeg')
                 self._pictures.append(byte_data)
+                if self._is_keep_pictures:
+                    self._comm.send(Workers.WORKER,
+                            StateMachine.CameraEvent('capture', byte_data))
             counter += 1
 
         self._comm.send(Workers.MASTER,
