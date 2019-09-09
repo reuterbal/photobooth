@@ -218,18 +218,7 @@ class Camera:
 
         self.setIdle()
 
-        # TODO make something like a "best of" for static output, maybe (depending on output) first, last, in between
-        picture = self._template.copy()
-        for i in range(self._pic_dims.totalNumPictures):
-            shot = Image.open(self._pictures[i])
-            resized = shot.resize(self._pic_dims.thumbnailSize)
-            picture.paste(resized, self._pic_dims.thumbnailOffset[i])
-
-        byte_data = BytesIO()
-        picture.save(byte_data, format='jpeg')
-
         picture = []
-        # TODO adapt to number of frames (scale automatically) and make number of frames configurable
         for i in range(self._gif_num_img_to_take):
             logging.debug("appending frame {}".format(i))
             picture.append(Image.open(self._pictures[i]))
