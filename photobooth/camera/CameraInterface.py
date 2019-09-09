@@ -97,10 +97,6 @@ class CameraInterface:
 
         raise NotImplementedError()
 
-    def getVideo(self):
-
-        raise NotImplementedError()
-
     def _initConfig(self):
 
         self._cfg = configparser.ConfigParser(interpolation=None)

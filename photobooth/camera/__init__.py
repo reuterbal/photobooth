@@ -57,7 +57,7 @@ class Camera:
         self._gif_num_frames = self._cfg.getInt('GIF', 'num_frames')
         self._gif_num_img_to_take = ((self._gif_num_frames - 2) // 2) + 2
         self._gif_frame_duration = self._cfg.getInt('GIF', 'frame_duration')
-        self._gif_wait_s_between_cap = self._cfg.getInt('GIF', 'ms_between_capture') / 1000
+        self._gif_use_nth_capture = self._cfg.getInt('GIF', 'use_nth_capture')
 
         rot_vals = {0: None, 90: Image.ROTATE_90, 180: Image.ROTATE_180,
                     270: Image.ROTATE_270}
@@ -179,29 +179,21 @@ class Camera:
     def captureVideo(self, state):
 
         logging.debug('entering boomerang capture')
-        # TODO handle
         number_pictures = 0
 
-        self.setIdle()
+        # self.setIdle()
+        counter = 0
         while number_pictures < self._gif_num_img_to_take:
-            self.setIdle()  # TODO use other method to get new image (capture is "too" fast)
-            # TODO select preview or picture
             picture = self._cap.getPreview()
-            # picture = self._cap.getPicture()
-            number_pictures += 1
-            if self._rotation is not None:
-                picture = picture.transpose(self._rotation)
-            byte_data = BytesIO()
-            picture.save(byte_data, format='jpeg')
-            self._pictures.append(byte_data)
-
-            self.setActive()
-            # if self._is_keep_pictures:
-            #     self._comm.send(Workers.WORKER,
-            #                     StateMachine.CameraEvent('capture', byte_data))
-            time.sleep(self._gif_wait_s_between_cap)
-            # TODO timing of capture
-        self.setActive()
+            if counter % self._gif_use_nth_capture == 0:
+                # skip images inbetween
+                number_pictures += 1
+                if self._rotation is not None:
+                    picture = picture.transpose(self._rotation)
+                byte_data = BytesIO()
+                picture.save(byte_data, format='jpeg')
+                self._pictures.append(byte_data)
+            counter += 1
 
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('assemble'))
