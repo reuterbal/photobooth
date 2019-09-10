@@ -20,6 +20,7 @@ This is a Python application to build your own photobooth.
 * Support for external buttons and lamps via GPIO interface
 * Rudimentary WebDAV upload functionality (saves pictures to WebDAV storage) and mailer feature (mails pictures to a fixed email address)
 * Theming support using [Qt stylesheets](https://doc.qt.io/qt-5/stylesheet-syntax.html)
+* Ability to take a short Boomerang-GIF (looping forwards and backwards) with the Live preview
 
 ### Screenshots
 Screenshots produced using `CameraDummy` that produces unicolor images.
@@ -38,7 +39,7 @@ Screenshots produced using `CameraDummy` that produces unicolor images.
 * Based on [Python 3](https://www.python.org/), [Pillow](https://pillow.readthedocs.io), and [Qt5](https://www.qt.io/developers/)
 
 ### History
-I started this project for my own wedding in 2015. 
+I started this project for my own wedding in 2015.
 See [Version 0.1](https://github.com/reuterbal/photobooth/tree/v0.1) for the original version.
 Github user [hackerb9](https://github.com/hackerb9/photobooth) forked this version and added a print functionality.
 However, I was not happy with the original software design and the limited options provided by the previously used [pygame](https://www.pygame.org) GUI library and thus abandoned the original version.
