@@ -516,6 +516,7 @@ class Settings(QtWidgets.QFrame):
         tabs.addTab(self.createPhotoboothSettings(), _('Photobooth'))
         tabs.addTab(self.createCameraSettings(), _('Camera'))
         tabs.addTab(self.createPictureSettings(), _('Picture'))
+        tabs.addTab(self.createGIFSettings(), _('GIF'))
         tabs.addTab(self.createStorageSettings(), _('Storage'))
         tabs.addTab(self.createGpioSettings(), _('GPIO'))
         tabs.addTab(self.createPrinterSettings(), _('Printer'))
@@ -776,6 +777,43 @@ class Settings(QtWidgets.QFrame):
         widget.setLayout(layout)
         return widget
 
+    def createGIFSettings(self):
+
+        self.init('GIF')
+
+        num_frames = QtWidgets.QSpinBox()
+        num_frames.setRange(1, 99)
+        num_frames.setValue(self._cfg.getInt('GIF', 'num_frames'))
+        self.add('GIF', 'num_frames', num_frames)
+
+        frame_duration = QtWidgets.QSpinBox()
+        frame_duration.setRange(1, 9999)
+        frame_duration.setValue(self._cfg.getInt('GIF', 'frame_duration'))
+        self.add('GIF', 'frame_duration', frame_duration)
+
+        use_nth_capture = QtWidgets.QSpinBox()
+        use_nth_capture.setRange(1, 9999)
+        use_nth_capture.setValue(self._cfg.getInt('GIF', 'use_nth_capture'))
+        self.add('GIF', 'use_nth_capture', use_nth_capture)
+
+        lay_num = QtWidgets.QHBoxLayout()
+        lay_num.addWidget(num_frames)
+
+        lay_duration = QtWidgets.QHBoxLayout()
+        lay_duration.addWidget(frame_duration)
+
+        lay_use_nth = QtWidgets.QHBoxLayout()
+        lay_use_nth.addWidget(use_nth_capture)
+
+        layout = QtWidgets.QFormLayout()
+        layout.addRow(_('Number of frames in final GIF:'), lay_num)
+        layout.addRow(_('Duration of one frame in final GIF:'), lay_duration)
+        layout.addRow(_('Use every nth image from capture:'), lay_use_nth)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        return widget
+
     def createStorageSettings(self):
 
         self.init('Storage')
@@ -810,6 +848,7 @@ class Settings(QtWidgets.QFrame):
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
+
 
     def createGpioSettings(self):
 
@@ -1058,6 +1097,10 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Picture', 'skip', self.get('Picture', 'skip').text())
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())
+
+        self._cfg.set('GIF', 'num_frames', self.get('GIF', 'num_frames').text())
+        self._cfg.set('GIF', 'frame_duration', self.get('GIF', 'frame_duration').text())
+        self._cfg.set('GIF', 'use_nth_capture', self.get('GIF', 'use_nth_capture').text())
 
         self._cfg.set('Storage', 'basedir',
                       self.get('Storage', 'basedir').text())
