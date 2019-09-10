@@ -227,10 +227,8 @@ class GIFMessage(QtWidgets.QFrame):
         self.movie.setCacheMode(QtGui.QMovie.CacheAll)
         self.movie_screen.setMovie(self.movie)
         self.movie_screen.setScaledContents(False)
+        logging.debug("Return value of movie.isValid: {}".format(self.movie.isValid()))
         # self.movie.setBackgroundColor(Qt.QColor(0, 0, 255, 127))
-        # print(self.movie.isValid())
-        # print(self.movie.loopCount())
-        # print(self.movie.state())
         self.movie.start()
 
 
