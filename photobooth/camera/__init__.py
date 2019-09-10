@@ -18,7 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import time
 
 from PIL import Image, ImageOps
 from io import BytesIO
