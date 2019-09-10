@@ -209,18 +209,17 @@ class GIFMessage(QtWidgets.QFrame):
 
     def initFrame(self, gif):
 
+        # make sure that we are at start of stream and load into movie
         gif.seek(0)
         self.a = QtCore.QByteArray.fromRawData(gif.getvalue())
         self.b = QtCore.QBuffer(self.a)
         self.b.open(QtCore.QIODevice.ReadOnly)
         self.movie = QtGui.QMovie(self.b, b'gif', self)
-        # self.movie = QtGui.QMovie('../photos/2019-09-03/photobooth00049.jpg.gif')
 
         size = self.movie.scaledSize()
         self.setGeometry(200, 200, size.width(), size.height())
         self.movie_screen = QtWidgets.QLabel('GIF')
         self.movie_screen.setSizePolicy(Qt.QSizePolicy.MinimumExpanding, Qt.QSizePolicy.MinimumExpanding)
-        #self.movie_screen.setAlignment(Qt.AlignCenter)
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(self.movie_screen)
         self.setLayout(lay)
@@ -228,7 +227,6 @@ class GIFMessage(QtWidgets.QFrame):
         self.movie_screen.setMovie(self.movie)
         self.movie_screen.setScaledContents(False)
         logging.debug("Return value of movie.isValid: {}".format(self.movie.isValid()))
-        # self.movie.setBackgroundColor(Qt.QColor(0, 0, 255, 127))
         self.movie.start()
 
 
