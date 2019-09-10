@@ -515,16 +515,22 @@ class ReviewState(State):
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'postprocess':
-            context.state = PostprocessState()
+            context.state = PostprocessState(self.gif)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class PostprocessState(State):
 
-    def __init__(self):
+    def __init__(self, gif=None):
 
         super().__init__()
+        self._gif = gif
+
+    @property
+    def gif(self):
+
+        return self._gif
 
     def handleEvent(self, event, context):
 

@@ -228,7 +228,7 @@ class PyQt5Gui(GuiSkeleton):
                 lambda: self._comm.send(Workers.MASTER, GuiEvent('postprocess')))
             picture = Image.open(state.picture)
             self._picture = ImageQt.ImageQt(picture)
-            self._postprocess.do(self._picture)
+            self._postprocess.do(self._picture, gif=True)
         else:
             picture = Image.open(state.picture)
             self._picture = ImageQt.ImageQt(picture)
@@ -241,7 +241,7 @@ class PyQt5Gui(GuiSkeleton):
 
     def showPostprocess(self, state):
 
-        tasks = self._postprocess.get(self._picture)
+        tasks = self._postprocess.get(self._picture, state.gif)
         postproc_t = self._cfg.getInt('Photobooth', 'postprocess_time')
 
         Frames.PostprocessMessage(
