@@ -53,6 +53,8 @@ class PyQt5Gui(GuiSkeleton):
         self._picture = None
         self._postprocess = GuiPostprocessor(self._cfg)
 
+        self._is_gif_enabled = self._cfg.getBool('GIF', 'enable')
+
     def run(self):
 
         exit_code = self._app.exec_()
@@ -169,9 +171,13 @@ class PyQt5Gui(GuiSkeleton):
 
         self._enableEscape()
         self._enableTrigger()
-        self._setWidget(Frames.IdleMessage(
-            lambda: self._comm.send(Workers.MASTER, GuiEvent('trigger')),
-            lambda: self._comm.send(Workers.MASTER, GuiEvent('triggerVideo'))))
+        if self._is_gif_enabled:
+            self._setWidget(Frames.IdleMessage(
+                lambda: self._comm.send(Workers.MASTER, GuiEvent('trigger')),
+                lambda: self._comm.send(Workers.MASTER, GuiEvent('triggerVideo'))))
+        else:
+            self._setWidget(Frames.IdleMessage(
+            lambda: self._comm.send(Workers.MASTER, GuiEvent('trigger'))))
 
     def showGreeter(self, state):
 

@@ -80,7 +80,7 @@ class Welcome(QtWidgets.QFrame):
 
 class IdleMessage(QtWidgets.QFrame):
 
-    def __init__(self, trigger_action, trigger_boomerang_action):
+    def __init__(self, trigger_action, trigger_boomerang_action=None):
 
         super().__init__()
         self.setObjectName('IdleMessage')
@@ -91,18 +91,20 @@ class IdleMessage(QtWidgets.QFrame):
 
         self.initFrame(trigger_action, trigger_boomerang_action)
 
-    def initFrame(self, trigger_action, trigger_boomerang_action):
+    def initFrame(self, trigger_action, trigger_boomerang_action=None):
 
         lbl = QtWidgets.QLabel(self._message_label)
         btn = QtWidgets.QPushButton(self._message_button)
-        btn_boomerang = QtWidgets.QPushButton(self._message_boomerang)
         btn.clicked.connect(trigger_action)
-        btn_boomerang.clicked.connect(trigger_boomerang_action)
+        if trigger_boomerang_action:
+            btn_boomerang = QtWidgets.QPushButton(self._message_boomerang)
+            btn_boomerang.clicked.connect(trigger_boomerang_action)
 
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(lbl)
         lay.addWidget(btn)
-        lay.addWidget(btn_boomerang)
+        if trigger_boomerang_action:
+            lay.addWidget(btn_boomerang)
         self.setLayout(lay)
 
 
@@ -779,6 +781,10 @@ class Settings(QtWidgets.QFrame):
 
         self.init('GIF')
 
+        enable = QtWidgets.QCheckBox()
+        enable.setChecked(self._cfg.getBool('GIF', 'enable'))
+        self.add('GIF', 'enable', enable)
+
         num_frames = QtWidgets.QSpinBox()
         num_frames.setRange(1, 99)
         num_frames.setValue(self._cfg.getInt('GIF', 'num_frames'))
@@ -794,6 +800,9 @@ class Settings(QtWidgets.QFrame):
         use_nth_capture.setValue(self._cfg.getInt('GIF', 'use_nth_capture'))
         self.add('GIF', 'use_nth_capture', use_nth_capture)
 
+        lay_enable = QtWidgets.QHBoxLayout()
+        lay_enable.addWidget(enable)
+
         lay_num = QtWidgets.QHBoxLayout()
         lay_num.addWidget(num_frames)
 
@@ -804,6 +813,7 @@ class Settings(QtWidgets.QFrame):
         lay_use_nth.addWidget(use_nth_capture)
 
         layout = QtWidgets.QFormLayout()
+        layout.addRow(_('Enable:'), lay_enable)
         layout.addRow(_('Number of frames in final GIF:'), lay_num)
         layout.addRow(_('Duration of one frame in final GIF:'), lay_duration)
         layout.addRow(_('Use every nth image from capture:'), lay_use_nth)
@@ -1096,6 +1106,7 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())
 
+        self._cfg.set('GIF', 'enable', str(self.get('GIF', 'enable').isChecked()))
         self._cfg.set('GIF', 'num_frames', self.get('GIF', 'num_frames').text())
         self._cfg.set('GIF', 'frame_duration', self.get('GIF', 'frame_duration').text())
         self._cfg.set('GIF', 'use_nth_capture', self.get('GIF', 'use_nth_capture').text())
