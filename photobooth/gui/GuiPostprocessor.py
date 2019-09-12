@@ -55,9 +55,9 @@ class GuiPostprocessor:
     def do(self, picture, gif=None):
 
         if gif:
-            tasklist = self._get_task_list_gif
+            tasklist = self._do_task_list_gif
         else:
-            tasklist = self._get_task_list
+            tasklist = self._do_task_list
         for task in tasklist:
             task.get(picture).action()
 
