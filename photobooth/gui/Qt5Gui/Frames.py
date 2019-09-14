@@ -25,6 +25,7 @@ import sys
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5 import Qt
 
 from .. import modules
 from ... import camera
@@ -79,31 +80,37 @@ class Welcome(QtWidgets.QFrame):
 
 class IdleMessage(QtWidgets.QFrame):
 
-    def __init__(self, trigger_action):
+    def __init__(self, trigger_action, trigger_boomerang_action=None):
 
         super().__init__()
         self.setObjectName('IdleMessage')
 
         self._message_label = _('Hit the')
         self._message_button = _('Button!')
+        self._message_boomerang = _('Boomerang!')
 
-        self.initFrame(trigger_action)
+        self.initFrame(trigger_action, trigger_boomerang_action)
 
-    def initFrame(self, trigger_action):
+    def initFrame(self, trigger_action, trigger_boomerang_action=None):
 
         lbl = QtWidgets.QLabel(self._message_label)
         btn = QtWidgets.QPushButton(self._message_button)
         btn.clicked.connect(trigger_action)
+        if trigger_boomerang_action:
+            btn_boomerang = QtWidgets.QPushButton(self._message_boomerang)
+            btn_boomerang.clicked.connect(trigger_boomerang_action)
 
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(lbl)
         lay.addWidget(btn)
+        if trigger_boomerang_action:
+            lay.addWidget(btn_boomerang)
         self.setLayout(lay)
 
 
 class GreeterMessage(QtWidgets.QFrame):
 
-    def __init__(self, num_x, num_y, skip, countdown_action):
+    def __init__(self, num_x, num_y, skip, countdown_action, boomerang=None):
 
         super().__init__()
         self.setObjectName('GreeterMessage')
@@ -112,7 +119,9 @@ class GreeterMessage(QtWidgets.QFrame):
         self._text_button = _('Start countdown')
 
         num_pictures = max(num_x * num_y - len(skip), 1)
-        if num_pictures > 1:
+        if boomerang:
+            self._text_label = _('for a Boomerang...')
+        elif num_pictures > 1:
             self._text_label = _('for {} pictures...').format(num_pictures)
         else:
             self._text_label = ''
@@ -138,13 +147,15 @@ class GreeterMessage(QtWidgets.QFrame):
 
 class CaptureMessage(QtWidgets.QFrame):
 
-    def __init__(self, num_picture, num_x, num_y, skip):
+    def __init__(self, num_picture, num_x, num_y, skip, boomerang=None):
 
         super().__init__()
         self.setObjectName('PoseMessage')
 
         num_pictures = max(num_x * num_y - len(skip), 1)
-        if num_pictures > 1:
+        if boomerang:
+            self._text = _('Taking a Boomerang...')
+        elif num_pictures > 1:
             self._text = _('Picture {} of {}...').format(num_picture,
                                                          num_pictures)
         else:
@@ -187,6 +198,38 @@ class PictureMessage(QtWidgets.QFrame):
         painter = QtGui.QPainter(self)
         self._paintPicture(painter)
         painter.end()
+
+
+class GIFMessage(QtWidgets.QFrame):
+
+    def __init__(self, gif):
+
+        super().__init__()
+        self.setObjectName('GIFMessage')
+
+        self.initFrame(gif)
+
+    def initFrame(self, gif):
+
+        # make sure that we are at start of stream and load into movie
+        gif.seek(0)
+        self.a = QtCore.QByteArray.fromRawData(gif.getvalue())
+        self.b = QtCore.QBuffer(self.a)
+        self.b.open(QtCore.QIODevice.ReadOnly)
+        self.movie = QtGui.QMovie(self.b, b'gif', self)
+
+        size = self.movie.scaledSize()
+        self.setGeometry(200, 200, size.width(), size.height())
+        self.movie_screen = QtWidgets.QLabel('GIF')
+        self.movie_screen.setSizePolicy(Qt.QSizePolicy.MinimumExpanding, Qt.QSizePolicy.MinimumExpanding)
+        lay = QtWidgets.QVBoxLayout()
+        lay.addWidget(self.movie_screen)
+        self.setLayout(lay)
+        self.movie.setCacheMode(QtGui.QMovie.CacheAll)
+        self.movie_screen.setMovie(self.movie)
+        self.movie_screen.setScaledContents(False)
+        logging.debug("Return value of movie.isValid: {}".format(self.movie.isValid()))
+        self.movie.start()
 
 
 class WaitMessage(QtWidgets.QFrame):
@@ -473,6 +516,7 @@ class Settings(QtWidgets.QFrame):
         tabs.addTab(self.createPhotoboothSettings(), _('Photobooth'))
         tabs.addTab(self.createCameraSettings(), _('Camera'))
         tabs.addTab(self.createPictureSettings(), _('Picture'))
+        tabs.addTab(self.createGIFSettings(), _('GIF'))
         tabs.addTab(self.createStorageSettings(), _('Storage'))
         tabs.addTab(self.createGpioSettings(), _('GPIO'))
         tabs.addTab(self.createPrinterSettings(), _('Printer'))
@@ -733,6 +777,51 @@ class Settings(QtWidgets.QFrame):
         widget.setLayout(layout)
         return widget
 
+    def createGIFSettings(self):
+
+        self.init('GIF')
+
+        enable = QtWidgets.QCheckBox()
+        enable.setChecked(self._cfg.getBool('GIF', 'enable'))
+        self.add('GIF', 'enable', enable)
+
+        num_frames = QtWidgets.QSpinBox()
+        num_frames.setRange(1, 99)
+        num_frames.setValue(self._cfg.getInt('GIF', 'num_frames'))
+        self.add('GIF', 'num_frames', num_frames)
+
+        frame_duration = QtWidgets.QSpinBox()
+        frame_duration.setRange(1, 9999)
+        frame_duration.setValue(self._cfg.getInt('GIF', 'frame_duration'))
+        self.add('GIF', 'frame_duration', frame_duration)
+
+        use_nth_capture = QtWidgets.QSpinBox()
+        use_nth_capture.setRange(1, 9999)
+        use_nth_capture.setValue(self._cfg.getInt('GIF', 'use_nth_capture'))
+        self.add('GIF', 'use_nth_capture', use_nth_capture)
+
+        lay_enable = QtWidgets.QHBoxLayout()
+        lay_enable.addWidget(enable)
+
+        lay_num = QtWidgets.QHBoxLayout()
+        lay_num.addWidget(num_frames)
+
+        lay_duration = QtWidgets.QHBoxLayout()
+        lay_duration.addWidget(frame_duration)
+
+        lay_use_nth = QtWidgets.QHBoxLayout()
+        lay_use_nth.addWidget(use_nth_capture)
+
+        layout = QtWidgets.QFormLayout()
+        layout.addRow(_('Enable:'), lay_enable)
+        layout.addRow(_('Number of frames in final GIF:'), lay_num)
+        layout.addRow(_('Duration of one frame in final GIF:'), lay_duration)
+        layout.addRow(_('Use every nth image from capture:'), lay_use_nth)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        return widget
+
     def createStorageSettings(self):
 
         self.init('Storage')
@@ -767,6 +856,7 @@ class Settings(QtWidgets.QFrame):
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
+
 
     def createGpioSettings(self):
 
@@ -1015,6 +1105,11 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Picture', 'skip', self.get('Picture', 'skip').text())
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())
+
+        self._cfg.set('GIF', 'enable', str(self.get('GIF', 'enable').isChecked()))
+        self._cfg.set('GIF', 'num_frames', self.get('GIF', 'num_frames').text())
+        self._cfg.set('GIF', 'frame_duration', self.get('GIF', 'frame_duration').text())
+        self._cfg.set('GIF', 'use_nth_capture', self.get('GIF', 'use_nth_capture').text())
 
         self._cfg.set('Storage', 'basedir',
                       self.get('Storage', 'basedir').text())

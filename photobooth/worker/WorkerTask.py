@@ -24,6 +24,6 @@ class WorkerTask:
 
         assert not kwargs
 
-    def do(self, picture):
+    def do(self, picture, filename, gif=None):
 
         raise NotImplementedError()

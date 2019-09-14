@@ -28,7 +28,9 @@ class GuiPostprocessor:
         super().__init__()
 
         self._get_task_list = []
+        self._get_task_list_gif = []
         self._do_task_list = []
+        self._do_task_list_gif = []
 
         if config.getBool('Printer', 'enable'):
             module = config.get('Printer', 'module')
@@ -42,13 +44,21 @@ class GuiPostprocessor:
                 self._do_task_list.append(
                     PrintPostprocess(module, paper_size, pdf))
 
-    def get(self, picture):
+    def get(self, picture, gif=None):
 
-        return [task.get(picture) for task in self._get_task_list]
+        if gif:
+            tasklist = self._get_task_list_gif
+        else:
+            tasklist = self._get_task_list
+        return [task.get(picture) for task in tasklist]
 
-    def do(self, picture):
+    def do(self, picture, gif=None):
 
-        for task in self._do_task_list:
+        if gif:
+            tasklist = self._do_task_list_gif
+        else:
+            tasklist = self._do_task_list
+        for task in tasklist:
             task.get(picture).action()
 
 
@@ -109,4 +119,4 @@ class PrintPostprocess(PostprocessTask):
 
     def get(self, picture):
 
-        return PostprocessItem('Print', lambda: self._printer.print(picture))
+        return PostprocessItem(_('Print'), lambda: self._printer.print(picture))

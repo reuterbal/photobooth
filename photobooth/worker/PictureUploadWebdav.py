@@ -38,7 +38,7 @@ class PictureUploadWebdav(WorkerTask):
         else:
             self._auth = None
 
-    def do(self, picture, filename):
+    def do(self, picture, filename, gif=None):
 
         url = self._baseurl + '/' + Path(filename).name
         logging.info('Uploading picture as %s', url)
