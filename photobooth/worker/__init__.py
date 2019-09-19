@@ -43,8 +43,8 @@ class Worker:
         self._pic_list = PictureList(basename)
 
         # Picture list for individual shots
-        path = os.path.join(config.get('Storage', 'basedir'),
-                            config.get('Storage', 'basename') + '_shot_')
+        path = os.path.join(config.get('Storage', 'basedir'),'src')
+        path = os.path.join(path,config.get('Storage', 'basename') + '_shot_')
         basename = strftime(path, localtime())
         self._shot_list = PictureList(basename)
 
@@ -71,6 +71,7 @@ class Worker:
         self._picture_tasks = []
 
         # PictureSaver for single shots
+		
         self._picture_tasks.append(PictureSaver(self._shot_list.basename))
 
     def run(self):
