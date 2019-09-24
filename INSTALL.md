@@ -149,3 +149,9 @@ You can trigger the countdown via space bar or an external button.
 To exit the application, use the Esc-key or an external button.
 
 You can directly startup the photobooth to the idle screen (skipping the welcome screen) by appending the parameter `--run`.
+
+AUTOSTART: 
+vim ~/.config/lxsession/LXDE-pi/autostart
+@lxterminal -e /home/pi/PB/autostart.sh
+
+in autostart.sh you can enter "sleep 2" for some delay while starting.
