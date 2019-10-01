@@ -23,6 +23,7 @@ import os
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5 import QtMultimedia
 
 from PIL import Image, ImageQt
 
@@ -54,6 +55,7 @@ class PyQt5Gui(GuiSkeleton):
         self._postprocess = GuiPostprocessor(self._cfg)
 
         self._is_gif_enabled = self._cfg.getBool('GIF', 'enable')
+        self._audio = AudioHelper(self._cfg)
 
     def run(self):
 
@@ -203,7 +205,8 @@ class PyQt5Gui(GuiSkeleton):
         countdown_time = self._cfg.getInt('Photobooth', 'countdown_time')
         self._setWidget(Frames.CountdownMessage(
             countdown_time,
-            lambda: self._comm.send(Workers.MASTER, GuiEvent('capture'))))
+            lambda: self._comm.send(Workers.MASTER, GuiEvent('capture')),
+            self._audio))
 
     def updateCountdown(self, event):
 
@@ -319,3 +322,40 @@ class PyQt5MainWindow(QtWidgets.QMainWindow):
     def keyPressEvent(self, event):
 
         self._handle_key(event)
+
+
+class AudioHelper(object):
+
+    def __init__(self, config, *args, **kwargs):
+
+        self._cfg = config
+
+        self._do_play_audio = self._cfg.getBool('Audio', 'enable')
+
+        if self._do_play_audio:
+            self.audio_beep = QtMultimedia.QSoundEffect()
+            self.audio_shutter = QtMultimedia.QSoundEffect()
+            url_beep = QtCore.QUrl.fromLocalFile(self._cfg.get('Audio', 'beep_wav'))
+            self.audio_beep.setSource(url_beep)
+            url_shutter = QtCore.QUrl.fromLocalFile(self._cfg.get('Audio', 'shutter_wav'))
+            self.audio_shutter.setSource(url_shutter)
+            # play only once
+            self.audio_beep.setLoopCount(0)
+            self.audio_shutter.setLoopCount(0)
+            # set volume
+            volume = self._cfg.getFloat('Audio', 'volume')
+            self.audio_beep.setVolume(volume)
+            self.audio_shutter.setVolume(volume)
+
+    @property
+    def do_play_audio(self):
+
+        return self._do_play_audio
+
+    def beep(self):
+        if self._do_play_audio:
+            self.audio_beep.play()
+
+    def shutter(self):
+        if self._do_play_audio:
+            self.audio_shutter.play()
