@@ -25,6 +25,7 @@ import sys
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5 import QtMultimedia
 
 from .. import modules
 from ... import camera
@@ -32,6 +33,7 @@ from ... import printer
 
 from . import Widgets
 from . import styles
+from . import PyQt5Gui
 
 
 class Welcome(QtWidgets.QFrame):
@@ -231,15 +233,17 @@ class WaitMessage(QtWidgets.QFrame):
 
 class CountdownMessage(QtWidgets.QFrame):
 
-    def __init__(self, time, action):
+    def __init__(self, time, action, audio):
 
         super().__init__()
         self.setObjectName('CountdownMessage')
 
         self._step_size = 50
         self._value = time * (1000 // self._step_size)
+        self._bar_value_old_int = self._value / (1000 // self._step_size)
         self._action = action
         self._picture = None
+        self._audio = audio
 
         self._initProgressBar(time)
 
@@ -274,6 +278,11 @@ class CountdownMessage(QtWidgets.QFrame):
     def _updateProgressBar(self):
 
         self._bar.value = self._value / (1000 // self._step_size)
+        if self._audio.do_play_audio:
+            diff = self._bar_value_old_int - int(self._bar.value)
+            if diff > 0:
+                self._audio.beep()
+            self._bar_value_old_int = int(self._bar.value)
 
     def showEvent(self, event):
 
@@ -285,6 +294,7 @@ class CountdownMessage(QtWidgets.QFrame):
 
         if self.value == 0:
             self.killTimer(self._timer)
+            self._audio.shutter()
             self._action()
         else:
             self._updateProgressBar()
