@@ -311,21 +311,22 @@ class AudioHelper(object):
 
     def __init__(self, config, *args, **kwargs):
 
-        self._do_play_audio = True
+        self._cfg = config
+
+        self._do_play_audio = self._cfg.getBool('Audio', 'enable')
 
         if self._do_play_audio:
             self.audio_beep = QtMultimedia.QSoundEffect()
             self.audio_shutter = QtMultimedia.QSoundEffect()
-            url = QtCore.QUrl.fromLocalFile('./supplementals/audio/1khz_peep.wav')
-            self.audio_beep.setSource(url)
-            url = QtCore.QUrl.fromLocalFile('./supplementals/audio/1khz_peep.wav')
-            self.audio_shutter.setSource(url)
+            url_beep = QtCore.QUrl.fromLocalFile(self._cfg.get('Audio', 'beep_wav'))
+            self.audio_beep.setSource(url_beep)
+            url_shutter = QtCore.QUrl.fromLocalFile(self._cfg.get('Audio', 'shutter_wav'))
+            self.audio_shutter.setSource(url_shutter)
             # play only once
-            loop_count = 0
-            self.audio_beep.setLoopCount(loop_count)
-            self.audio_shutter.setLoopCount(loop_count)
-            # full volume
-            volume = 1.0
+            self.audio_beep.setLoopCount(0)
+            self.audio_shutter.setLoopCount(0)
+            # set volume
+            volume = self._cfg.getFloat('Audio', 'volume')
             self.audio_beep.setVolume(volume)
             self.audio_shutter.setVolume(volume)
 
