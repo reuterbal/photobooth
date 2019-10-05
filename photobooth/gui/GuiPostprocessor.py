@@ -108,7 +108,6 @@ class PrintPostprocess(PostprocessTask):
         Printer = lookup_and_import(printer.modules, printer_module, 'printer')
         self._printer = Printer(paper_size, is_pdf)
 
-
     def get(self, picture):
 
         return PostprocessItem('Print', lambda: self._printer.print(picture))
