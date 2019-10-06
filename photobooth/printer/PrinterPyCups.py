@@ -37,7 +37,9 @@ from . import Printer
 
 class PrinterPyCups(Printer):
 
-    def __init__(self, page_size, print_pdf=False):
+    def __init__(self, page_size, num_prints, print_pdf=False):
+
+        self.num_prints = num_prints
 
         self._conn = cups.Connection() if cups else None
 
@@ -57,10 +59,12 @@ class PrinterPyCups(Printer):
 
     def print(self, picture):
 
-        if self._conn is not None:
-            if isinstance(picture, ImageQt.ImageQt):
-                picture.save(self._tmp_filename)
-            else:
-                picture.save(self._tmp_filename, format='JPEG')
-            self._conn.printFile(self._printer, self._tmp_filename,
-                                 "photobooth", {})
+        for n in range(num_prints):
+            logging.info('Printing picture, {} of {}'.format(n + 1, self.num_prints))
+            if self._conn is not None:
+                if isinstance(picture, ImageQt.ImageQt):
+                    picture.save(self._tmp_filename)
+                else:
+                    picture.save(self._tmp_filename, format='JPEG')
+                self._conn.printFile(self._printer, self._tmp_filename,
+                                    "photobooth", {})

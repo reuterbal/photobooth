@@ -856,12 +856,18 @@ class Settings(QtWidgets.QFrame):
         lay_size.addWidget(QtWidgets.QLabel('x'))
         lay_size.addWidget(height)
 
+        num_prints = QtWidgets.QSpinBox()
+        num_prints.setRange(1, 99)
+        num_prints.setValue(self._cfg.getInt('Printer', 'num_prints'))
+        self.add('Printer', 'num_prints', num_prints)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Enable printing:'), enable)
         layout.addRow(_('Module:'), module)
         layout.addRow(_('Print to PDF (for debugging):'), pdf)
         layout.addRow(_('Ask for confirmation before printing:'), confirmation)
         layout.addRow(_('Paper size [mm]:'), lay_size)
+        layout.addRow(_('Number of prints from one image:'), num_prints)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -1048,6 +1054,8 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Printer', 'width', self.get('Printer', 'width').text())
         self._cfg.set('Printer', 'height',
                       self.get('Printer', 'height').text())
+        self._cfg.set('Printer', 'num_prints',
+                      self.get('Printer', 'num_prints').text())
 
         self._cfg.set('Mailer', 'enable',
                       str(self.get('Mailer', 'enable').isChecked()))
