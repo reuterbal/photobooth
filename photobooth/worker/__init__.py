@@ -43,8 +43,13 @@ class Worker:
         self._pic_list = PictureList(basename)
 
         # Picture list for individual shots
-        path = os.path.join(config.get('Storage', 'basedir'),
-                            config.get('Storage', 'basename') + '_shot_')
+        single_extra = config.getBool('Storage', 'single_extra')
+        if single_extra:
+            path = os.path.join(config.get('Storage', 'basedir_single'),
+                                config.get('Storage', 'basename') + '_shot_')
+        else:
+            path = os.path.join(config.get('Storage', 'basedir'),
+                                config.get('Storage', 'basename') + '_shot_')
         basename = strftime(path, localtime())
         self._shot_list = PictureList(basename)
 
