@@ -863,23 +863,45 @@ class Settings(QtWidgets.QFrame):
         keep_pictures.setChecked(self._cfg.getBool('Storage', 'keep_pictures'))
         self.add('Storage', 'keep_pictures', keep_pictures)
 
-        def directory_dialog():
+        single_extra = QtWidgets.QCheckBox()
+        single_extra.setChecked(self._cfg.getBool('Storage', 'single_extra'))
+        self.add('Storage', 'single_extra', single_extra)
+
+        basedir_single = QtWidgets.QLineEdit(self._cfg.get('Storage', 'basedir_single'))
+        self.add('Storage', 'basedir_single', basedir_single)
+
+        def directory_dialog(target):
             dialog = QtWidgets.QFileDialog.getExistingDirectory
-            basedir.setText(dialog(self, _('Select directory'),
+            target.setText(dialog(self, _('Select directory'),
                                    os.path.expanduser('~'),
                                    QtWidgets.QFileDialog.ShowDirsOnly))
 
+        def directory_dialog_basedir():
+            directory_dialog(basedir)
+
         dir_button = QtWidgets.QPushButton(_('Select directory'))
-        dir_button.clicked.connect(directory_dialog)
+        dir_button.clicked.connect(directory_dialog_basedir)
 
         lay_dir = QtWidgets.QHBoxLayout()
         lay_dir.addWidget(basedir)
         lay_dir.addWidget(dir_button)
 
+        def directory_dialog_single():
+            directory_dialog(basedir_single)
+
+        dir_button_single = QtWidgets.QPushButton(_('Select directory'))
+        dir_button_single.clicked.connect(directory_dialog_single)
+
+        lay_dir_single = QtWidgets.QHBoxLayout()
+        lay_dir_single.addWidget(basedir_single)
+        lay_dir_single.addWidget(dir_button_single)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Output directory (strftime possible):'), lay_dir)
         layout.addRow(_('Basename of files (strftime possible):'), basename)
         layout.addRow(_('Keep single shots:'), keep_pictures)
+        layout.addRow(_('Store single shots in different directory:'), single_extra)
+        layout.addRow(_('Directory for single shots (strftime possible):'), lay_dir_single)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -1208,6 +1230,10 @@ class Settings(QtWidgets.QFrame):
                       self.get('Storage', 'basename').text())
         self._cfg.set('Storage', 'keep_pictures',
                       str(self.get('Storage', 'keep_pictures').isChecked()))
+        self._cfg.set('Storage', 'single_extra',
+                      str(self.get('Storage', 'single_extra').isChecked()))
+        self._cfg.set('Storage', 'basedir_single',
+                      self.get('Storage', 'basedir_single').text())
 
         self._cfg.set('Gpio', 'enable',
                       str(self.get('Gpio', 'enable').isChecked()))
