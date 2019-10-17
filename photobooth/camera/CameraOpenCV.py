@@ -64,4 +64,5 @@ class CameraOpenCV(CameraInterface):
 
         # OpenCV yields frames in BGR format, conversion to RGB necessary.
         # (See https://stackoverflow.com/a/32270308)
-        return Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        img = cv2.resize(frame, (0,0), fx = 3, fy = 3)
+        return Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))

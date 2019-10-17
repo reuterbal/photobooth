@@ -673,6 +673,13 @@ class Settings(QtWidgets.QFrame):
         inner_dist_y.setValue(self._cfg.getInt('Picture', 'inner_dist_y'))
         self.add('Picture', 'inner_dist_y', inner_dist_y)
 
+
+        top_border_dist = QtWidgets.QSpinBox()
+        top_border_dist.setRange(0, 999999)
+        top_border_dist.setValue(self._cfg.getInt('Picture', 'top_border_dist'))
+        self.add('Picture', 'top_border_dist', top_border_dist)
+
+
         outer_dist_x = QtWidgets.QSpinBox()
         outer_dist_x.setRange(0, 999999)
         outer_dist_x.setValue(self._cfg.getInt('Picture', 'outer_dist_x'))
@@ -709,6 +716,10 @@ class Settings(QtWidgets.QFrame):
         lay_outer_dist.addWidget(QtWidgets.QLabel('x'))
         lay_outer_dist.addWidget(outer_dist_y)
 
+        lay_border_dist = QtWidgets.QHBoxLayout()
+        lay_border_dist.addWidget(top_border_dist)
+
+
         def file_dialog():
             dialog = QtWidgets.QFileDialog.getOpenFileName
             bg.setText(dialog(self, _('Select file'), os.path.expanduser('~'),
@@ -726,6 +737,7 @@ class Settings(QtWidgets.QFrame):
         layout.addRow(_('Size of assembled picture [px]:'), lay_size)
         layout.addRow(_('Min. distance between shots [px]:'), lay_inner_dist)
         layout.addRow(_('Min. distance border to shots [px]:'), lay_outer_dist)
+        layout.addRow(_('Top border [px]:'), lay_border_dist)
         layout.addRow(_('Skip pictures:'), skip)
         layout.addRow(_('Background image:'), lay_file)
 
@@ -1006,6 +1018,9 @@ class Settings(QtWidgets.QFrame):
                       self.get('Picture', 'size_y').text())
         self._cfg.set('Picture', 'inner_dist_x',
                       self.get('Picture', 'inner_dist_x').text())
+        self._cfg.set('Picture', 'top_border_dist',
+                      self.get('Picture', 'top_border_dist').text())
+
         self._cfg.set('Picture', 'inner_dist_y',
                       self.get('Picture', 'inner_dist_y').text())
         self._cfg.set('Picture', 'outer_dist_x',

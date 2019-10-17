@@ -65,6 +65,18 @@ class Camera:
             'with' if self._is_preview else 'without'))
 
         test_picture = self._cap.getPicture()
+        width, height = test_picture.size  # Get dimensions
+
+        new_width = height
+        new_height = height
+
+        left = (width - new_width) / 2
+        top = (height - new_height) / 2
+        right = (width + new_width) / 2
+        bottom = (height + new_height) / 2
+
+            # Crop the center of the image
+        test_picture = test_picture.crop((left, top, right, bottom))
         if self._rotation is not None:
             test_picture = test_picture.transpose(self._rotation)
 
@@ -127,12 +139,9 @@ class Camera:
     def capturePreview(self):
 
         if self._is_preview:
+            i = 0
             while self._comm.empty(Workers.CAMERA):
                 picture = self._cap.getPreview()
-                if self._rotation is not None:
-                    picture = picture.transpose(self._rotation)
-                picture = picture.resize(self._pic_dims.previewSize)
-                picture = ImageOps.mirror(picture)
                 byte_data = BytesIO()
                 picture.save(byte_data, format='jpeg')
                 self._comm.send(Workers.GUI,
@@ -167,6 +176,18 @@ class Camera:
         picture = self._template.copy()
         for i in range(self._pic_dims.totalNumPictures):
             shot = Image.open(self._pictures[i])
+            width, height = shot.size  # Get dimensions
+
+            new_width = height
+            new_height = height
+
+            left = (width - new_width) / 2
+            top = (height - new_height) / 2
+            right = (width + new_width) / 2
+            bottom = (height + new_height) / 2
+
+            # Crop the center of the image
+            shot = shot.crop((left, top, right, bottom))
             resized = shot.resize(self._pic_dims.thumbnailSize)
             picture.paste(resized, self._pic_dims.thumbnailOffset[i])
 

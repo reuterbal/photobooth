@@ -106,7 +106,7 @@ class CameraGphoto2(CameraInterface):
         logging.info(config_txt)
 
     def _changeConfig(self, state):
-
+        import time
         if self.config[state]:
             config = self._cap.get_config()
 
@@ -120,6 +120,7 @@ class CameraGphoto2(CameraInterface):
             except BaseException as e:
                 logging.warn(('CameraGphoto2: Applying config for state '
                               '"{}" failed: {}').format(state, e))
+                self._cap.set_config(config)
 
     def setActive(self):
 
@@ -141,4 +142,6 @@ class CameraGphoto2(CameraInterface):
         camera_file = self._cap.file_get(file_path.folder, file_path.name,
                                          gp.GP_FILE_TYPE_NORMAL)
         file_data = camera_file.get_data_and_size()
-        return Image.open(io.BytesIO(file_data))
+        im = Image.open(io.BytesIO(file_data))
+
+        return im

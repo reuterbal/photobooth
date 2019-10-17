@@ -37,6 +37,9 @@ class PictureDimensions:
         self._outer_distance = (config.getInt('Picture', 'outer_dist_x'),
                                 config.getInt('Picture', 'outer_dist_y'))
 
+        self._top_border_distance = config.getInt('Picture', 'top_border_dist')
+
+
         self._skip = [i for i in config.getIntList('Picture', 'skip')
                       if 1 <= i and
                       i <= self._num_pictures[0] * self._num_pictures[1]]
@@ -57,7 +60,7 @@ class PictureDimensions:
                 self.thumbnailSize[coord]) // (self.numPictures[coord] + 1)
 
     def computeThumbnailDimensions(self):
-
+        border_corr = [0, self._top_border_distance]
         border = tuple(self.outerDistance[i] - self.innerDistance[i]
                        for i in range(2))
         inner_size = tuple(self.outputSize[i] - 2 * border[i]
@@ -77,7 +80,7 @@ class PictureDimensions:
         self._thumb_offsets = []
         for i in thumbs:
             pos = (i % self.numPictures[0], i // self.numPictures[0])
-            self._thumb_offsets.append(tuple(border[j] +
+            self._thumb_offsets.append(tuple(border[j] + border_corr[j] +
                                              (pos[j] + 1) * thumb_dist[j] +
                                              pos[j] * self.thumbnailSize[j]
                                              for j in range(2)))
