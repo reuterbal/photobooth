@@ -78,19 +78,23 @@ class PictureDimensions:
 
         self._thumb_offsets = []
         #websta changedfrom thumbs
-        for i in range(self.numPictures[0] * self.numPictures[1]):
-            pos = (i % self.numPictures[0], i // self.numPictures[0])
-            #self._thumb_offsets.append(tuple(border[j] + (pos[j] + 1) * thumb_dist[j] + pos[j] * self.thumbnailSize[j] for j in range(2)))
-            # websta: changed to calculate from center of image so the spacing is horizontally and vertically equal
-            thumb_offs = []
-            for j in range(2):
-                if pos[j] < 1 :
-                    thumb_offs.append(self.outputSize[j]//2 - self.thumbnailSize[j] - (thumb_dist[1] // 2))
-                else :
-                    thumb_offs.append(self.outputSize[j]//2 +  (thumb_dist[1] // 2))
+        if (self.numPictures[0] * self.numPictures[1]) > 1: #for mor than one picture
+            for i in range(self.numPictures[0] * self.numPictures[1]):
+                pos = (i % self.numPictures[0], i // self.numPictures[0])
+                #self._thumb_offsets.append(tuple(border[j] + (pos[j] + 1) * thumb_dist[j] + pos[j] * self.thumbnailSize[j] for j in range(2)))
+                # websta: changed to calculate from center of image so the spacing is horizontally and vertically equal
+                thumb_offs = []
+                for j in range(2):
+                    if pos[j] < 1 :
+                        thumb_offs.append(self.outputSize[j]//2 - self.thumbnailSize[j] - (thumb_dist[1] // 2))
+                    else :
+                        thumb_offs.append(self.outputSize[j]//2 +  (thumb_dist[1] // 2))
 
-            self._thumb_offsets.append(tuple(thumb_offs[j] 
+                self._thumb_offsets.append(tuple(thumb_offs[j] 
                                              for j in range(2)))
+        else: # if just one picture center the picture
+             self._thumb_offsets.append(tuple((self.outputSize[j]//2 - self.thumbnailSize[j]//2)
+                                                                 for j in range(2)))
 
         logging.debug(('Assembled picture will contain {} ({}x{}) pictures '
                        'in positions {}').format(self.totalNumPictures,
