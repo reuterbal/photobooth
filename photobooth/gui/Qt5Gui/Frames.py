@@ -685,9 +685,32 @@ class Settings(QtWidgets.QFrame):
 
         skip = QtWidgets.QLineEdit(self._cfg.get('Picture', 'skip'))
         self.add('Picture', 'skip', skip)
+        
+        fancy = QtWidgets.QCheckBox()
+        
+        fancy.setChecked(self._cfg.getBool('Picture', 'fancy'))
+        self.add('Picture', 'fancy', fancy)
+
+        addlogo =  QtWidgets.QCheckBox()
+										
+        addlogo.setChecked(self._cfg.getBool('Picture', 'addlogo'))
+        self.add('Picture', 'addlogo', addlogo)
+
+        addBg =  QtWidgets.QCheckBox()
+										
+        addBg.setChecked(self._cfg.getBool('Picture', 'addBg'))
+        self.add('Picture', 'addBg', addBg)
+
+        lay_check = QtWidgets.QHBoxLayout()
+        lay_check.addWidget(skip)
+        lay_check.addWidget(QtWidgets.QLabel('fancy Layout:'))
+        lay_check.addWidget(fancy)
 
         bg = QtWidgets.QLineEdit(self._cfg.get('Picture', 'background'))
         self.add('Picture', 'background', bg)
+        
+        logo = QtWidgets.QLineEdit(self._cfg.get('Picture', 'logo'))
+        self.add('Picture', 'logo', logo)
 
         lay_num = QtWidgets.QHBoxLayout()
         lay_num.addWidget(num_x)
@@ -709,26 +732,82 @@ class Settings(QtWidgets.QFrame):
         lay_outer_dist.addWidget(QtWidgets.QLabel('x'))
         lay_outer_dist.addWidget(outer_dist_y)
 
-        def file_dialog():
+        def bg_file_dialog():
             dialog = QtWidgets.QFileDialog.getOpenFileName
-            bg.setText(dialog(self, _('Select file'), os.path.expanduser('~'),
+            bg.setText(dialog(self, _('Select file'), os.path.expanduser('~/background'),
                               'Images (*.jpg *.png)')[0])
 
-        file_button = QtWidgets.QPushButton(_('Select file'))
-        file_button.clicked.connect(file_dialog)
-
+        bg_file_button = QtWidgets.QPushButton(_('Select file'))
+        bg_file_button.clicked.connect(bg_file_dialog)
+        
         lay_file = QtWidgets.QHBoxLayout()
+        lay_file.addWidget(addBg)						 
         lay_file.addWidget(bg)
-        lay_file.addWidget(file_button)
+        lay_file.addWidget(bg_file_button)
+        
+        def logo_file_dialog():
+            dialog = QtWidgets.QFileDialog.getOpenFileName
+            logo.setText(dialog(self, _('Select file'), os.path.expanduser('~/logo'),
+                              'Images (*.jpg *.png)')[0])
+
+        logo_file_button = QtWidgets.QPushButton(_('Select file'))
+        logo_file_button.clicked.connect(logo_file_dialog)
+
+        lay_logo = QtWidgets.QHBoxLayout()
+        lay_logo.addWidget(addlogo)
+        lay_logo.addWidget(logo)
+        lay_logo.addWidget(logo_file_button)
+
+        logo_rot = QtWidgets.QSpinBox()
+        logo_rot.setRange(0, 360)
+        logo_rot.setValue(self._cfg.getInt('Picture', 'logo_rot'))
+        self.add('Picture', 'logo_rot', logo_rot)
+
+        lay_logo_rot = QtWidgets.QHBoxLayout()
+        lay_logo_rot.addWidget(logo_rot)
+        
+        
+
+        def show_colordiag():
+            bgColor = '#' + self._cfg.get('Picture', 'bgColor')
+            curcol = QtGui.QColor(bgColor)
+            
+            colord = QtWidgets.QColorDialog()
+            colord.setCurrentColor(QtGui.QColor(curcol)) #not working dont know why
+                       
+            color = colord.getColor()
+            if color.isValid():
+                bgColor = color.name()[1:]
+                logging.info(bgColor)
+            else:
+                bgColor = 'ffffff'
+            
+            self.add('Picture', 'bgColor', bgColor)
+            curCol.setStyleSheet("QWidget { background-color: %s}" % color.name())
+
+        bgColor = self._cfg.get('Picture', 'bgColor')
+        self.add('Picture', 'bgColor', bgColor)
+        tempcol = '#' + bgColor
+        curCol = QtWidgets.QLabel('Hintergrund Farbe')
+        curCol.setStyleSheet("QWidget { background-color: %s}" % tempcol)
+        colorb = QtWidgets.QPushButton('Open color dialog')
+        colorb.clicked.connect(show_colordiag)
+        
+        lay_col = QtWidgets.QHBoxLayout()
+        lay_col.addWidget(curCol)
+        lay_col.addWidget(colorb)
 
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Number of shots per picture:'), lay_num)
         layout.addRow(_('Size of assembled picture [px]:'), lay_size)
         layout.addRow(_('Min. distance between shots [px]:'), lay_inner_dist)
         layout.addRow(_('Min. distance border to shots [px]:'), lay_outer_dist)
-        layout.addRow(_('Skip pictures:'), skip)
+        layout.addRow(_('Skip pictures:'), lay_check) #websta :orgig: skip
         layout.addRow(_('Background image:'), lay_file)
-
+        layout.addRow(_('Add Logo image:'), lay_logo)
+        layout.addRow(_('Logo rotation:'), lay_logo_rot)
+        layout.addRow(_('Background color:'), lay_col)
+        
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         return widget
@@ -1015,6 +1094,18 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Picture', 'skip', self.get('Picture', 'skip').text())
         self._cfg.set('Picture', 'background',
                       self.get('Picture', 'background').text())
+        self._cfg.set('Picture', 'logo',
+                      self.get('Picture', 'logo').text())
+        self._cfg.set('Picture', 'logo_rot',
+                      self.get('Picture', 'logo_rot').text())
+        self._cfg.set('Picture', 'fancy',
+                      str(self.get('Picture', 'fancy').isChecked()))
+        self._cfg.set('Picture', 'addlogo',
+                      str(self.get('Picture', 'addlogo').isChecked()))
+        self._cfg.set('Picture', 'addBg',
+                      str(self.get('Picture', 'addBg').isChecked()))
+        self._cfg.set('Picture', 'bgColor',
+                      self.get('Picture', 'bgColor'))
 
         self._cfg.set('Storage', 'basedir',
                       self.get('Storage', 'basedir').text())

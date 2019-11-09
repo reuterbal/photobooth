@@ -49,6 +49,8 @@ class CameraPicamera(CameraInterface):
 
         if self._cap is None or self._cap.closed:
             self._cap = PiCamera()
+            self._cap.resolution = (2352, 1568) # websta added because default is screen resolution
+            self._cap.framerate = 15				# websta added 																		
 
     def setIdle(self):
 
@@ -60,6 +62,7 @@ class CameraPicamera(CameraInterface):
 
         self.setActive()
         stream = io.BytesIO()
+        self._preview_resolution = (400,240)	# websta added because preview is crap								
         self._cap.capture(stream, format='jpeg', use_video_port=True,
                           resize=self._preview_resolution)
         stream.seek(0)
