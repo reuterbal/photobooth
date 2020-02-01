@@ -56,10 +56,16 @@ Since then it underwent a complete rewrite, with vastly improved performance and
 See [installation instructions](INSTALL.md).
 
 ## Configuration and modifications
+### Photobooth settings
 Default settings are stored in [`defaults.cfg`](photobooth/defaults.cfg) and can either be changed in the graphical user interface or by creating a file `photobooth.cfg` in the top folder and overwriting your settings there.
 
 The software design is very modular.
 Feel free to add new postprocessing components, a GUI based on some other library, etc.
+
+### Camera configuration
+It is possible to add a camera specific configuration. Create a file with the name of your camera in ```photobooth/camera/models/```
+
+See the sample configuration [`canoneos500d.cfg`](photobooth/camera/models/canoneos500d.cfg) 
 
 ## Feedback and bugs
 I appreciate any feedback or bug reports.
