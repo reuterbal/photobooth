@@ -136,9 +136,30 @@ class CameraGphoto2(CameraInterface):
         return Image.open(io.BytesIO(file_data))
 
     def getPicture(self):
+        try:
+            self.setAutofocus()
+        except gp.GPhoto2Error:
+            raise ValueError('Autofocus?')
 
         file_path = self._cap.capture(gp.GP_CAPTURE_IMAGE)
         camera_file = self._cap.file_get(file_path.folder, file_path.name,
                                          gp.GP_FILE_TYPE_NORMAL)
         file_data = camera_file.get_data_and_size()
+        self.clearAutofocus()
         return Image.open(io.BytesIO(file_data))
+
+    def setAutofocus(self):
+        config = self._cap.get_config()
+        val = config.get_child_by_name('autofocusdrive')
+
+        val.set_value(1)
+        logging.info('CameraGphoto2: change autofocusdrive to "%s"', str(val.get_value()))
+        self._cap.set_config(config)
+        
+    def clearAutofocus(self):
+        config = self._cap.get_config()
+        val = config.get_child_by_name('autofocusdrive')
+
+        val.set_value(0)
+        logging.info('CameraGphoto2: change autofocusdrive to "%s"', str(val.get_value()))
+        self._cap.set_config(config)
