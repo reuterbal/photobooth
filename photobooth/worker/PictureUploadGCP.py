@@ -18,25 +18,25 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
+import requests
+
+from pathlib import Path
 
 from .WorkerTask import WorkerTask
 
 
-class PictureSaver(WorkerTask):
+class PictureUploadGCP(WorkerTask):
 
-    def __init__(self, basename):
+    def __init__(self, config):
 
         super().__init__()
 
-        # Ensure directory exists
-        dirname = os.path.dirname(basename)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
+        if config.getBool('UploadWebdav', 'enable_gcp'):
+            self._project = config.get('UploadWebdav', 'project')
+            self._project = config.get('UploadWebdav', 'service_account')
+            self._project = config.get('UploadWebdav', 'bucket')
 
     def do(self, picture, filename):
 
-        print('Saving picture as ' + filename)
-        logging.info('Saving picture as %s', filename)
-        with open(filename, 'wb') as f:
-            f.write(picture.getbuffer())
+        print("Uploading the picture now!")
+        #TODO: implement GCP upload

@@ -28,6 +28,7 @@ from .PictureList import PictureList
 from .PictureMailer import PictureMailer
 from .PictureSaver import PictureSaver
 from .PictureUploadWebdav import PictureUploadWebdav
+from .PictureUploadGCP import PictureUploadGCP
 
 
 class Worker:
@@ -66,12 +67,18 @@ class Worker:
         if config.getBool('UploadWebdav', 'enable'):
             self._postprocess_tasks.append(PictureUploadWebdav(config))
 
+        if config.getBool('UploadWebdav', 'enable_gcp'):
+            self._postprocess_tasks.append(PictureUploadGCP(config))
+
     def initPictureTasks(self, config):
 
         self._picture_tasks = []
 
         # PictureSaver for single shots
         self._picture_tasks.append(PictureSaver(self._shot_list.basename))
+
+        if config.getBool('UploadWebdav', 'enable_gcp'):
+            self._picture_tasks.append(PictureUploadGCP(config))
 
     def run(self):
 

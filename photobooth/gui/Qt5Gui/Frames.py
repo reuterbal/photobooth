@@ -957,10 +957,30 @@ class Settings(QtWidgets.QFrame):
         lay_auth.addWidget(QtWidgets.QLabel('Password:'))
         lay_auth.addWidget(password)
 
+        #GCP
+
+        enable_gcp = QtWidgets.QCheckBox()
+        enable_gcp.setChecked(self._cfg.getBool('UploadWebdav', 'enable_gcp'))
+        print("bool: " + str(self._cfg.getBool('UploadWebdav', 'enable_gcp')))
+        self.add('UploadWebdav', 'enable_gcp', enable_gcp)
+
+        project = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav', 'project'))
+        self.add('UploadWebdav', 'project', project)
+
+        service_account = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav', 'service_account'))
+        self.add('UploadWebdav', 'service_account', service_account)
+
+        bucket = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav', 'bucket'))
+        self.add('UploadWebdav', 'bucket', bucket)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Enable WebDAV upload:'), enable)
         layout.addRow(_('URL (folder must exist):'), url)
         layout.addRow(_('Server requires auth:'), lay_auth)
+        layout.addRow(_('Enable GCP upload:'), enable_gcp)
+        layout.addRow(_('Project:'), project)
+        layout.addRow(_('Location of the service account:'), service_account)
+        layout.addRow(_('Bucket:'), bucket)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -1078,6 +1098,15 @@ class Settings(QtWidgets.QFrame):
                       self.get('UploadWebdav', 'user').text())
         self._cfg.set('UploadWebdav', 'password',
                       self.get('UploadWebdav', 'password').text())
+
+        self._cfg.set('UploadWebdav', 'enable_gcp',
+                      str(self.get('UploadWebdav', 'enable_gcp').isChecked()))
+        self._cfg.set('UploadWebdav', 'project',
+                      str(self.get('UploadWebdav', 'project').text()))
+        self._cfg.set('UploadWebdav', 'service_account',
+                      str(self.get('UploadWebdav', 'service_account').text()))
+        self._cfg.set('UploadWebdav', 'bucket',
+                      str(self.get('UploadWebdav', 'bucket').text()))
 
         self._cfg.write()
         self._restartAction()
