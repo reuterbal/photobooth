@@ -166,7 +166,7 @@ def mainloop(comm, context):
                         return exit_code
         except Exception as e:
             logging.exception('Main: Exception "{}"'.format(e))
-            comm.send(Workers.MASTER, ErrorEvent('Gpio', str(e)))
+            comm.send(Workers.MASTER, ErrorEvent('MainLoop', str(e)))
 
 
 def run(argv, is_run):
@@ -215,7 +215,7 @@ def main(argv):
     else:
         log_level = logging.INFO
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        '%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d %(funcName)s]: %(message)s')
 
     # create console handler and set format
     ch = logging.StreamHandler()

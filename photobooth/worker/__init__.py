@@ -28,6 +28,7 @@ from .PictureList import PictureList
 from .PictureMailer import PictureMailer
 from .PictureSaver import PictureSaver
 from .PictureUploadWebdav import PictureUploadWebdav
+from .PictureList import PictureList
 
 
 class Worker:
@@ -36,17 +37,11 @@ class Worker:
 
         self._comm = comm
 
-        # Picture list for assembled pictures
+        # Picture naming convention for assembled pictures
         path = os.path.join(config.get('Storage', 'basedir'),
                             config.get('Storage', 'basename'))
         basename = strftime(path, localtime())
         self._pic_list = PictureList(basename)
-
-        # Picture list for individual shots
-        path = os.path.join(config.get('Storage', 'basedir'),
-                            config.get('Storage', 'basename') + '_shot_')
-        basename = strftime(path, localtime())
-        self._shot_list = PictureList(basename)
 
         self.initPostprocessTasks(config)
         self.initPictureTasks(config)
@@ -56,7 +51,7 @@ class Worker:
         self._postprocess_tasks = []
 
         # PictureSaver for assembled pictures
-        self._postprocess_tasks.append(PictureSaver(self._pic_list.basename))
+        self._postprocess_tasks.append(PictureSaver())
 
         # PictureMailer for assembled pictures
         if config.getBool('Mailer', 'enable'):
@@ -71,7 +66,7 @@ class Worker:
         self._picture_tasks = []
 
         # PictureSaver for single shots
-        self._picture_tasks.append(PictureSaver(self._shot_list.basename))
+        self._picture_tasks.append(PictureSaver())
 
     def run(self):
 
@@ -85,10 +80,12 @@ class Worker:
         if isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
         elif isinstance(state, StateMachine.ReviewState):
-            self.doPostprocessTasks(state.picture, self._pic_list.getNext())
+            picturename = self._pic_list.getNextPic()
+            self.doPostprocessTasks(state.picture, picturename)
         elif isinstance(state, StateMachine.CameraEvent):
             if state.name == 'capture':
-                self.doPictureTasks(state.picture, self._shot_list.getNext())
+                picturename = self._pic_list.getNextPicShot()
+                self.doPictureTasks(state.picture, picturename)
             else:
                 raise ValueError('Unknown CameraEvent "{}"'.format(state))
 
@@ -96,12 +93,12 @@ class Worker:
 
         pass
 
-    def doPostprocessTasks(self, picture, filename):
+    def doPostprocessTasks(self, picture, picturename):
 
         for task in self._postprocess_tasks:
-            task.do(picture, filename)
+            task.do(picture, picturename)
 
-    def doPictureTasks(self, picture, filename):
+    def doPictureTasks(self, picture, picturename):
 
         for task in self._picture_tasks:
-            task.do(picture, filename)
+            task.do(picture, picturename)
