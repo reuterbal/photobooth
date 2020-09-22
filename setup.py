@@ -189,7 +189,8 @@ setup(
         'gpiozero',
         'gphoto2',
         'pycups',
-        'requests'
+        'requests',
+        'google-cloud-storage'
         ],
 
     # List additional groups of dependencies here (e.g. development

@@ -27,7 +27,7 @@ from ..Threading import Workers
 from .PictureList import PictureList
 from .PictureMailer import PictureMailer
 from .PictureSaver import PictureSaver
-from .PictureUploadWebdav import PictureUploadWebdav
+from .PictureUpload import PictureUpload
 
 
 class Worker:
@@ -63,8 +63,8 @@ class Worker:
             self._postprocess_tasks.append(PictureMailer(config))
 
         # PictureUploadWebdav to upload pictures to a webdav storage
-        if config.getBool('UploadWebdav', 'enable'):
-            self._postprocess_tasks.append(PictureUploadWebdav(config))
+        if config.getBool('Upload', 'webdav_enable'):
+            self._postprocess_tasks.append(PictureUpload(config))
 
     def initPictureTasks(self, config):
 

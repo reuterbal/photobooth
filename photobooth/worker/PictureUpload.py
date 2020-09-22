@@ -25,16 +25,18 @@ from pathlib import Path
 from .WorkerTask import WorkerTask
 
 
-class PictureUploadWebdav(WorkerTask):
+class PictureUpload(WorkerTask):
 
     def __init__(self, config):
 
         super().__init__()
 
-        self._baseurl = config.get('UploadWebdav', 'url')
-        if config.getBool('UploadWebdav', 'use_auth'):
-            self._auth = (config.get('UploadWebdav', 'user'),
-                          config.get('UploadWebdav', 'password'))
+        logging.info('Starting the pictureupload now')
+
+        self._baseurl = config.get('Upload', 'webdav_url')
+        if config.getBool('Upload', 'webdav_use_auth'):
+            self._auth = (config.get('Upload', 'webdav_user'),
+                          config.get('Upload', 'webdav_password'))
         else:
             self._auth = None
 
@@ -45,5 +47,5 @@ class PictureUploadWebdav(WorkerTask):
 
         r = requests.put(url, data=picture.getbuffer(), auth=self._auth)
         if r.status_code in range(200, 300):
-            logging.warn(('PictureUploadWebdav: Upload failed with '
+            logging.warn(('PictureUpload: Upload failed with '
                           'status code {}').format(r.status_code))
