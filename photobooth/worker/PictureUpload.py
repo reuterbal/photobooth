@@ -69,4 +69,4 @@ class PictureUpload(WorkerTask):
             bucket = storage_client.bucket(self._bucket_name)
             blob = bucket.blob(filename)
             blob.upload_from_string(picture.getvalue())
-            print(blob.public_url)
+            print(blob.id)
