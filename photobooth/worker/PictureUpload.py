@@ -21,6 +21,7 @@ import logging
 import requests
 
 from pathlib import Path
+from google.cloud.storage import Client
 
 from .WorkerTask import WorkerTask
 
@@ -31,21 +32,37 @@ class PictureUpload(WorkerTask):
 
         super().__init__()
 
-        logging.info('Starting the pictureupload now')
+        self._webdav_enabled = config.getBool('Upload', 'webdav_enable')
+        self._gcp_enabled = config.getBool('Upload', 'gcp_enable')
 
-        self._baseurl = config.get('Upload', 'webdav_url')
-        if config.getBool('Upload', 'webdav_use_auth'):
-            self._auth = (config.get('Upload', 'webdav_user'),
-                          config.get('Upload', 'webdav_password'))
+        if self._webdav_enabled:
+            self._baseurl = config.get('Upload', 'webdav_url')
+            if config.getBool('Upload', 'webdav_use_auth'):
+                self._auth = (config.get('Upload', 'webdav_user'),
+                              config.get('Upload', 'webdav_password'))
+            else:
+                self._auth = None
         else:
-            self._auth = None
+            self._bucket_name = config.get('Upload', 'gcp_bucket')
+            self._service_account_location = config.get('Upload', 'gcp_service_account_path')
+            self._client = Client.from_service_account_json(self._service_account_location)
+
 
     def do(self, picture, filename):
 
-        url = self._baseurl + '/' + Path(filename).name
-        logging.info('Uploading picture as %s', url)
+        if self._webdav_enabled:
+            url = self._baseurl + '/' + Path(filename).name
+            logging.info('Uploading picture as %s', url)
 
-        r = requests.put(url, data=picture.getbuffer(), auth=self._auth)
-        if r.status_code in range(200, 300):
-            logging.warn(('PictureUpload: Upload failed with '
-                          'status code {}').format(r.status_code))
+            r = requests.put(url, data=picture.getbuffer(), auth=self._auth)
+            if r.status_code in range(200, 300):
+                logging.warn(('PictureUpload: Upload failed with '
+                              'status code {}').format(r.status_code))
+
+        if self._gcp_enabled:
+            print("Uploading the picture now!")
+            storage_client = self._client
+            bucket = storage_client.bucket(self._bucket_name)
+            blob = bucket.blob(filename)
+            blob.upload_from_string(picture.getvalue())
+            print(blob.public_url)
