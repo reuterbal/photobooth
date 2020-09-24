@@ -43,7 +43,7 @@ class Worker:
         self._pic_list = PictureList(basename)
 
         # Picture list for individual shots
-        path = os.path.join(config.get('Storage', 'basedir'),
+        path = os.path.join(config.get('Storage', 'basedir'), 'single_shots',
                             config.get('Storage', 'basename') + '_shot_')
         basename = strftime(path, localtime())
         self._shot_list = PictureList(basename)
@@ -72,6 +72,8 @@ class Worker:
 
         # PictureSaver for single shots
         self._picture_tasks.append(PictureSaver(self._shot_list.basename))
+
+        # PictureUploader for single shots
         if config.getBool('Upload', 'webdav_enable') or config.getBool('Upload', 'gcp_enable'):
             self._picture_tasks.append(PictureUpload(config))
 

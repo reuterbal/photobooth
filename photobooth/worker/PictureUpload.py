@@ -45,7 +45,11 @@ class PictureUpload(WorkerTask):
         else:
             self._bucket_name = config.get('Upload', 'gcp_bucket')
             self._service_account_location = config.get('Upload', 'gcp_service_account_path')
-            self._client = Client.from_service_account_json(self._service_account_location)
+            try:
+                self._client = Client.from_service_account_json(self._service_account_location)
+            except:
+                raise Exception("Could not start the GCP uploading client")
+
 
 
     def do(self, picture, filename):
