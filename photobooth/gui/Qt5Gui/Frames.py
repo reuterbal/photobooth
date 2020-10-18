@@ -932,35 +932,50 @@ class Settings(QtWidgets.QFrame):
 
     def createUploadSettings(self):
 
-        self.init('UploadWebdav')
+        self.init('Upload')
 
-        enable = QtWidgets.QCheckBox()
-        enable.setChecked(self._cfg.getBool('UploadWebdav', 'enable'))
-        self.add('UploadWebdav', 'enable', enable)
+        # webdav
+        webdav_enable = QtWidgets.QCheckBox()
+        webdav_enable.setChecked(self._cfg.getBool('Upload', 'webdav_enable'))
+        self.add('Upload', 'webdav_enable', webdav_enable)
 
-        url = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav', 'url'))
-        self.add('UploadWebdav', 'url', url)
+        url = QtWidgets.QLineEdit(self._cfg.get('Upload', 'webdav_url'))
+        self.add('Upload', 'webdav_url', url)
 
         use_auth = QtWidgets.QCheckBox()
-        use_auth.setChecked(self._cfg.getBool('UploadWebdav', 'use_auth'))
-        self.add('UploadWebdav', 'use_auth', use_auth)
-        user = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav', 'user'))
-        self.add('UploadWebdav', 'user', user)
-        password = QtWidgets.QLineEdit(self._cfg.get('UploadWebdav',
-                                                     'password'))
-        self.add('UploadWebdav', 'password', password)
+        use_auth.setChecked(self._cfg.getBool('Upload', 'webdav_use_auth'))
+        self.add('Upload', 'webdav_use_auth', use_auth)
+        user = QtWidgets.QLineEdit(self._cfg.get('Upload', 'webdav_user'))
+        self.add('Upload', 'webdav_user', user)
+        password = QtWidgets.QLineEdit(self._cfg.get('Upload',
+                                                     'webdav_password'))
+        self.add('Upload', 'webdav_password', password)
+
+        # GCP
+        gcp_enable = QtWidgets.QCheckBox()
+        gcp_enable.setChecked(self._cfg.getBool('Upload', 'gcp_enable'))
+        self.add('Upload', 'gcp_enable', gcp_enable)
+
+        gcp_bucket = QtWidgets.QLineEdit(self._cfg.get('Upload', 'gcp_bucket'))
+        self.add('Upload', 'gcp_bucket', gcp_bucket)
+
+        gcp_service_account_path = QtWidgets.QLineEdit(self._cfg.get('Upload', 'gcp_service_account_path'))
+        self.add('Upload', 'gcp_service_account_path', gcp_service_account_path)
 
         lay_auth = QtWidgets.QHBoxLayout()
         lay_auth.addWidget(use_auth)
-        lay_auth.addWidget(QtWidgets.QLabel('Username:'))
+        lay_auth.addWidget(QtWidgets.QLabel('Webdav Username:'))
         lay_auth.addWidget(user)
-        lay_auth.addWidget(QtWidgets.QLabel('Password:'))
+        lay_auth.addWidget(QtWidgets.QLabel('Webdav Password:'))
         lay_auth.addWidget(password)
 
         layout = QtWidgets.QFormLayout()
-        layout.addRow(_('Enable WebDAV upload:'), enable)
-        layout.addRow(_('URL (folder must exist):'), url)
-        layout.addRow(_('Server requires auth:'), lay_auth)
+        layout.addRow(_('Enable WebDAV upload:'), webdav_enable)
+        layout.addRow(_('Webdav URL (folder must exist):'), url)
+        layout.addRow(_('Webdav Server requires auth:'), lay_auth)
+        layout.addRow(_('Enable GCP upload:'), gcp_enable)
+        layout.addRow(_('GCP bucket:'), gcp_bucket)
+        layout.addRow(_('GCP service account:'), gcp_service_account_path)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -1068,16 +1083,23 @@ class Settings(QtWidgets.QFrame):
         self._cfg.set('Mailer', 'password',
                       self.get('Mailer', 'password').text())
 
-        self._cfg.set('UploadWebdav', 'enable',
-                      str(self.get('UploadWebdav', 'enable').isChecked()))
-        self._cfg.set('UploadWebdav', 'url',
-                      self.get('UploadWebdav', 'url').text())
-        self._cfg.set('UploadWebdav', 'use_auth',
-                      str(self.get('UploadWebdav', 'use_auth').isChecked()))
-        self._cfg.set('UploadWebdav', 'user',
-                      self.get('UploadWebdav', 'user').text())
-        self._cfg.set('UploadWebdav', 'password',
-                      self.get('UploadWebdav', 'password').text())
+        self._cfg.set('Upload', 'webdav_enable',
+                      str(self.get('Upload', 'webdav_enable').isChecked()))
+        self._cfg.set('Upload', 'webdav_url',
+                      self.get('Upload', 'webdav_url').text())
+        self._cfg.set('Upload', 'webdav_use_auth',
+                      str(self.get('Upload', 'webdav_use_auth').isChecked()))
+        self._cfg.set('Upload', 'webdav_user',
+                      self.get('Upload', 'webdav_user').text())
+        self._cfg.set('Upload', 'webdav_password',
+                      self.get('Upload', 'webdav_password').text())
+
+        self._cfg.set('Upload', 'gcp_enable',
+                      str(self.get('Upload', 'gcp_enable').isChecked()))
+        self._cfg.set('Upload', 'gcp_bucket',
+                      self.get('Upload', 'gcp_bucket').text())  
+        self._cfg.set('Upload', 'gcp_service_account_path',
+                      self.get('Upload', 'gcp_service_account_path').text())                      
 
         self._cfg.write()
         self._restartAction()
