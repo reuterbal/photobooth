@@ -52,7 +52,7 @@ class PictureUpload(WorkerTask):
             try:
                 self._client = Client.from_service_account_json(self._service_account_location)
             except:
-                raise Exception("Could not start the GCP uploading client")
+                self._client = None
 
 
 
@@ -71,11 +71,14 @@ class PictureUpload(WorkerTask):
             # Do not use the logger here, since the root logger somehow gets set to WARN instead of INFO here
             print("Uploading the picture now to GCP!")
             storage_client = self._client
-            try:
-                bucket = storage_client.bucket(self._bucket_name)
-                blob = bucket.blob(filename)
-                blob.upload_from_string(picture.getvalue(), content_type='image/jpeg')
-                print(f"uploaded {blob.id} to {self._bucket_name}")
-            except:
-                logging.warn("Could not upload the image to GCP")
+            if self._client is not None:
+                try:
+                    bucket = storage_client.bucket(self._bucket_name)
+                    blob = bucket.blob(filename)
+                    blob.upload_from_string(picture.getvalue(), content_type='image/jpeg')
+                    print(f"uploaded {blob.id} to {self._bucket_name}")
+                except:
+                    logging.warn("Could not upload the image to GCP")
+            else:
+                logging.warn("Something went wrong initiating the GCP Storage client")
 
