@@ -934,6 +934,7 @@ class Settings(QtWidgets.QFrame):
 
         self.init('Upload')
 
+        # webdav
         webdav_enable = QtWidgets.QCheckBox()
         webdav_enable.setChecked(self._cfg.getBool('Upload', 'webdav_enable'))
         self.add('Upload', 'webdav_enable', webdav_enable)
@@ -951,7 +952,6 @@ class Settings(QtWidgets.QFrame):
         self.add('Upload', 'webdav_password', password)
 
         # GCP
-
         gcp_enable = QtWidgets.QCheckBox()
         gcp_enable.setChecked(self._cfg.getBool('Upload', 'gcp_enable'))
         self.add('Upload', 'gcp_enable', gcp_enable)

@@ -19,6 +19,7 @@ This is a Python application to build your own photobooth.
 * Ability to skip single pictures in the m-by-n grid (e.g., to include a logo in the background image)
 * Support for external buttons and lamps via GPIO interface
 * Rudimentary WebDAV upload functionality (saves pictures to WebDAV storage) and mailer feature (mails pictures to a fixed email address)
+* Rudimentary GCP upload functionality (saves pictures to a GCP bucket)
 * Theming support using [Qt stylesheets](https://doc.qt.io/qt-5/stylesheet-syntax.html)
 
 ### Screenshots

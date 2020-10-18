@@ -115,7 +115,6 @@ class WorkerProcess(mp.Process):
             except Exception as e:
                 logging.exception('WorkerProcess: Exception "{}"'.format(e))
                 self._comm.send(Workers.MASTER, ErrorEvent('Worker', str(e)))
-                break
 
         logging.debug('WorkerProcess: Exit')
 
