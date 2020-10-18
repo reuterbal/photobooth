@@ -189,8 +189,7 @@ setup(
         'gpiozero',
         'gphoto2',
         'pycups',
-        'requests',
-        'google-cloud-storage'
+        'requests'
         ],
 
     # List additional groups of dependencies here (e.g. development
@@ -202,6 +201,7 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
+        'gcp': ['google-cloud-storage'],
         'pyqt': ['PyQt5'],
         'picamera': ['picamera'],
         'gphoto2-cffi': ['gphoto2-cffi'],
