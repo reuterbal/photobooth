@@ -21,7 +21,10 @@ import logging
 import requests
 
 from pathlib import Path
-from google.cloud.storage import Client
+try:
+    from google.cloud.storage import Client
+except
+    logging.warn("GCP dependency not installed")
 
 from .WorkerTask import WorkerTask
 
@@ -42,7 +45,8 @@ class PictureUpload(WorkerTask):
                               config.get('Upload', 'webdav_password'))
             else:
                 self._auth = None
-        else:
+        if self._gcp_enabled:
+            print("Initialized GCP!")
             self._bucket_name = config.get('Upload', 'gcp_bucket')
             self._service_account_location = config.get('Upload', 'gcp_service_account_path')
             try:
