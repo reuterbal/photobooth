@@ -23,7 +23,7 @@ import requests
 from pathlib import Path
 try:
     from google.cloud.storage import Client
-except
+except:
     logging.warn("GCP dependency not installed")
 
 from .WorkerTask import WorkerTask
