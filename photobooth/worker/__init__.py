@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os.path
+import uuid
 
 from time import localtime, strftime
 
@@ -36,6 +37,13 @@ class Worker:
 
         self._comm = comm
 
+        self._random_names = config.getBool('Storage', 'random_names')
+
+        if self._random_names:
+            self._unique_id = str(uuid.uuid4())
+        else:
+            self._unique_id = None
+
         # Picture list for assembled pictures
         path = os.path.join(config.get('Storage', 'basedir'),
                             config.get('Storage', 'basename'))
@@ -44,7 +52,7 @@ class Worker:
 
         # Picture list for individual shots
         path = os.path.join(config.get('Storage', 'basedir'), 'single_shots',
-                            config.get('Storage', 'basename') + '_shot_')
+                            config.get('Storage', 'basename') + '_shot')
         basename = strftime(path, localtime())
         self._shot_list = PictureList(basename)
 
@@ -89,10 +97,16 @@ class Worker:
         if isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
         elif isinstance(state, StateMachine.ReviewState):
-            self.doPostprocessTasks(state.picture, self._pic_list.getNext())
+            # If using random UUID, don't use the counter in the total picture as we need to reference the UUID back
+            self.doPostprocessTasks(state.picture, self._pic_list.getNext(self._unique_id, use_counter=not self._random_names))
+            if self._random_names:
+                # Reset the UUID and the counter
+                self._unique_id = str(uuid.uuid4())
+                self._pic_list.resetCounter()
+                self._shot_list.resetCounter()
         elif isinstance(state, StateMachine.CameraEvent):
             if state.name == 'capture':
-                self.doPictureTasks(state.picture, self._shot_list.getNext())
+                self.doPictureTasks(state.picture, self._shot_list.getNext(self._unique_id))
             else:
                 raise ValueError('Unknown CameraEvent "{}"'.format(state))
 

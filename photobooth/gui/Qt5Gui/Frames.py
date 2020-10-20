@@ -746,6 +746,10 @@ class Settings(QtWidgets.QFrame):
         keep_pictures.setChecked(self._cfg.getBool('Storage', 'keep_pictures'))
         self.add('Storage', 'keep_pictures', keep_pictures)
 
+        random_names = QtWidgets.QCheckBox()
+        random_names.setChecked(self._cfg.getBool('Storage', 'random_names'))
+        self.add('Storage', 'random_names', random_names)
+
         def directory_dialog():
             dialog = QtWidgets.QFileDialog.getExistingDirectory
             basedir.setText(dialog(self, _('Select directory'),
@@ -762,6 +766,7 @@ class Settings(QtWidgets.QFrame):
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Output directory (strftime possible):'), lay_dir)
         layout.addRow(_('Basename of files (strftime possible):'), basename)
+        layout.addRow(_('Random names of files (UUID):'), random_names)
         layout.addRow(_('Keep single shots:'), keep_pictures)
 
         widget = QtWidgets.QWidget()
@@ -1035,6 +1040,8 @@ class Settings(QtWidgets.QFrame):
                       self.get('Storage', 'basedir').text())
         self._cfg.set('Storage', 'basename',
                       self.get('Storage', 'basename').text())
+        self._cfg.set('Storage', 'random_names',
+                      str(self.get('Storage', 'random_names').isChecked()))
         self._cfg.set('Storage', 'keep_pictures',
                       str(self.get('Storage', 'keep_pictures').isChecked()))
 
