@@ -40,7 +40,7 @@ class Worker:
         self._random_names = config.getBool('Storage', 'random_names')
 
         if self._random_names:
-            self._unique_id = str(uuid.uuid4())
+            self._unique_id = str(uuid.uuid4().hex)
         else:
             self._unique_id = None
 
@@ -101,7 +101,7 @@ class Worker:
             self.doPostprocessTasks(state.picture, self._pic_list.getNext(self._unique_id, use_counter=not self._random_names))
             if self._random_names:
                 # Reset the UUID and the counter
-                self._unique_id = str(uuid.uuid4())
+                self._unique_id = str(uuid.uuid4().hex)
                 self._pic_list.resetCounter()
                 self._shot_list.resetCounter()
         elif isinstance(state, StateMachine.CameraEvent):
