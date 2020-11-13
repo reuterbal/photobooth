@@ -73,7 +73,7 @@ class Gpio:
             if self._is_neopixel_enabled:
                 pixel_pin = board.D18
                 num_pixels = 3
-                ORDER = neopixel.GRB
+                ORDER = neopixel.RGBW
 
                 self._neo_pixels = neopixel.NeoPixel(
                     pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
