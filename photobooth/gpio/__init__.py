@@ -25,6 +25,13 @@ from .. import StateMachine
 from ..Threading import Workers
 
 
+try:
+    import time
+    import board
+    import neopixel
+except:
+    logging.warn("Neopixel dependency not installed")
+
 class Gpio:
 
     def __init__(self, config, comm):
@@ -33,9 +40,11 @@ class Gpio:
 
         self._comm = comm
         self._gpio = None
+        self._neo_pixels = None
 
         self._is_trigger = False
         self._is_enabled = config.getBool('Gpio', 'enable')
+        self._is_neopixel_enabled = True
         self._countdown_time = config.getInt('Photobooth', 'countdown_time')
 
         self.initGpio(config)
@@ -61,6 +70,14 @@ class Gpio:
             self._gpio.setButton(exit_pin, self.exit)
             self._lamp = self._gpio.setLamp(lamp_pin)
             self._rgb = self._gpio.setRgb(rgb_pin)
+            if self._is_neopixel_enabled:
+                pixel_pin = board.D18
+                num_pixels = 3
+                ORDER = neopixel.GRB
+
+                self._neo_pixels = neopixel.NeoPixel(
+                    pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
+                )
         else:
             logging.info('GPIO disabled')
 
@@ -147,12 +164,20 @@ class Gpio:
         self.enableTrigger()
 
         if self._is_enabled:
-            h, s, v = 0, 1, 1
-            while self._comm.empty(Workers.GPIO):
-                h = (h + 1) % 360
-                rgb = hsv_to_rgb(h / 360, s, v)
-                self.setRgbColor(*rgb)
-                sleep(0.1)
+            if self._is_neopixel_enabled:
+                r = 0
+                while self._comm.empty(Workers.GPIO):
+                    r = (r + 20) % 255
+                    self._neo_pixels.fill((r, 0, 0))
+                    self._neo_pixels.show()
+                    sleep(0.1)
+            else:
+                h, s, v = 0, 1, 1
+                while self._comm.empty(Workers.GPIO):
+                    h = (h + 1) % 360
+                    rgb = hsv_to_rgb(h / 360, s, v)
+                    self.setRgbColor(*rgb)
+                    sleep(0.1)
 
     def showGreeter(self):
 
@@ -166,8 +191,12 @@ class Gpio:
 
     def showCapture(self):
 
-        self.rgbOn()
-        self.setRgbColor(1, 1, .9)
+        if self._is_neopixel_enabled:
+            self._neo_pixels.fill((255, 255, 255))
+            self._neo_pixels.show()
+        else:
+            self.rgbOn()
+            self.setRgbColor(1, 1, .9)
 
     def showAssemble(self):
 
