@@ -168,7 +168,7 @@ class Gpio:
                 r = 0
                 while self._comm.empty(Workers.GPIO):
                     r = (r + 20) % 255
-                    self._neo_pixels.fill((r, 0, 0))
+                    self._neo_pixels.fill((r, 0, 0, 0))
                     self._neo_pixels.show()
                     sleep(0.1)
             else:
@@ -192,7 +192,7 @@ class Gpio:
     def showCapture(self):
 
         if self._is_neopixel_enabled:
-            self._neo_pixels.fill((255, 255, 255))
+            self._neo_pixels.fill((255, 255, 255, 0))
             self._neo_pixels.show()
         else:
             self.rgbOn()
