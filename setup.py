@@ -201,6 +201,7 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
+        'neopixel': ['rpi_ws281x', 'adafruit-circuitpython-neopixel', 'adafruit-blinka'],
         'gcp': ['google-cloud-storage'],
         'pyqt': ['PyQt5'],
         'picamera': ['picamera'],
