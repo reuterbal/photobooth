@@ -157,7 +157,7 @@ class Gpio:
                 r = 0
                 while self._comm.empty(Workers.GPIO):
                     r = (r + 5) % 255
-                    self._neo_pixels.set_color(r, 0, 0)
+                    self._neo_pixels.set_color(r, 0, 0, 10)
                     sleep(0.1)
             else:
                 h, s, v = 0, 1, 1
@@ -173,7 +173,7 @@ class Gpio:
         self.rgbOff()
 
         if self._is_neopixel_enabled:
-            self._neo_pixels.set_color(0, 255, 0)
+            self._neo_pixels.set_color(0, 255, 0, 10)
 
     def showCountdown(self):
 
@@ -185,7 +185,7 @@ class Gpio:
     def showCapture(self):
 
         if self._is_neopixel_enabled:
-            self._neo_pixels.set_color(255,255,255)
+            self._neo_pixels.set_color(255, 255, 255, 200)
         else:
             self.rgbOn()
             self.setRgbColor(1, 1, .9)
@@ -219,16 +219,17 @@ class NeoPixels:
             self._neopixel_pin, self._num_neopixels, brightness=0.2, auto_write=False, pixel_order=self._neopixel_order
         )
 
-    def set_color(self, r, g, b):
-        self._pixels.fill((r, g, b, 10))
+    def set_color(self, r, g, b, w):
+        self._pixels.fill((r, g, b, w))
         self._pixels.show()
 
     def _count_down(self, countdown_time, num_leds):
         for x in range(0, num_leds):
-            self._pixels[x] = (255, 255, 255)
+            self._pixels[x] = (150, 150, 150, 10)
             self._pixels.show()
             print("Sleeping " + str(countdown_time/num_leds))
             sleep(countdown_time/num_leds)
+        self.set_color(0,0,0,0)
 
 class Entities:
 
