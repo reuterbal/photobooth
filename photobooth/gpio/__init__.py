@@ -226,6 +226,7 @@ class NeoPixels:
     def _count_down(self, countdown_time, num_leds):
         for x in range(0, num_leds):
             self._pixels[x] = (255, 255, 255)
+            self._pixels.show()
             print("Sleeping " + str(countdown_time/num_leds))
             sleep(countdown_time/num_leds)
 
