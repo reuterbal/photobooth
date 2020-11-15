@@ -224,12 +224,13 @@ class NeoPixels:
         self._pixels.show()
 
     def _count_down(self, countdown_time, num_leds):
+        self.set_color(0, 0, 0, 0)
         for x in range(0, num_leds):
             self._pixels[x] = (150, 150, 150, 10)
             self._pixels.show()
             print("Sleeping " + str(countdown_time/num_leds))
             sleep(countdown_time/num_leds)
-        self.set_color(0,0,0,0)
+        self.set_color(0, 0, 0, 0)
 
 class Entities:
 
