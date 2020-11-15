@@ -192,11 +192,17 @@ class Gpio:
 
     def showAssemble(self):
 
-        self.rgbOff()
+        if self._is_neopixel_enabled:
+            self._neo_pixels.set_color(0, 0, 255, 10)
+        else:
+            self.rgbOff()
 
     def showReview(self):
 
-        self.setRgbColor(0, .15, 0)
+        if self._is_neopixel_enabled:
+            self._neo_pixels.set_color(255, 255, 0, 10)
+        else:
+            self.setRgbColor(0, .15, 0)
 
     def showPostprocess(self):
 
