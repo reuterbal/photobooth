@@ -25,13 +25,6 @@ from .. import StateMachine
 from ..Threading import Workers
 
 
-try:
-    import time
-    import board
-    import neopixel
-except:
-    logging.warn("Neopixel dependency not installed")
-
 class Gpio:
 
     def __init__(self, config, comm):
@@ -44,7 +37,9 @@ class Gpio:
 
         self._is_trigger = False
         self._is_enabled = config.getBool('Gpio', 'enable')
+
         self._is_neopixel_enabled = True
+
         self._countdown_time = config.getInt('Photobooth', 'countdown_time')
 
         self.initGpio(config)
@@ -71,13 +66,7 @@ class Gpio:
             self._lamp = self._gpio.setLamp(lamp_pin)
             self._rgb = self._gpio.setRgb(rgb_pin)
             if self._is_neopixel_enabled:
-                pixel_pin = board.D18
-                num_pixels = 3
-                ORDER = neopixel.RGBW
-
-                self._neo_pixels = neopixel.NeoPixel(
-                    pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
-                )
+                self._neo_pixels = NeoPixels()
         else:
             logging.info('GPIO disabled')
 
@@ -168,8 +157,7 @@ class Gpio:
                 r = 0
                 while self._comm.empty(Workers.GPIO):
                     r = (r + 5) % 255
-                    self._neo_pixels.fill((r, 0, 0, 10))
-                    self._neo_pixels.show()
+                    self._neo_pixels.set_color(r, 0, 0)
                     sleep(0.1)
             else:
                 h, s, v = 0, 1, 1
@@ -184,10 +172,15 @@ class Gpio:
         self.disableTrigger()
         self.rgbOff()
 
+        if self._is_neopixel_enabled:
+            self._neo_pixels.set_color(0, 255, 0)
+
     def showCountdown(self):
 
         sleep(0.2)
         self.rgbBlink()
+        if self._is_neopixel_enabled:
+            self._neo_pixels._count_down(3)
 
     def showCapture(self):
 
@@ -210,6 +203,31 @@ class Gpio:
 
         pass
 
+class NeoPixels:
+
+    def __init__(self):
+
+        super().__init__()
+
+        import board
+        import neopixel
+
+        self._neopixel_pin = board.D18
+        self._num_neopixels = 3
+        self._neopixel_order = neopixel.RGBW
+
+        self._pixels = neopixel.NeoPixel(
+            self._neopixel_pin, self._num_neopixels, brightness=0.2, auto_write=False, pixel_order=self._neopixel_order
+        )
+
+    def set_color(self, r, g, b):
+        self._pixels.fill((r, g, b, 10))
+        self._pixels.show()
+
+    def _count_down(self, countdown_time, num_leds):
+        for x in range(0, num_leds):
+            self._pixels[x] = (255, 255, 255)
+            sleep(countdown_time/num_leds)
 
 class Entities:
 
