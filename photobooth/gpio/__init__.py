@@ -185,8 +185,7 @@ class Gpio:
     def showCapture(self):
 
         if self._is_neopixel_enabled:
-            self._neo_pixels.fill((150, 150, 150, 100))
-            self._neo_pixels.show()
+            self._neo_pixels.set_color(255,255,255)
         else:
             self.rgbOn()
             self.setRgbColor(1, 1, .9)
@@ -227,6 +226,7 @@ class NeoPixels:
     def _count_down(self, countdown_time, num_leds):
         for x in range(0, num_leds):
             self._pixels[x] = (255, 255, 255)
+            print("Sleeping " + str(countdown_time/num_leds))
             sleep(countdown_time/num_leds)
 
 class Entities:
