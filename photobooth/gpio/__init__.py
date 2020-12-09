@@ -263,7 +263,7 @@ class NeoPixels:
             b = int(255 - pos * 3)
         return r, g, b, 0
 
-    def rainbow_cycle(self, wait, num_pixels):
+    def rainbow_cycle(self, num_pixels):
         self._start_rainbow += 1
         for i in range(num_pixels):
             pixel_index = (i * 256 // num_pixels) + j
