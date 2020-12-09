@@ -156,8 +156,8 @@ class Gpio:
             if self._is_neopixel_enabled:
                 r = 0
                 while self._comm.empty(Workers.GPIO):
-                    self._neo_pixels.rainbow_cycle(0.1, 32)
-
+                    self._neo_pixels.rainbow_cycle(32)
+                    sleep(0.1)
                     # r = (r + 5) % 255
                     # self._neo_pixels.set_color(r, 0, 0, 10)
                     # sleep(0.1)
@@ -222,6 +222,7 @@ class NeoPixels:
         self._neopixel_pin = board.D18
         self._num_neopixels = 32
         self._neopixel_order = neopixel.RGBW
+        self._start_rainbow = 0
 
         self._pixels = neopixel.NeoPixel(
             self._neopixel_pin, self._num_neopixels, brightness=0.2, auto_write=False, pixel_order=self._neopixel_order
@@ -263,13 +264,11 @@ class NeoPixels:
         return r, g, b, 0
 
     def rainbow_cycle(self, wait, num_pixels):
-        for j in range(255):
-            for i in range(num_pixels):
-                pixel_index = (i * 256 // num_pixels) + j
-                self._pixels[i] = self.wheely(pixel_index & 255)
-            self._pixels.show()
-            sleep(wait)
-
+        self._start_rainbow += 1
+        for i in range(num_pixels):
+            pixel_index = (i * 256 // num_pixels) + j
+            self._pixels[i] = self.wheely(pixel_index & 255)
+        self._pixels.show()
 
 class Entities:
 
