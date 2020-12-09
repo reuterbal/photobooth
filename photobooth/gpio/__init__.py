@@ -156,7 +156,7 @@ class Gpio:
             if self._is_neopixel_enabled:
                 r = 0
                 while self._comm.empty(Workers.GPIO):
-                    self._neo_pixels.rainbow_cycle(1, 32)
+                    self._neo_pixels.rainbow_cycle(0.1, 32)
 
                     # r = (r + 5) % 255
                     # self._neo_pixels.set_color(r, 0, 0, 10)
