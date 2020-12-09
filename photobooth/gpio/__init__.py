@@ -180,7 +180,7 @@ class Gpio:
         sleep(0.2)
         self.rgbBlink()
         if self._is_neopixel_enabled:
-            self._neo_pixels._count_down(self._countdown_time, 3)
+            self._neo_pixels._count_down(self._countdown_time, 32)
 
     def showCapture(self):
 
@@ -218,7 +218,7 @@ class NeoPixels:
         import neopixel
 
         self._neopixel_pin = board.D18
-        self._num_neopixels = 3
+        self._num_neopixels = 32
         self._neopixel_order = neopixel.RGBW
 
         self._pixels = neopixel.NeoPixel(
@@ -231,8 +231,9 @@ class NeoPixels:
 
     def _count_down(self, countdown_time, num_leds):
         self.set_color(0, 0, 0, 0)
-        for x in range(0, num_leds):
+        for x in range(0, num_leds/2):
             self._pixels[x] = (150, 150, 150, 10)
+            self._pixels[x+(num_leds/2)] = (150, 150, 150, 10)
             self._pixels.show()
             print("Sleeping " + str(countdown_time/num_leds))
             sleep(countdown_time/num_leds)
