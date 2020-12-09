@@ -265,8 +265,9 @@ class NeoPixels:
 
     def rainbow_cycle(self, num_pixels):
         self._start_rainbow += 1
+        self._start_rainbow = self._start_rainbow % 255
         for i in range(num_pixels):
-            pixel_index = (i * 256 // num_pixels) + j
+            pixel_index = (i * 256 // num_pixels) + self._start_rainbow
             self._pixels[i] = self.wheely(pixel_index & 255)
         self._pixels.show()
 
