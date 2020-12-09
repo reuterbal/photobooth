@@ -236,7 +236,7 @@ class NeoPixels:
             self._pixels[x+int(num_leds/2)] = (150, 150, 150, 10)
             self._pixels.show()
             print("Sleeping " + str(countdown_time/num_leds))
-            sleep(countdown_time/num_leds)
+            sleep((countdown_time/num_leds)*2)
         self.set_color(0, 0, 0, 0)
 
 class Entities:
