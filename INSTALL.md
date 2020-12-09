@@ -140,6 +140,8 @@ Alternatively, use the Python binary of the virtual environment to start the pho
 ```bash
 .venv/bin/python -m photobooth
 ```
+**add `sudo` in front if you are using the neopixel lib for the leds!!**
+  
 This is useful, e.g., when starting the photobooth from scripts, desktop shortcuts, or when using an autostart mechanism of your window manager.
 
 Change any settings via the "Settings" menu.
