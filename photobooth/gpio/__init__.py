@@ -156,9 +156,11 @@ class Gpio:
             if self._is_neopixel_enabled:
                 r = 0
                 while self._comm.empty(Workers.GPIO):
-                    r = (r + 5) % 255
-                    self._neo_pixels.set_color(r, 0, 0, 10)
-                    sleep(0.1)
+                    self._neo_pixels.rainbow_cycle(1, 32)
+
+                    # r = (r + 5) % 255
+                    # self._neo_pixels.set_color(r, 0, 0, 10)
+                    # sleep(0.1)
             else:
                 h, s, v = 0, 1, 1
                 while self._comm.empty(Workers.GPIO):
@@ -174,7 +176,6 @@ class Gpio:
 
         if self._is_neopixel_enabled:
             self._neo_pixels.set_color(0, 255, 0, 10)
-            self._neo_pixels.rainbow_cycle(1, 32)
 
     def showCountdown(self):
 
@@ -240,7 +241,7 @@ class NeoPixels:
             sleep((countdown_time/num_leds)*2)
         self.set_color(0, 0, 0, 0)
 
-    def wheely(pos):
+    def wheely(self, pos):
         # Input a value 0 to 255 to get a color value.
         # The colours are a transition r - g - b - back to r.
         if pos < 0 or pos > 255:
@@ -259,7 +260,7 @@ class NeoPixels:
             r = 0
             g = int(pos * 3)
             b = int(255 - pos * 3)
-        return (r, g, b, 0)
+        return r, g, b, 0
 
     def rainbow_cycle(self, wait, num_pixels):
         for j in range(255):
