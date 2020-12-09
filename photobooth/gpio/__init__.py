@@ -231,9 +231,9 @@ class NeoPixels:
 
     def _count_down(self, countdown_time, num_leds):
         self.set_color(0, 0, 0, 0)
-        for x in range(0, num_leds/2):
+        for x in range(0, int(num_leds/2)):
             self._pixels[x] = (150, 150, 150, 10)
-            self._pixels[x+(num_leds/2)] = (150, 150, 150, 10)
+            self._pixels[x+int(num_leds/2)] = (150, 150, 150, 10)
             self._pixels.show()
             print("Sleeping " + str(countdown_time/num_leds))
             sleep(countdown_time/num_leds)
