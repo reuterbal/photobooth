@@ -62,6 +62,7 @@ class Gpio:
                          lamp_pin, trigger_pin, exit_pin, *rgb_pin)
 
             self._gpio.setButton(trigger_pin, self.trigger)
+            # self._gpio.setButton(exit_pin, self.exit)
             self._gpio.setButton(exit_pin, self.start_over)
             self._lamp = self._gpio.setLamp(lamp_pin)
             self._rgb = self._gpio.setRgb(rgb_pin)
