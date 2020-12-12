@@ -62,7 +62,7 @@ class Gpio:
                          lamp_pin, trigger_pin, exit_pin, *rgb_pin)
 
             self._gpio.setButton(trigger_pin, self.trigger)
-            self._gpio.setButton(exit_pin, self.exit)
+            self._gpio.setButton(exit_pin, self.start_over)
             self._lamp = self._gpio.setLamp(lamp_pin)
             self._rgb = self._gpio.setRgb(rgb_pin)
             if self._is_neopixel_enabled:
@@ -147,6 +147,13 @@ class Gpio:
         self._comm.send(
             Workers.MASTER,
             StateMachine.TeardownEvent(StateMachine.TeardownEvent.WELCOME))
+
+    def start_over(self):
+
+        self._comm.send(
+            Workers.MASTER,
+            StateMachine.TeardownEvent(StateMachine.TeardownEvent.RESTART))
+
 
     def showIdle(self):
 
