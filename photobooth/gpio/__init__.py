@@ -153,7 +153,7 @@ class Gpio:
 
         self._comm.send(
             Workers.MASTER,
-            StateMachine.TeardownEvent(StateMachine.GuiEvent('retry')))
+            StateMachine.TeardownEvent(StateMachine.GuiEvent('idle')))
 
 
     def showIdle(self):
