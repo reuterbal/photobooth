@@ -75,7 +75,7 @@ class PictureUpload(WorkerTask):
                 try:
                     bucket = storage_client.bucket(self._bucket_name)
                     blob = bucket.blob(filename)
-                    blob.upload_from_string(picture.getvalue(), content_type='image/jpeg')
+                    blob.upload_from_string(picture.getvalue(), content_type='image/jpeg', timeout=30)
                     print(f"uploaded {blob.id} to {self._bucket_name}")
                 except:
                     logging.warn("Could not upload the image to GCP")
