@@ -355,6 +355,9 @@ class IdleState(State):
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'trigger'):
             context.state = GreeterState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
