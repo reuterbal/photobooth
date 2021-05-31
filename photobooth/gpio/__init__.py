@@ -246,12 +246,13 @@ class NeoPixels:
         self._pixels.show()
 
     def _count_down(self, countdown_time, num_leds):
+        delta = 0.5
         self.set_color(0, 0, 0, 0)
         for x in range(0, int(num_leds/2)):
             self._pixels[x] = (150, 150, 150, 10)
             self._pixels[x+int(num_leds/2)] = (150, 150, 150, 10)
             self._pixels.show()
-            sleep(round((countdown_time/num_leds)*2,1))
+            sleep(round(((countdown_time-delta)/num_leds)*2, 1))
         self.set_color(0, 0, 0, 0)
 
     def wheely(self, pos):
