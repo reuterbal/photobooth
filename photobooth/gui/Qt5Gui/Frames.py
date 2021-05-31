@@ -84,6 +84,7 @@ class IdleMessage(QtWidgets.QFrame):
         super().__init__()
         self.setObjectName('IdleMessage')
 
+        self._message_label = _('Hit the')
         self._message_button = _('Button!')
 
         self.initFrame(trigger_action)
@@ -94,12 +95,11 @@ class IdleMessage(QtWidgets.QFrame):
         btn = QtWidgets.QPushButton(self._message_button)
         btn.clicked.connect(trigger_action)
 
-        label = QtWidgets.QLabel(_('image'))
+        label = QtWidgets.QLabel(_(''))
         pixmap = QtWidgets.QPixmap('photobooth/gui/Qt5Gui/images/checkmark.png')
         label.setPixmap(pixmap)
 
         lay = QtWidgets.QVBoxLayout()
-        lay.addWidget(label)
         lay.addWidget(lbl)
         lay.addWidget(btn)
         self.setLayout(lay)
