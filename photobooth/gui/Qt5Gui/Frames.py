@@ -102,6 +102,7 @@ class IdleMessage(QtWidgets.QFrame):
         lay = QtWidgets.QVBoxLayout()
         lay.addWidget(lbl)
         lay.addWidget(btn)
+        lay.addWidget(label)
         self.setLayout(lay)
 
 
