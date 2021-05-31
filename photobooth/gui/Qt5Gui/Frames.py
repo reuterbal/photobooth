@@ -349,7 +349,7 @@ class PostprocessMessage(Widgets.TransparentOverlay):
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(QtWidgets.QLabel(_('Press the red button')))
-        layout.addWidget(QtWidgets.QLabel(_('')))
+        layout.addWidget(QtWidgets.QLabel(_('                    ')))
         layout.addWidget(QtWidgets.QLabel(_('to start over.')))
         # layout.addLayout(button_lay)
         self.setLayout(layout)
