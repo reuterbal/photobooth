@@ -30,7 +30,7 @@ QPushButton:pressed {
 /* Idle Screen */
 
 QFrame#IdleMessage {
-    background-image: url(photobooth/gui/Qt5Gui/images/nalu-800x600.png);
+    background-image: url(photobooth/gui/Qt5Gui/images/arrow-800x600.png);
     background-repeat: no-repeat;
     padding: 80px 40px 60px 40px;
 }
