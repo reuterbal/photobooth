@@ -96,7 +96,7 @@ class IdleMessage(QtWidgets.QFrame):
         btn.clicked.connect(trigger_action)
 
         label = QtWidgets.QLabel(_(''))
-        pixmap = QtWidgets.QPixmap('photobooth/gui/Qt5Gui/images/checkmark.png')
+        pixmap = QtGui.QPixmap('photobooth/gui/Qt5Gui/images/checkmark.png')
         label.setPixmap(pixmap)
 
         lay = QtWidgets.QVBoxLayout()
