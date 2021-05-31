@@ -191,6 +191,7 @@ class Gpio:
 
     def showCountdown(self):
 
+        sleep(0.2)
         self.rgbBlink()
         if self._is_neopixel_enabled:
             self._neo_pixels._count_down(self._countdown_time, 32)
