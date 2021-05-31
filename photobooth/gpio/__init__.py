@@ -251,6 +251,7 @@ class NeoPixels:
             self._pixels[x+int(num_leds/2)] = (150, 150, 150, 10)
             self._pixels.show()
             print("Sleeping " + str(countdown_time/num_leds))
+            print("Sleepingk " + str(round((countdown_time/num_leds)*2)))
             sleep(round((countdown_time/num_leds)*2))
         self.set_color(0, 0, 0, 0)
 
