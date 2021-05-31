@@ -86,7 +86,7 @@ class Gpio:
         elif isinstance(state, StateMachine.GreeterState):
             self.showGreeter()
         elif isinstance(state, StateMachine.CountdownState):
-            self.showCountdown()
+            self.showCountdown(state.num_picture())
         elif isinstance(state, StateMachine.CaptureState):
             self.showCapture()
         elif isinstance(state, StateMachine.AssembleState):
@@ -190,10 +190,10 @@ class Gpio:
         if self._is_neopixel_enabled:
             self._neo_pixels.set_color(0, 255, 0, 10)
 
-    def showCountdown(self):
+    def showCountdown(self, num_of_pictures):
 
-        print("Showing countdown now")
-        sleep(0.2)
+        if num_of_pictures == 1:
+            sleep(0.2)              # Simulate the uploading of an image initially as otherwise the led countdown gets out of sync
         self.rgbBlink()
         if self._is_neopixel_enabled:
             self._neo_pixels._count_down(self._countdown_time, 32)
