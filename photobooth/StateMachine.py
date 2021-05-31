@@ -325,6 +325,9 @@ class WelcomeState(State):
                 context.state = StartupState()
             elif event.name == 'exit':
                 context.state = TeardownState(TeardownEvent.EXIT)
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -340,6 +343,9 @@ class StartupState(State):
         if isinstance(event, CameraEvent) and event.name == 'ready':
             context.is_running = True
             context.state = IdleState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
