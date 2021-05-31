@@ -84,7 +84,6 @@ class IdleMessage(QtWidgets.QFrame):
         super().__init__()
         self.setObjectName('IdleMessage')
 
-        self._message_label = c
         self._message_button = _('Button!')
 
         self.initFrame(trigger_action)
