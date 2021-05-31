@@ -37,6 +37,7 @@ class Gpio:
 
         self._is_trigger = False
         self._is_enabled = config.getBool('Gpio', 'enable')
+        self._is_button_startup = True
 
         self._is_neopixel_enabled = True
 
@@ -142,6 +143,9 @@ class Gpio:
         if self._is_trigger:
             self.disableTrigger()
             self._comm.send(Workers.MASTER, StateMachine.GpioEvent('trigger'))
+        if not self._is_trigger and self._is_button_startup:
+            self._is_button_startup = False
+            self._comm.send(Workers.MASTER, StateMachine.GuiEvent('start'))
 
     def exit(self):
 
