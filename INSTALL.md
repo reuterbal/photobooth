@@ -158,3 +158,18 @@ You can directly startup the photobooth to the idle screen (skipping the welcome
 2. Create a bucket (Storage) and note down the bucket name
 3. Create a service account with write permissions to the bucket. Download the key as JSON.
 4. Update the photobooth config with the bucket name and the path of the JSON file
+
+## Autostart the application
+
+add this snippet in /etc/xdg/lxsession/LXDE-pi/autostart
+
+    @lxpanel --profile LXDE-pi
+    @pcmanfm --desktop --profile LXDE-pi
+    @xscreensaver -no-splash
+    @sudo /home/pi/Desktop/autostart.sh
+    
+where the autostart.sh is in the desktop folder containing this snippet:
+
+    #!/bin/bash
+    cd /home/pi/photobooth
+    /home/pi/photobooth/venv/bin/python -m photobooth
