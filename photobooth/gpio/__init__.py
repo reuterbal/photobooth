@@ -86,7 +86,7 @@ class Gpio:
         elif isinstance(state, StateMachine.GreeterState):
             self.showGreeter()
         elif isinstance(state, StateMachine.CountdownState):
-            self.showCountdown(state.num_picture())
+            self.showCountdown(state._num_picture)
         elif isinstance(state, StateMachine.CaptureState):
             self.showCapture()
         elif isinstance(state, StateMachine.AssembleState):
