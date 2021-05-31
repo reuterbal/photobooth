@@ -141,6 +141,7 @@ class Gpio:
     def trigger(self):
 
         if self._is_trigger:
+            self._is_button_startup = False
             self.disableTrigger()
             self._comm.send(Workers.MASTER, StateMachine.GpioEvent('trigger'))
         if not self._is_trigger and self._is_button_startup:
