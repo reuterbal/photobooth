@@ -26,7 +26,6 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PyQt5 import Qt
-from PyQt5 import QtMultimedia
 
 from .. import modules
 from ... import camera
@@ -34,7 +33,6 @@ from ... import printer
 
 from . import Widgets
 from . import styles
-from . import PyQt5Gui
 
 
 class Welcome(QtWidgets.QFrame):
@@ -276,17 +274,15 @@ class WaitMessage(QtWidgets.QFrame):
 
 class CountdownMessage(QtWidgets.QFrame):
 
-    def __init__(self, time, action, audio):
+    def __init__(self, time, action):
 
         super().__init__()
         self.setObjectName('CountdownMessage')
 
         self._step_size = 50
         self._value = time * (1000 // self._step_size)
-        self._bar_value_old_int = self._value / (1000 // self._step_size)
         self._action = action
         self._picture = None
-        self._audio = audio
 
         self._initProgressBar(time)
 
@@ -321,11 +317,6 @@ class CountdownMessage(QtWidgets.QFrame):
     def _updateProgressBar(self):
 
         self._bar.value = self._value / (1000 // self._step_size)
-        if self._audio.do_play_audio:
-            diff = self._bar_value_old_int - int(self._bar.value)
-            if diff > 0:
-                self._audio.beep()
-            self._bar_value_old_int = int(self._bar.value)
 
     def showEvent(self, event):
 
@@ -337,7 +328,6 @@ class CountdownMessage(QtWidgets.QFrame):
 
         if self.value == 0:
             self.killTimer(self._timer)
-            self._audio.shutter()
             self._action()
         else:
             self._updateProgressBar()
@@ -529,7 +519,6 @@ class Settings(QtWidgets.QFrame):
         tabs.addTab(self.createGIFSettings(), _('GIF'))
         tabs.addTab(self.createStorageSettings(), _('Storage'))
         tabs.addTab(self.createGpioSettings(), _('GPIO'))
-        tabs.addTab(self.createAudioSettings(), _('Audio'))
         tabs.addTab(self.createPrinterSettings(), _('Printer'))
         tabs.addTab(self.createMailerSettings(), _('Mailer'))
         tabs.addTab(self.createUploadSettings(), _('Upload'))
@@ -962,61 +951,6 @@ class Settings(QtWidgets.QFrame):
         widget.setLayout(layout)
         return widget
 
-    def createAudioSettings(self):
-
-        self.init('Audio')
-
-        enable = QtWidgets.QCheckBox()
-        enable.setChecked(self._cfg.getBool('Audio', 'enable'))
-        self.add('Audio', 'enable', enable)
-
-        volume = QtWidgets.QDoubleSpinBox()
-        volume.setRange(0, 1.0)
-        volume.setSingleStep(0.05)
-        volume.setValue(self._cfg.getFloat('Audio', 'volume'))
-        self.add('Audio', 'volume', volume)
-
-        beep = QtWidgets.QLineEdit(self._cfg.get('Audio', 'beep_wav'))
-        self.add('Audio', 'beep_wav', beep)
-
-        shutter = QtWidgets.QLineEdit(self._cfg.get('Audio', 'shutter_wav'))
-        self.add('Audio', 'shutter_wav', shutter)
-
-        def file_dialog_beep():
-            dialog = QtWidgets.QFileDialog.getOpenFileName
-            beep.setText(dialog(self, _('Select file'), os.path.expanduser('~'),
-                              'WAV-Audio (*.wav)')[0])
-
-        def file_dialog_shutter():
-            dialog = QtWidgets.QFileDialog.getOpenFileName
-            shutter.setText(dialog(self, _('Select file'), os.path.expanduser('~'),
-                              'WAV-Audio (*.wav)')[0])
-
-
-        beep_file_button = QtWidgets.QPushButton(_('Select file'))
-        beep_file_button.clicked.connect(file_dialog_beep)
-
-        shutter_file_button = QtWidgets.QPushButton(_('Select file'))
-        shutter_file_button.clicked.connect(file_dialog_shutter)
-
-        lay_file_beep = QtWidgets.QHBoxLayout()
-        lay_file_beep.addWidget(beep)
-        lay_file_beep.addWidget(beep_file_button)
-
-        lay_file_shutter = QtWidgets.QHBoxLayout()
-        lay_file_shutter.addWidget(shutter)
-        lay_file_shutter.addWidget(shutter_file_button)
-
-        layout = QtWidgets.QFormLayout()
-        layout.addRow(_('Play Audio:'), enable)
-        layout.addRow(_('Volume [0 - 1.0]:'), volume)
-        layout.addRow(_('Audio that is played every countdown second:'), lay_file_beep)
-        layout.addRow(_('Audio that is played when countdown finishes:'), lay_file_shutter)
-
-        widget = QtWidgets.QWidget()
-        widget.setLayout(layout)
-        return widget
-
     def createPrinterSettings(self):
 
         self.init('Printer')
@@ -1247,12 +1181,6 @@ class Settings(QtWidgets.QFrame):
                       self.get('Gpio', 'chan_g_pin').text())
         self._cfg.set('Gpio', 'chan_b_pin',
                       self.get('Gpio', 'chan_b_pin').text())
-
-        self._cfg.set('Audio', 'enable',
-                      str(self.get('Audio', 'enable').isChecked()))
-        self._cfg.set('Audio', 'beep_wav', self.get('Audio', 'beep_wav').text())
-        self._cfg.set('Audio', 'shutter_wav', self.get('Audio', 'shutter_wav').text())
-        self._cfg.set('Audio', 'volume', '{:.2f}'.format(self.get('Audio', 'volume').value()))
 
         self._cfg.set('Printer', 'enable',
                       str(self.get('Printer', 'enable').isChecked()))
