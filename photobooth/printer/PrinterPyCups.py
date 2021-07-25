@@ -40,6 +40,8 @@ class PrinterPyCups(Printer):
 
         self.num_prints = num_prints
 
+        self.pageSize = page_size
+
         self._conn = cups.Connection() if cups else None
 
         if print_pdf:
@@ -66,5 +68,12 @@ class PrinterPyCups(Printer):
                 else:
                     picture.save(self._tmp_filename, format="JPEG")
                 self._conn.printFile(
-                    self._printer, self._tmp_filename, "photobooth", {}
+                    self._printer,
+                    self._tmp_filename,
+                    "photobooth",
+                    {
+                        "media": "Custom.{}x{}mm".format(
+                            self.pageSize[0], self.pageSize[1]
+                        )
+                    },
                 )
