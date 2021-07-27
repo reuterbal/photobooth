@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Photobooth\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-09-10 16:24+0200\n"
-"PO-Revision-Date: 2019-09-10 16:30+0200\n"
+"PO-Revision-Date: 2021-07-27 23:03+0200\n"
 "Last-Translator: \n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.7.0\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.3\n"
 
 #: photobooth/gui/GuiPostprocessor.py:122
 msgid "Print"
@@ -40,11 +40,11 @@ msgstr "Photobooth"
 
 #: photobooth/gui/Qt5Gui/Frames.py:88
 msgid "Hit the"
-msgstr "Drück' den"
+msgstr "Drücke"
 
 #: photobooth/gui/Qt5Gui/Frames.py:89
 msgid "Button!"
-msgstr "Knopf!"
+msgstr "↠ hier ↞"
 
 #: photobooth/gui/Qt5Gui/Frames.py:90
 msgid "Boomerang!"
