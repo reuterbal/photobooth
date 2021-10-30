@@ -20,6 +20,10 @@
 import logging
 
 
+CAPMODE_STATIC = 'static'
+CAPMODE_BOOMERANG = 'boomerang'
+
+
 class Context:
 
     def __init__(self, communicator, omit_welcome=False):
@@ -27,6 +31,7 @@ class Context:
         super().__init__()
         self._comm = communicator
         self.is_running = False
+        self.capturemode = CAPMODE_STATIC
         if omit_welcome:
             self.state = StartupState()
         else:
@@ -44,6 +49,21 @@ class Context:
             raise TypeError('is_running must be a bool')
 
         self._is_running = running
+
+    @property
+    def capturemode(self):
+
+        return self._capturemode
+
+    @capturemode.setter
+    def capturemode(self, mode):
+
+        if (mode != CAPMODE_BOOMERANG) and (mode != CAPMODE_STATIC):
+            raise TypeError('capturemode must be boomerang or static')
+
+        logging.debug('Context: Set capture mode to "{}"'.format(mode))
+
+        self._capturemode = mode
 
     @property
     def state(self):
@@ -177,15 +197,21 @@ class GpioEvent(Event):
 
 class CameraEvent(Event):
 
-    def __init__(self, name, picture=None):
+    def __init__(self, name, picture=None, gif=None):
 
         super().__init__(name)
         self._picture = picture
+        self._gif = gif
 
     @property
     def picture(self):
 
         return self._picture
+
+    @property
+    def gif(self):
+
+        return self._gif
 
 
 class WorkerEvent(Event):
@@ -354,16 +380,27 @@ class IdleState(State):
 
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'trigger'):
+            context.capturemode = CAPMODE_STATIC
             context.state = GreeterState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+                    event.name == 'triggerVideo'):
+            context.capturemode = CAPMODE_BOOMERANG
+            context.state = GreeterState(gif=True)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class GreeterState(State):
 
-    def __init__(self):
+    def __init__(self, gif=None):
 
         super().__init__()
+        self._gif = gif
+
+    @property
+    def gif(self):
+
+        return self._gif
 
     def handleEvent(self, event, context):
 
@@ -392,73 +429,108 @@ class CountdownState(State):
         if isinstance(event, GuiEvent) and event.name == 'countdown':
             pass
         elif isinstance(event, GuiEvent) and event.name == 'capture':
-            context.state = CaptureState(self.num_picture)
+            context.state = CaptureState(self.num_picture, context.capturemode)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class CaptureState(State):
 
-    def __init__(self, num_picture):
+    def __init__(self, num_picture, capturemode):
 
         super().__init__()
 
         self._num_picture = num_picture
+        self._capturemode = capturemode
 
     @property
     def num_picture(self):
 
         return self._num_picture
 
+    @property
+    def capturemode(self):
+
+        return self._capturemode
+
+    @property
+    def gif(self):
+
+        gif = False
+        if self.capturemode == CAPMODE_BOOMERANG:
+            gif = True
+        return gif
+
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'countdown':
             context.state = CountdownState(self.num_picture + 1)
         elif isinstance(event, CameraEvent) and event.name == 'assemble':
-            context.state = AssembleState()
+            context.state = AssembleState(self.capturemode)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class AssembleState(State):
 
-    def __init__(self):
+    def __init__(self, capturemode):
 
         super().__init__()
+        self._capturemode = capturemode
+
+    @property
+    def capturemode(self):
+
+        return self._capturemode
 
     def handleEvent(self, event, context):
 
         if isinstance(event, CameraEvent) and event.name == 'review':
-            context.state = ReviewState(event.picture)
+            if self.capturemode == CAPMODE_BOOMERANG:
+                context.state = ReviewState(event.picture, event.gif)
+            else:
+                context.state = ReviewState(event.picture)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class ReviewState(State):
 
-    def __init__(self, picture):
+    def __init__(self, picture, gif=None):
 
         super().__init__()
         self._picture = picture
+        self._gif = gif
 
     @property
     def picture(self):
 
         return self._picture
 
+    @property
+    def gif(self):
+
+        return self._gif
+
     def handleEvent(self, event, context):
 
         if isinstance(event, GuiEvent) and event.name == 'postprocess':
-            context.state = PostprocessState()
+            context.state = PostprocessState(self.gif)
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
 
 class PostprocessState(State):
 
-    def __init__(self):
+    def __init__(self, gif=None):
 
         super().__init__()
+        self._gif = gif
+
+    @property
+    def gif(self):
+
+        return self._gif
 
     def handleEvent(self, event, context):
 

@@ -32,7 +32,7 @@ QPushButton:pressed {
 QFrame#IdleMessage {
     background-image: url(photobooth/gui/Qt5Gui/images/arrow-1024x600.png);
     background-repeat: no-repeat;
-    padding: 80px 400px 120px 80px;
+    padding: 40px 180px 40px 60px;
 }
 
 QFrame#IdleMessage QLabel {
@@ -43,7 +43,7 @@ QFrame#IdleMessage QLabel {
 QFrame#IdleMessage QPushButton {
     border: none;
     color: rgba(255, 27, 0, 200);
-    font-size: 200px;
+    font-size: 180px;
     text-align: center;
 }
 
@@ -123,6 +123,17 @@ QFrame#PictureMessage {
     margin: 30px;
 }
 
+/* GIF Screen */
+
+QFrame#GIFMessage {
+    margin: 30px;
+}
+
+QFrame#GIFMessage QLabel {
+    font-size: 160px;
+    qproperty-alignment: AlignCenter;
+}
+
 /* Overlay message */
 
 QWidget#TransparentOverlay {
@@ -170,7 +181,7 @@ QTabWidget::pane {
     border-color: #eeeeee;
     color: #333333;
     padding: 10px;
-    margin: 0; 
+    margin: 0;
 }
 
 QTabWidget::tab-bar {

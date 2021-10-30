@@ -29,14 +29,21 @@ class PictureList:
     of taken and previously existing pictures.
     """
 
-    def __init__(self, basename):
+    def __init__(self, basename, suffix=None):
         """Initialize filenames to the given basename and search for
         existing files. Set the counter accordingly.
         """
 
         # Set basename and suffix
         self._basename = basename
-        self.suffix = '.jpg'
+        if suffix:
+            if (suffix is not 'jpg') and (suffix is not 'gif'):
+                raise TypeError('suffix must be "jpg" or "gif"')
+            self.suffix_raw = suffix
+        else:
+            self.suffix_raw = 'jpg'
+        self.suffix = '.{}'.format(self.suffix_raw)
+
         self.count_width = 5
 
         self.findExistingFiles()
@@ -60,7 +67,7 @@ class PictureList:
         # Print initial infos
         logging.info('Number of last existing file: %d', self.counter)
         logging.info('Saving pictures as "%s%s.%s"', self.basename,
-                     self.count_width * 'X', 'jpg')
+                     self.count_width * 'X', self.suffix_raw)
 
     @property
     def basename(self):

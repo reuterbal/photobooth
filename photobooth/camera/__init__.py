@@ -53,6 +53,11 @@ class Camera:
         self._is_preview = self._cfg.getBool('Photobooth', 'show_preview')
         self._is_keep_pictures = self._cfg.getBool('Storage', 'keep_pictures')
 
+        self._gif_num_frames = self._cfg.getInt('GIF', 'num_frames')
+        self._gif_num_img_to_take = ((self._gif_num_frames - 2) // 2) + 2
+        self._gif_frame_duration = self._cfg.getInt('GIF', 'frame_duration')
+        self._gif_use_nth_capture = self._cfg.getInt('GIF', 'use_nth_capture')
+
         rot_vals = {0: None, 90: Image.ROTATE_90, 180: Image.ROTATE_180,
                     270: Image.ROTATE_270}
         self._rotation = rot_vals[self._cfg.getInt('Camera', 'rotation')]
@@ -80,6 +85,15 @@ class Camera:
             self._template = Image.new('RGB', self._pic_dims.outputSize,
                                        (255, 255, 255))
 
+        overlay = self._cfg.get('Picture', 'overlay')
+        if len(overlay) > 0:
+            logging.info('Using overlay "{}"'.format(overlay))
+            ov_picture = Image.open(overlay)
+            self._overlay = ov_picture.resize(self._pic_dims.outputSize)
+        else:
+            self._overlay = Image.new('RGBA', self._pic_dims.outputSize,
+                                      (255, 255, 255, 0))
+
         self.setIdle()
         self._comm.send(Workers.MASTER, StateMachine.CameraEvent('ready'))
 
@@ -104,9 +118,19 @@ class Camera:
         elif isinstance(state, StateMachine.CountdownState):
             self.capturePreview()
         elif isinstance(state, StateMachine.CaptureState):
-            self.capturePicture(state)
+            if state.capturemode == StateMachine.CAPMODE_STATIC:
+                self.capturePicture(state)
+            elif state.capturemode == StateMachine.CAPMODE_BOOMERANG:
+                self.captureVideo(state)
+            else:
+                raise TypeError('unknown capturemode in camera')
         elif isinstance(state, StateMachine.AssembleState):
-            self.assemblePicture()
+            if state.capturemode == StateMachine.CAPMODE_STATIC:
+                self.assemblePicture()
+            elif state.capturemode == StateMachine.CAPMODE_BOOMERANG:
+                self.assembleGIF()
+            else:
+                raise TypeError('unknown capturemode in camera')
         elif isinstance(state, StateMachine.TeardownState):
             self.teardown(state)
 
@@ -160,6 +184,30 @@ class Camera:
             self._comm.send(Workers.MASTER,
                             StateMachine.CameraEvent('assemble'))
 
+    def captureVideo(self, state):
+
+        logging.debug('entering boomerang capture')
+        number_pictures = 0
+
+        counter = 0
+        while number_pictures < self._gif_num_img_to_take:
+            picture = self._cap.getPreview()
+            if counter % self._gif_use_nth_capture == 0:
+                # skip images inbetween
+                number_pictures += 1
+                if self._rotation is not None:
+                    picture = picture.transpose(self._rotation)
+                byte_data = BytesIO()
+                picture.save(byte_data, format='jpeg')
+                self._pictures.append(byte_data)
+                if self._is_keep_pictures:
+                    self._comm.send(Workers.WORKER,
+                            StateMachine.CameraEvent('capture', byte_data))
+            counter += 1
+
+        self._comm.send(Workers.MASTER,
+                        StateMachine.CameraEvent('assemble'))
+
     def assemblePicture(self):
 
         self.setIdle()
@@ -167,11 +215,32 @@ class Camera:
         picture = self._template.copy()
         for i in range(self._pic_dims.totalNumPictures):
             shot = Image.open(self._pictures[i])
-            resized = shot.resize(self._pic_dims.thumbnailSize)
+            resized = shot.resize(self._pic_dims.thumbnailSize, Image.BICUBIC)
             picture.paste(resized, self._pic_dims.thumbnailOffset[i])
+        picture.paste(self._overlay, (0, 0), self._overlay)
 
         byte_data = BytesIO()
         picture.save(byte_data, format='jpeg')
         self._comm.send(Workers.MASTER,
                         StateMachine.CameraEvent('review', byte_data))
+        self._pictures = []
+
+    def assembleGIF(self):
+
+        self.setIdle()
+
+        picture = []
+        for i in range(self._gif_num_img_to_take):
+            logging.debug("appending frame {}".format(i))
+            picture.append(Image.open(self._pictures[i]))
+        for i in range((self._gif_num_frames - self._gif_num_img_to_take), 0, -1):
+            logging.debug("appending frame {}".format(i))
+            picture.append(Image.open(self._pictures[i]))
+
+        byte_data_gif = BytesIO()
+        picture[0].save(byte_data_gif, format='GIF', append_images=picture[1:],
+                        save_all=True, optimize=True, duration=self._gif_frame_duration,
+                        loop=0)
+        self._comm.send(Workers.MASTER,
+                        StateMachine.CameraEvent('review', byte_data_gif, True))
         self._pictures = []
