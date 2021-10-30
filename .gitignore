@@ -11,4 +11,4 @@ print_*.pdf
 build
 dist
 .idea/
-.vscode/
+.tox/
