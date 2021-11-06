@@ -67,15 +67,23 @@ class PictureList:
         """Return the basename for the files"""
         return self._basename
 
-    def getFilename(self, count):
-        """Return the file name for a given file number"""
+    def getFilename(self, count, uuid=None, use_counter=True):
+        """Return the file name for a given file number or a UUID"""
+        if uuid:
+            if use_counter:
+                return self.basename + '-' + uuid + '_' + str(count) + self.suffix
+            else:
+                return self.basename + '-' + uuid + self.suffix
         return self.basename + str(count).zfill(self.count_width) + self.suffix
 
     def getLast(self):
         """Return the current filename"""
         return self.getFilename(self.counter)
 
-    def getNext(self):
+    def getNext(self, uuid=None, use_counter=True):
         """Update counter and return the next filename"""
         self.counter += 1
-        return self.getFilename(self.counter)
+        return self.getFilename(self.counter, uuid, use_counter)
+
+    def resetCounter(self):
+        self.counter = 0

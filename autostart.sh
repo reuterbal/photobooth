@@ -1,5 +1,3 @@
 #!/bin/bash
-
-cd "$(dirname "$0")"
-.venv/bin/python -m photobooth
-
+cd /home/pi/photobooth
+/home/pi/photobooth/venv/bin/python -m photobooth

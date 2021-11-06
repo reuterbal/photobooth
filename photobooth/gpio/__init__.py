@@ -33,9 +33,14 @@ class Gpio:
 
         self._comm = comm
         self._gpio = None
+        self._neo_pixels = None
 
         self._is_trigger = False
         self._is_enabled = config.getBool('Gpio', 'enable')
+        self._is_button_startup = True
+
+        self._is_neopixel_enabled = True
+
         self._countdown_time = config.getInt('Photobooth', 'countdown_time')
 
         self.initGpio(config)
@@ -58,9 +63,12 @@ class Gpio:
                          lamp_pin, trigger_pin, exit_pin, *rgb_pin)
 
             self._gpio.setButton(trigger_pin, self.trigger)
-            self._gpio.setButton(exit_pin, self.exit)
+            # self._gpio.setButton(exit_pin, self.exit)
+            self._gpio.setButton(exit_pin, self.start_over)
             self._lamp = self._gpio.setLamp(lamp_pin)
             self._rgb = self._gpio.setRgb(rgb_pin)
+            if self._is_neopixel_enabled:
+                self._neo_pixels = NeoPixels()
         else:
             logging.info('GPIO disabled')
 
@@ -78,7 +86,7 @@ class Gpio:
         elif isinstance(state, StateMachine.GreeterState):
             self.showGreeter()
         elif isinstance(state, StateMachine.CountdownState):
-            self.showCountdown()
+            self.showCountdown(state._num_picture)
         elif isinstance(state, StateMachine.CaptureState):
             self.showCapture()
         elif isinstance(state, StateMachine.AssembleState):
@@ -133,8 +141,12 @@ class Gpio:
     def trigger(self):
 
         if self._is_trigger:
+            self._is_button_startup = False
             self.disableTrigger()
             self._comm.send(Workers.MASTER, StateMachine.GpioEvent('trigger'))
+        if not self._is_trigger and self._is_button_startup:
+            self._is_button_startup = False
+            self._comm.send(Workers.MASTER, StateMachine.GuiEvent('start'))
 
     def exit(self):
 
@@ -142,45 +154,136 @@ class Gpio:
             Workers.MASTER,
             StateMachine.TeardownEvent(StateMachine.TeardownEvent.WELCOME))
 
+    def start_over(self):
+
+        self._comm.send(
+            Workers.MASTER,
+            StateMachine.GuiEvent('idle'))
+
+
     def showIdle(self):
 
         self.enableTrigger()
 
         if self._is_enabled:
-            h, s, v = 0, 1, 1
-            while self._comm.empty(Workers.GPIO):
-                h = (h + 1) % 360
-                rgb = hsv_to_rgb(h / 360, s, v)
-                self.setRgbColor(*rgb)
-                sleep(0.1)
+            if self._is_neopixel_enabled:
+                r = 0
+                while self._comm.empty(Workers.GPIO):
+                    self._neo_pixels.rainbow_cycle(32)
+                    sleep(0.1)
+                    # r = (r + 5) % 255
+                    # self._neo_pixels.set_color(r, 0, 0, 10)
+                    # sleep(0.1)
+            else:
+                h, s, v = 0, 1, 1
+                while self._comm.empty(Workers.GPIO):
+                    h = (h + 1) % 360
+                    rgb = hsv_to_rgb(h / 360, s, v)
+                    self.setRgbColor(*rgb)
+                    sleep(0.1)
 
     def showGreeter(self):
 
         self.disableTrigger()
         self.rgbOff()
 
-    def showCountdown(self):
+        if self._is_neopixel_enabled:
+            self._neo_pixels.set_color(0, 255, 0, 10)
 
-        sleep(0.2)
+    def showCountdown(self, num_of_pictures):
+
+        if num_of_pictures == 1:
+            sleep(0.2)              # Simulate the uploading of an image initially as otherwise the led countdown gets out of sync
         self.rgbBlink()
+        if self._is_neopixel_enabled:
+            self._neo_pixels._count_down(self._countdown_time, 32)
 
     def showCapture(self):
 
-        self.rgbOn()
-        self.setRgbColor(1, 1, .9)
+        if self._is_neopixel_enabled:
+            self._neo_pixels.set_color(255, 255, 255, 200)
+        else:
+            self.rgbOn()
+            self.setRgbColor(1, 1, .9)
 
     def showAssemble(self):
 
-        self.rgbOff()
+        if self._is_neopixel_enabled:
+            self._neo_pixels.set_color(0, 0, 255, 10)
+        else:
+            self.rgbOff()
 
     def showReview(self):
 
-        self.setRgbColor(0, .15, 0)
+        if self._is_neopixel_enabled:
+            self._neo_pixels.set_color(255, 255, 0, 10)
+        else:
+            self.setRgbColor(0, .15, 0)
 
     def showPostprocess(self):
 
         pass
 
+class NeoPixels:
+
+    def __init__(self):
+
+        super().__init__()
+
+        import board
+        import neopixel
+
+        self._neopixel_pin = board.D18
+        self._num_neopixels = 32
+        self._neopixel_order = neopixel.RGBW
+        self._start_rainbow = 0
+
+        self._pixels = neopixel.NeoPixel(
+            self._neopixel_pin, self._num_neopixels, brightness=0.2, auto_write=False, pixel_order=self._neopixel_order
+        )
+
+    def set_color(self, r, g, b, w):
+        self._pixels.fill((r, g, b, w))
+        self._pixels.show()
+
+    def _count_down(self, countdown_time, num_leds):
+        delta = 0.5
+        self.set_color(0, 0, 0, 0)
+        for x in range(0, int(num_leds/2)):
+            self._pixels[x] = (150, 150, 150, 10)
+            self._pixels[x+int(num_leds/2)] = (150, 150, 150, 10)
+            self._pixels.show()
+            sleep(round(((countdown_time-delta)/num_leds)*2, 1))
+        self.set_color(0, 0, 0, 0)
+
+    def wheely(self, pos):
+        # Input a value 0 to 255 to get a color value.
+        # The colours are a transition r - g - b - back to r.
+        if pos < 0 or pos > 255:
+            r = g = b = 0
+        elif pos < 85:
+            r = int(pos * 3)
+            g = int(255 - pos * 3)
+            b = 0
+        elif pos < 170:
+            pos -= 85
+            r = int(255 - pos * 3)
+            g = 0
+            b = int(pos * 3)
+        else:
+            pos -= 170
+            r = 0
+            g = int(pos * 3)
+            b = int(255 - pos * 3)
+        return r, g, b, 0
+
+    def rainbow_cycle(self, num_pixels):
+        self._start_rainbow += 1
+        self._start_rainbow = self._start_rainbow % 255
+        for i in range(num_pixels):
+            pixel_index = (i * 256 // num_pixels) + self._start_rainbow
+            self._pixels[i] = self.wheely(pixel_index & 255)
+        self._pixels.show()
 
 class Entities:
 

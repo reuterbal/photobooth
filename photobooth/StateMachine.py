@@ -325,6 +325,9 @@ class WelcomeState(State):
                 context.state = StartupState()
             elif event.name == 'exit':
                 context.state = TeardownState(TeardownEvent.EXIT)
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -340,6 +343,9 @@ class StartupState(State):
         if isinstance(event, CameraEvent) and event.name == 'ready':
             context.is_running = True
             context.state = IdleState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -355,6 +361,9 @@ class IdleState(State):
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'trigger'):
             context.state = GreeterState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -370,6 +379,9 @@ class GreeterState(State):
         if ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
            event.name == 'countdown'):
             context.state = CountdownState(1)
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -393,6 +405,9 @@ class CountdownState(State):
             pass
         elif isinstance(event, GuiEvent) and event.name == 'capture':
             context.state = CaptureState(self.num_picture)
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -416,6 +431,9 @@ class CaptureState(State):
             context.state = CountdownState(self.num_picture + 1)
         elif isinstance(event, CameraEvent) and event.name == 'assemble':
             context.state = AssembleState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
@@ -450,6 +468,9 @@ class ReviewState(State):
 
         if isinstance(event, GuiEvent) and event.name == 'postprocess':
             context.state = PostprocessState()
+        elif ((isinstance(event, GuiEvent) or isinstance(event, GpioEvent)) and
+           event.name == 'idle'):
+            print("Ignoring the red button here")
         else:
             raise TypeError('Unknown Event type "{}"'.format(event))
 
