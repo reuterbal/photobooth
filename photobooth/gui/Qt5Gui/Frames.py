@@ -595,6 +595,12 @@ class Settings(QtWidgets.QFrame):
             self._cfg.get('Photobooth', 'overwrite_error_message'))
         self.add('Photobooth', 'overwrite_error_message', err_msg)
 
+        capture_retry = QtWidgets.QSpinBox()
+        capture_retry.setRange(0,10)
+        capture_retry.setValue(self._cfg.getInt('Photobooth',
+                                                'capture_error_retry'))
+        self.add('Photobooth', 'capture_error_retry', capture_retry)
+
         layout = QtWidgets.QFormLayout()
         layout.addRow(_('Show preview during countdown:'), preview)
         layout.addRow(_('Greeter time before countdown [s]:'), greet_time)
@@ -602,6 +608,7 @@ class Settings(QtWidgets.QFrame):
         layout.addRow(_('Picture display time [s]:'), displ_time)
         layout.addRow(_('Postprocess timeout [s]:'), postproc_time)
         layout.addRow(_('Overwrite displayed error message:'), err_msg)
+        layout.addRow(_('Retries on capture error:'), capture_retry)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
@@ -991,6 +998,8 @@ class Settings(QtWidgets.QFrame):
                       str(self.get('Photobooth', 'postprocess_time').text()))
         self._cfg.set('Photobooth', 'overwrite_error_message',
                       self.get('Photobooth', 'overwrite_error_message').text())
+        self._cfg.set('Photobooth', 'capture_error_retry',
+                      self.get('Photobooth', 'capture_error_retry').text())
 
         self._cfg.set('Camera', 'module',
                       camera.modules[self.get('Camera',
