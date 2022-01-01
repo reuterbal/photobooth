@@ -138,10 +138,23 @@ class Camera:
                 self._comm.send(Workers.GUI,
                                 StateMachine.CameraEvent('preview', byte_data))
 
+    def _getPicture(self):
+        tries = 0
+        max_retries = self._cfg.getInt('Photobooth', 'capture_error_retry')
+        while True:
+            try:
+                return self._cap.getPicture()
+            except BaseException as e:
+                if tries < max_retries:
+                    logging.warn(('CameraGphoto2: Error on capture #{} ErrorCode: {}').format(tries, str(e)))
+                    tries += 1
+                else:
+                    raise e
+
     def capturePicture(self, state):
 
         self.setIdle()
-        picture = self._cap.getPicture()
+        picture = self._getPicture()
         if self._rotation is not None:
             picture = picture.transpose(self._rotation)
         byte_data = BytesIO()
