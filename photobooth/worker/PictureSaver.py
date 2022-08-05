@@ -25,14 +25,10 @@ from .WorkerTask import WorkerTask
 
 class PictureSaver(WorkerTask):
 
-    def __init__(self, basename):
+    def __init__(self):
 
         super().__init__()
 
-        # Ensure directory exists
-        dirname = os.path.dirname(basename)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
 
     def do(self, picture, filename):
 
